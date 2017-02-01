@@ -1,0 +1,2 @@
+/usr/bin/ar qc libMatlabLib.a  CMakeFiles/MatlabLib.dir/include/DynModel_grt_rtw/DynModel.c.o CMakeFiles/MatlabLib.dir/include/DynModel_grt_rtw/DynModel_data.c.o
+/usr/bin/ranlib libMatlabLib.a

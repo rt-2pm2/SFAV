@@ -1,0 +1,6 @@
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/edit_cache.dir
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/rebuild_cache.dir
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/PtaskLib.dir
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/MatlabLib.dir
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/BasicLib.dir
+/run/media/rt-2pm2/500GB/autopilot/AVMSF/build/CMakeFiles/AVMTF.dir

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libPtaskLib.a  CMakeFiles/PtaskLib.dir/include/ptask/src/pbarrier.c.o CMakeFiles/PtaskLib.dir/include/ptask/src/pmutex.c.o CMakeFiles/PtaskLib.dir/include/ptask/src/ptask.c.o CMakeFiles/PtaskLib.dir/include/ptask/src/ptime.c.o CMakeFiles/PtaskLib.dir/include/ptask/src/rtmode.c.o CMakeFiles/PtaskLib.dir/include/ptask/src/tstat.c.o
+/usr/bin/ranlib libPtaskLib.a

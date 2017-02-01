@@ -1,0 +1,12 @@
+pbarrier.o: pbarrier.c pbarrier.h ptime.h pmutex.h
+pbarrier.o: pbarrier.h ptime.h
+pmutex.o: pmutex.c pmutex.h
+pmutex.o: pmutex.h
+ptask.o: ptask.c ptask.h ptime.h rtmode.h pmutex.h tstat.h
+ptask.o: ptask.h ptime.h rtmode.h
+ptime.o: ptime.c ptime.h
+ptime.o: ptime.h
+rtmode.o: rtmode.c rtmode.h ptime.h ptask.h rtmode.h pmutex.h
+rtmode.o: rtmode.h ptime.h
+tstat.o: tstat.c tstat.h ptime.h ptask.h rtmode.h
+tstat.o: tstat.h ptime.h
