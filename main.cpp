@@ -5,7 +5,7 @@
  */
 
 #include "main.h"
-#include "avmsf_config.h"
+#include "sfav_config.h"
 
 int time_to_exit = 0;
 const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
@@ -331,7 +331,7 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->uart_name = uart_name;
     larg->synch = sync;
     ptask_create_param(lauch_thread, &larg->params);
-}
+}   
 
 int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
@@ -341,7 +341,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     // Load the IPs and other dat...
     ip_addr_uav[0] = (char *)"192.168.1.2";
     uav_port[0] = 4000;
-    synch[0] = true;
+    synch[0] = false;
 
     ip_addr_uav[1]= (char *)"192.168.1.3";
     uav_port[1] = 4002;

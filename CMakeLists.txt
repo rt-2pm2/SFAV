@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (AVMTF)
+project (SFAV)
 
 # Version Number    
 set (LSim_VERSION_MAJOR 1)
@@ -51,20 +51,20 @@ add_library(PtaskLib STATIC ${ptask_src})
 
 set(SOURCES main.cpp ${src_files})
 
-#add_executable(AVMTF main.cpp)
-add_executable(AVMTF ${SOURCES})
+#add_executable(SFAV main.cpp)
+add_executable(SFAV ${SOURCES})
 
 # =================================================
 # Linking Libraries
 
 # Link Basic Library
-target_link_libraries(AVMTF BasicLib)
+target_link_libraries(SFAV BasicLib)
 # Link Ptask library
-target_link_libraries(AVMTF PtaskLib)
+target_link_libraries(SFAV PtaskLib)
 # Link the Matlab Library
-target_link_libraries(AVMTF MatlabLib)
+target_link_libraries(SFAV MatlabLib)
 # Link Pthread Libraries
-target_link_libraries (AVMTF ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (SFAV ${CMAKE_THREAD_LIBS_INIT})
 
-#target_link_libraries(AVMTF ExternLib)
+#target_link_libraries(SFAV ExternLib)
 
