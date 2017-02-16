@@ -2,48 +2,81 @@
  * \file: avmsf_config.h
  */
 
-/*
- * Vector with the synchronization information
- */
-bool synch[256];
-char* ip_addr_uav[256];
-unsigned int uav_port[256];
+// Ground Station
+#ifndef GS_IP
+#define GS_IP ("10.30.3.136")
+#endif
+#ifndef GS_RPORT
+#define GS_RPORT (14551)
+#endif
+#ifndef GS_WPORT
+#define GS_WPORT (14550)
+#endif
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Threads Time properties
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tspec Inflow_Thread_Period = tspec_from(0, MILLI);
-int Inflow_Thread_Priority = 90;
+// Unreal Engine
+#ifndef UE_IP
+#define UE_IP ("10.30.3.136")
+#endif
+#ifndef UE_RPORT
+#define UE_RPORT (9000)
+#endif
+#ifndef UE_WPORT
+#define UE_WPORT (8000)
+#endif
 
-tspec Simulation_Thread_Period = tspec_from(2, MILLI);
-int Simulation_Thread_Priority = 93;
+// Serial Connection
+#ifndef UART_NAME
+#define UART_NAME ("/dev/ttyUSB0")
+#endif
+#ifndef BAUDRATE
+#define BAUDRATE (921600)
+#endif
 
-tspec GroundStation_Thread_Period = tspec_from(4, MILLI);
-int GroundStation_Thread_Priority = 70;
+// Threads
+#ifndef INFLOWTHR_PRIO
+#define INFLOWTHR_PRIO (90)
+#endif
+#ifndef INFLOWTHR_T
+#define INFLOWTHR_T (0)
+#endif
 
-tspec UnrealEngine_Thread_Period = tspec_from(20, MILLI);
-int UnrealEngine_Thread_Priority = 60;
+#ifndef SIMTHR_PRIO
+#define SIMTHR_PRIO (93)
+#endif
+#ifndef SIMTHR_T
+#define SIMTHR_T (2)
+#endif
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Port for the communication with the Boards
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-char* uart_name = (char *)"/dev/ttyUSB0";
-int baudrate = 921600;
+#ifndef GSTHR_PRIO
+#define GSTHR_PRIO (70)
+#endif
+#ifndef GSTHR_T
+#define GSTHR_T (4)
+#endif
+
+#ifndef UETHR_PRIO
+#define UETHR_PRIO (60)
+#endif
+#ifndef UETHR_T
+#define UETHR_T (20)
+#endif
 
 
+// Vehicles Connections
+#ifndef NCONNECTED_VEHICLES
+#define NCONNECTED_VEHICLES (19)
+#endif
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Ports for the communication with GS
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//char* gs_ip = (char *)"127.0.0.1";
-char* gs_ip = (char *)"10.30.3.136";
-unsigned int gs_r_port = 14551;
-unsigned int gs_w_port = 14550;
+#ifndef V1_IP
+#define V1_IP ("192.168.1.2")
+#define V1_PORT (4000)
+#endif
 
+#ifndef V2_IP
+#define V2_IP ("192.168.1.2")
+#define V2_PORT (4002)
+#endif
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Ports for the communication with Unreal Engine
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-char* ue_ip = (char *)"10.30.3.136";
-unsigned int ue_w_port = 8000;
-unsigned int ue_r_port = 9000;
+#ifndef EXTPC_IP
+#define EXTPC_IP ("10.30.3.24")
+#endif

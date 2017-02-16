@@ -66,9 +66,9 @@ public:
     
     //! Initialization Function
     /*!
- 	* 	\param target_ip Target Ip String
- 	* 	\param w_port Remote Port for Sending
-  	*/
+    *     \param target_ip Target Ip String
+    *     \param w_port Remote Port for Sending
+    */
     void InitializeOutputPort(const char* target_ip, uint32_t w_port);
     
 	//! Send a Mavlink Message to the Remote Target 

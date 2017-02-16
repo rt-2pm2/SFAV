@@ -5,7 +5,6 @@
  */
 
 #include "main.h"
-#include "sfav_config.h"
 
 int time_to_exit = 0;
 const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
@@ -36,8 +35,7 @@ int start_inflow_thread(struct InflowArg* arg)
         //printf("Waiting for autopilot connection...\n");
         arg->aut->waitNextHeartbeat();
     }
-    
-    
+
     // Save the thread_id in the structure
     arg->ThreadId = inflowT_id;
     
@@ -296,15 +294,15 @@ void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 {
     struct LaunchArg* larg = new (struct LaunchArg);
     
-    larg->ma = ma; /// Pointer to the Multiagent Manager Interface Class
-    larg->sm = sm; /// Pointer to the Simulators Manager Interface Class
-    larg->gs = gs; /// Pointer to the GroundStation Interface Class
-    larg->ue = ue; /// Pointer to the UnrealEngine Interface Class
+    larg->ma = ma; // Pointer to the Multiagent Manager Interface Class
+    larg->sm = sm; // Pointer to the Simulators Manager Interface Class
+    larg->gs = gs; // Pointer to the GroundStation Interface Class
+    larg->ue = ue; // Pointer to the UnrealEngine Interface Class
     larg->params = TASK_SPEC_DFL;
     larg->params.act_flag = NOW;
     larg->params.arg = (void *) larg;
-    larg->ip = ip_addr; 
-    larg->r_port = port; 
+    larg->ip = ip_addr;
+    larg->r_port = port;
     larg->w_port = port + 1;
     larg->commType = UDP;
     larg->synch = sync;
@@ -316,10 +314,10 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 {
     struct LaunchArg* larg = new (struct LaunchArg);
     
-    larg->ma = ma; /// Pointer to the Multiagent Manager Interface Class
-    larg->sm = sm; /// Pointer to the Simulators Manager Interface Class
-    larg->gs = gs; /// Pointer to the GroundStation Interface Class
-    larg->ue = ue; /// Pointer to the UnrealEngine Interface Class
+    larg->ma = ma; // Pointer to the Multiagent Manager Interface Class
+    larg->sm = sm; // Pointer to the Simulators Manager Interface Class
+    larg->gs = gs; // Pointer to the GroundStation Interface Class
+    larg->ue = ue; // Pointer to the UnrealEngine Interface Class
     larg->params = TASK_SPEC_DFL;
     larg->params.act_flag = NOW;
     larg->params.arg = (void *) larg;
@@ -336,86 +334,86 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
     int i;
-    int N_UDP_vehicles = 19;
+    int N_UDP_vehicles = NCONNECTED_VEHICLES;
     
-    // Load the IPs and other dat...
-    ip_addr_uav[0] = (char *)"192.168.1.2";
-    uav_port[0] = 4000;
+    // Load the IPs and other data...
+    ip_addr_uav[0] = (char *)V1_IP;
+    uav_port[0] = V1_PORT;
     synch[0] = false;
 
-    ip_addr_uav[1]= (char *)"192.168.1.3";
-    uav_port[1] = 4002;
+    ip_addr_uav[1]= (char *)V2_IP;
+    uav_port[1] = V2_PORT;
     synch[1] = false;
 
-    ip_addr_uav[2] = (char *)"10.30.3.24";
+    ip_addr_uav[2] = (char *)EXTPC_IP;
     uav_port[2] = 4004;
     synch[2] = false;
 
-    ip_addr_uav[3] = (char *)"10.30.3.24";
+    ip_addr_uav[3] = (char *)EXTPC_IP;
     uav_port[3] = 4006;
     synch[3] = false;
 
-    ip_addr_uav[4] = (char *)"10.30.3.24";
+    ip_addr_uav[4] = (char *)EXTPC_IP;
     uav_port[4] = 4008;
     synch[4] = false;
 
-    ip_addr_uav[5] = (char *)"10.30.3.24";
+    ip_addr_uav[5] = (char *)EXTPC_IP;
     uav_port[5] = 4010;
     synch[5] = false;
 
-    ip_addr_uav[6] = (char *)"10.30.3.24";
+    ip_addr_uav[6] = (char *)EXTPC_IP;
     uav_port[6] = 4012;
     synch[6] = false;
 
-    ip_addr_uav[7] = (char *)"10.30.3.24";
+    ip_addr_uav[7] = (char *)EXTPC_IP;
     uav_port[7] = 4014;
     synch[7] = false;
 
-    ip_addr_uav[8] = (char *)"10.30.3.24";
+    ip_addr_uav[8] = (char *)EXTPC_IP;
     uav_port[8] = 4016;
     synch[8] = false;
 
-    ip_addr_uav[9] = (char *)"10.30.3.24";
+    ip_addr_uav[9] = (char *)EXTPC_IP;
     uav_port[9] = 4018;
     synch[9] = false;
 
-    ip_addr_uav[10] = (char *)"10.30.3.24";
+    ip_addr_uav[10] = (char *)EXTPC_IP;
     uav_port[10] = 4020;
     synch[10] = false;
 
-    ip_addr_uav[11] = (char *)"10.30.3.24";
+    ip_addr_uav[11] = (char *)EXTPC_IP;
     uav_port[11] = 4022;
     synch[11] = false;
 
-    ip_addr_uav[12] = (char *)"10.30.3.24";
+    ip_addr_uav[12] = (char *)EXTPC_IP;
     uav_port[12] = 4024;
     synch[12] = false;
 
-    ip_addr_uav[13] = (char *)"10.30.3.24";
+    ip_addr_uav[13] = (char *)EXTPC_IP;
     uav_port[13] = 4026;
     synch[13] = false;
     
-    ip_addr_uav[14] = (char *)"10.30.3.24";
+    ip_addr_uav[14] = (char *)EXTPC_IP;
     uav_port[14] = 4028;
     synch[14] = false;
     
-    ip_addr_uav[15] = (char *)"10.30.3.24";
+    ip_addr_uav[15] = (char *)EXTPC_IP;
     uav_port[15] = 4030;
     synch[15] = false;
     
-    ip_addr_uav[16] = (char *)"10.30.3.24";
+    ip_addr_uav[16] = (char *)EXTPC_IP;
     uav_port[16] = 4032;
     synch[16] = false;
     
-    ip_addr_uav[17] = (char *)"10.30.3.24";
+    ip_addr_uav[17] = (char *)EXTPC_IP;
     uav_port[17] = 4034;
     synch[17] = false;
     
-    ip_addr_uav[18] = (char *)"10.30.3.24";
+    ip_addr_uav[18] = (char *)EXTPC_IP;
     uav_port[18] = 4036;
     synch[18] = false;
     
-    ip_addr_uav[19] = (char *)"10.30.3.24";
+    ip_addr_uav[19] = (char *)EXTPC_IP;
     uav_port[19] = 4038;
     synch[19] = false;
     
@@ -515,7 +513,7 @@ int main(int argc, char *argv[])
     //======================================================================
 
     gsT_id = start_gs_thread(&GSarg, &ma_manager, &gs_interface);
-    //start_ue_thread(&UEarg, &sim_ma
+    //ueT_id = start_ue_thread(&UEarg, &sim_ma, &ue_interface);
     
     /*
     for(;;)
@@ -595,10 +593,7 @@ void inflow_thread()
     mavlink_message_t rec_message; // Current received mavlink message
 
     int tid = ptask_get_index();
-    //int system_id = p->aut->getSystemId();
-    
-    //ptime abs_deadlinetime;
-    //tspec abs_deadlinetime_tspec; 
+    int system_id = p->aut->getSystemId();
 
     // The autopilot interface has been configured
     while (!time_to_exit)
@@ -622,16 +617,6 @@ void inflow_thread()
                 }
             }
         }
-        
-//         if (ptask_deadline_miss())
-//         {
-//             abs_deadlinetime = task_absdl(tid);
-//             abs_deadlinetime_tspec = tspec_from(abs_deadlinetime, MILLI);
-//             
-//             printf("Inflow Thread [%d] Deadline Miss!  Abs deadline = %ld [ms]|| Time = %ld [ms]\n", 
-//                    system_id, tspec_to_rel(&abs_deadlinetime_tspec, MILLI), ptask_gettime(MILLI));
-//         }
-//         ptask_wait_for_period();
         
     }
     p->aut->stop_hil();

@@ -44,39 +44,59 @@ extern "C" {
 #include <pbarrier.h>
 }
 
+#include "../sfav_config.h"
+
 
 // -----------------------------------------------------------------------
-//   Prototypes
+//   Variables and Structures
 // -----------------------------------------------------------------------
-int main(int argc, char **argv);
 
-
-/** This function parse the option used to launch the application
- * throws EXIT_FAILURE if could not open the port
- * Inputs
- * \param gs_ip    Ground Station IP <"x.x.x.x">
- * \param gs_r_port Port number for reading incoming data from GS <"x">
- * \param gs_w_port Port number for writing outgoing data to GS <"x">
- * \param ue_ip    UnrealEngine Visualizator IP <"x.x.x.x">
- * \param ue_r_port number for reading incoming data from Visualizator <"x">
- * \param ue_w_port Port number for writing outgoing data to Visualizator <"x">
+/*
+ * Vector with the synchronization information
  */
-void parse_commandline(int argc, char **argv, char *&gs_ip, unsigned int &gs_r_port, unsigned int &gs_w_port, 
-                        char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port);
+bool synch[256];            /// Vector containing the synchronization type flag
+char* ip_addr_uav[256];     /// Vector containing the pointer to IP strings
+unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
 
-void routing_messages(mavlink_message_t *msg, struct InflowArg* p);
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Threads Time properties
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tspec Inflow_Thread_Period = tspec_from(INFLOWTHR_T, MILLI); /// Period of the Inflow Thread
+int Inflow_Thread_Priority = INFLOWTHR_PRIO; /// Priority of the Inflow Thread
 
-// Threads Bodies
-//
-void lauch_thread();
-void inflow_thread();
-void simulator_thread();
-void gs_thread();
-void ue_thread();
+tspec Simulation_Thread_Period = tspec_from(SIMTHR_T, MILLI); /// Period of the Simulation Thread
+int Simulation_Thread_Priority = SIMTHR_PRIO; /// Priority of the Simulation Thread
+
+tspec GroundStation_Thread_Period = tspec_from(GSTHR_T, MILLI); /// Period of the Groundstation Thread
+int GroundStation_Thread_Priority = GSTHR_PRIO; /// Priority of the Groundstation Thread
+
+tspec UnrealEngine_Thread_Period = tspec_from(UETHR_T, MILLI); /// Period of the UnrealEngine Thread
+int UnrealEngine_Thread_Priority = UETHR_PRIO; /// Priority of the UnrealEngine Thread
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Ports for the communication with GS
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+char* gs_ip = (char *)GS_IP; /// IP of the Groundstation
+unsigned int gs_r_port = GS_RPORT; /// Read Port of the Groundstation
+unsigned int gs_w_port = GS_WPORT; /// Write Port of the Groundstation
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Ports for the communication with Unreal Engine
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+char* ue_ip = (char *)UE_IP; /// IP of the Unreal Engine
+unsigned int ue_w_port = UE_WPORT; /// Read Port of the Unreal Engine
+unsigned int ue_r_port = UE_RPORT; /// Write Port of the Unreal Engine
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Port for the communication with the Boards
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+char* uart_name = (char *)UART_NAME; /// Name of the uart for serial communication
+int baudrate = BAUDRATE; /// Serial connection baudrate
 
 // Threads Indexes
-int gsT_id;
-int ueT_id;
+int gsT_id; // Ground station thread index
+int ueT_id; // Unreal Engine thread index
 
 /**
  * Struct with the pointes to the interfaces
@@ -176,7 +196,59 @@ tspec ue_period;  /*!< Period of the unreal engine thread */
 /**
  * File handler
  */
-FILE *outfile;
+FILE *outfile; /// File for output
+
+
+
+// -----------------------------------------------------------------------
+//   Functions Prototypes
+// -----------------------------------------------------------------------
+int main(int argc, char **argv);
+
+
+/** This function parse the option used to launch the application
+ * throws EXIT_FAILURE if could not open the port
+ * Inputs
+ * \param gs_ip    Ground Station IP <"x.x.x.x">
+ * \param gs_r_port Port number for reading incoming data from GS <"x">
+ * \param gs_w_port Port number for writing outgoing data to GS <"x">
+ * \param ue_ip    UnrealEngine Visualizator IP <"x.x.x.x">
+ * \param ue_r_port number for reading incoming data from Visualizator <"x">
+ * \param ue_w_port Port number for writing outgoing data to Visualizator <"x">
+ */
+void parse_commandline(int argc, char **argv, char *&gs_ip, unsigned int &gs_r_port, unsigned int &gs_w_port, 
+                        char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port);
+
+void routing_messages(mavlink_message_t *msg, struct InflowArg* p);
+
+// Threads Bodies
+//
+/** 
+ * Launch thread: it launch the inflow thread and the simulation thread for a given connected uav.
+ */
+void lauch_thread();
+
+/** 
+ * Inflow thread: It reads data from the uav.
+ */
+void inflow_thread();
+
+/** 
+ * Simulation thread: It simulates the dynamics of the vehicle using the actuation command 
+ * and compute the value of the sensors. 
+ */
+void simulator_thread();
+
+/** 
+ * Ground station thread: Perform the data exchange between the ground station and the PC.
+ */
+void gs_thread();
+
+/** 
+ * Unreal Engine thread: Perform the data exchange between the ground station and the Unreal Engine
+ * application.
+ */
+void ue_thread();
 
 /** 
  * Quit handler
