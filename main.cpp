@@ -161,11 +161,11 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     IArg->aut = pA;
     IArg->params.arg = (void *) IArg;
 
-    // Put the Pointer to the Structure in the Vector and set the thread parameter to point to that
-    VectInflowArg.push_back(IArg);
-
     // Start the InflowThread
     Agent_Id = start_inflow_thread(IArg);
+    
+    // Put the Pointer to the Structure in the Vector and set the thread parameter to point to that
+    VectInflowArg.push_back(IArg);
 
     //
     // 2a) Add a Simulation_Interface class
@@ -445,11 +445,11 @@ void Init_ThreadsEnvironment()
 }
 
 
-// ***********************************************************************
-// ***********************************************************************
+// *************************************************************************************************
+// *************************************************************************************************
 //                     MAIN
-// ***********************************************************************
-// ***********************************************************************
+// *************************************************************************************************
+// *************************************************************************************************
 int main(int argc, char *argv[])
 {
     int N_size, i;
@@ -522,27 +522,47 @@ int main(int argc, char *argv[])
     }
     */
     
-//     N_size = VectInflowArg.size();
-//     for (i = 0; i < N_size; i++)
-//     {
-//         pthread_join(ptask_get_threadid(VectInflowArg.at(i)->ThreadId), 0);
-//     }
-//     
-//     N_size = VectSimThreadArg.size();
-//     for (i = 0; i < N_size; i++)
-//     {
-//         pthread_join(ptask_get_threadid(VectSimThreadArg.at(i)->ThreadId), 0);
-//     }
-    
+    // Wait for the GS thread to finish
     pthread_join(ptask_get_threadid(gsT_id), 0);
+    
+    // Wait for the Inflow threads to finish
+    N_size = VectInflowArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        pthread_join(ptask_get_threadid(VectInflowArg.at(i)->ThreadId), 0);
+        
+    }
+    
+    // Wait for the simulation threads to finish
+    N_size = VectSimThreadArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        pthread_join(ptask_get_threadid(VectSimThreadArg.at(i)->ThreadId), 0);
+    }
+
+    N_size = VectInflowArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        delete VectInflowArg.at(i)->aut;
+        delete VectInflowArg.at(i);
+    }
+    
+    N_size = VectSimThreadArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        delete VectSimThreadArg.at(i)->sim;
+        delete VectSimThreadArg.at(i);
+    }
+    
+    
     fclose(outfile);
     return 0;
 }
 
-// ***********************************************************************
-// ***********************************************************************
-// ***********************************************************************
-// ***********************************************************************
+// *************************************************************************************************
+// *************************************************************************************************
+// *************************************************************************************************
+// *************************************************************************************************
 
 
 // ----------------------------------------------------------------------
@@ -570,7 +590,7 @@ void lauch_thread()
             printf("Connection method not specified!\n");
             break;
     }
-    
+    delete p;
 }
 
 

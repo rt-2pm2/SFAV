@@ -229,7 +229,7 @@ int Autopilot_Interface::fetch_data()
     int i = 0;
     int ret = 0;
     int nread = 0;
-    int timeout = -1;
+    int timeout = 200;
     
     // Allocate Space for the Reading Buffer
     unsigned int NBytes = 256;
