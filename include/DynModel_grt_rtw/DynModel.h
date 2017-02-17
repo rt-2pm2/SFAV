@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.732
+ * Model version              : 1.743
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Mon Dec 12 17:02:46 2016
+ * C source code generated on : Fri Feb 17 17:33:22 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -187,28 +187,49 @@ typedef struct {
   real_T xeyeze[3];                    /* '<S4>/xe,ye,ze' */
   real_T Sum1;                         /* '<S146>/Sum1' */
   real_T Sum1_e;                       /* '<S64>/Sum1' */
+  real_T RateTransition;               /* '<S72>/Rate Transition' */
+  real_T RateTransition1;              /* '<S72>/Rate Transition1' */
   real_T Product2;                     /* '<S64>/Product2' */
+  real_T RateTransition_c;             /* '<S69>/Rate Transition' */
   real_T Product3;                     /* '<S64>/Product3' */
-  real_T ubvbwb[3];                    /* '<S4>/ub,vb,wb' */
-  real_T VectorConcatenate[9];         /* '<S30>/Vector Concatenate' */
-  real_T Product[3];                   /* '<S16>/Product' */
+  real_T RateTransition_b;             /* '<S67>/Rate Transition' */
+  real_T UnitConversion[3];            /* '<S14>/Unit Conversion' */
+  real_T RateTransition1_p[3];         /* '<S67>/Rate Transition1' */
+  real_T RateTransition1_i;            /* '<S60>/Rate Transition1' */
+  real_T RateTransition2;              /* '<S60>/Rate Transition2' */
+  real_T RateTransition3;              /* '<S60>/Rate Transition3' */
+  real_T RateTransition1_a[3];         /* '<S63>/Rate Transition1' */
+  real_T RateTransition_e;             /* '<S63>/Rate Transition' */
+  real_T RateTransition5;              /* '<S63>/Rate Transition5' */
+  real_T Reshape9to3x3columnmajor[9];  /* '<S30>/Reshape (9) to [3x3] column-major' */
+  real_T Reshape2[3];                  /* '<S16>/Reshape2' */
+  real_T UnitConversion_j[3];          /* '<S15>/Unit Conversion' */
+  real_T RateTransition2_l[3];         /* '<S63>/Rate Transition2' */
+  real_T RateTransition6[3];           /* '<S63>/Rate Transition6' */
+  real_T RateTransition3_o;            /* '<S63>/Rate Transition3' */
+  real_T RateTransition4;              /* '<S63>/Rate Transition4' */
+  real_T RateTransition7;              /* '<S63>/Rate Transition7' */
+  real_T RateTransition1_o[9];         /* '<S66>/Rate Transition1' */
+  real_T RateTransition2_j;            /* '<S66>/Rate Transition2' */
+  real_T RateTransition3_d;            /* '<S66>/Rate Transition3' */
+  real_T RateTransition4_o;            /* '<S66>/Rate Transition4' */
   real_T Output;                       /* '<S61>/Output' */
   real_T Gain13[3];                    /* '<S5>/Gain13' */
   real_T Gain11[3];                    /* '<S5>/Gain11' */
   real_T Switch2[3];                   /* '<S5>/Switch2' */
   real_T DiscreteFilter;               /* '<S5>/Discrete Filter' */
   real_T Product2_n[3];                /* '<S5>/Product2' */
-  real_T Gain10[3];                    /* '<S5>/Gain10' */
+  real_T Saturation[3];                /* '<S5>/Saturation' */
   real_T Submatrix[3];                 /* '<S50>/Submatrix' */
   real_T Gain1[3];                     /* '<S48>/Gain1' */
-  real_T Product_b[3];                 /* '<S4>/Product' */
+  real_T Product[3];                   /* '<S4>/Product' */
   real_T MatrixMultiply1[3];           /* '<S3>/Matrix Multiply1' */
   real_T pqr[3];                       /* '<S4>/p,q,r ' */
-  real_T VectorConcatenate_i[3];       /* '<S18>/Vector Concatenate' */
+  real_T VectorConcatenate[3];         /* '<S18>/Vector Concatenate' */
   real_T Saturation1[3];               /* '<S5>/Saturation1' */
   real_T Product2_p[3];                /* '<S47>/Product2' */
-  real_T Product2_m[3];                /* '<S11>/Product2' */
-  real_T UnitConversion[3];            /* '<S117>/Unit Conversion' */
+  real_T Reshape[3];                   /* '<S11>/Reshape' */
+  real_T UnitConversion_h[3];          /* '<S117>/Unit Conversion' */
   real_T q0dot;                        /* '<S20>/q0dot' */
   real_T q1dot;                        /* '<S20>/q1dot' */
   real_T q2dot;                        /* '<S20>/q2dot' */
@@ -229,6 +250,12 @@ typedef struct {
   real_T DiscreteTransferFcn_states_m; /* '<S53>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_c; /* '<S54>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_a; /* '<S55>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_h[2];/* '<S126>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_b[2];/* '<S127>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_cb[2];/* '<S128>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_d[2];/* '<S141>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_dr[2];/* '<S142>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_as[2];/* '<S143>/Discrete Transfer Fcn' */
   real_T NextOutput;                   /* '<S72>/Random Number' */
   real_T NextOutput_a;                 /* '<S69>/Random Number' */
   real_T NextOutput_l;                 /* '<S67>/Random Number' */
@@ -248,7 +275,13 @@ typedef struct {
   real_T Memory5_PreviousInput[3];     /* '<S2>/Memory5' */
   real_T Memory3_PreviousInput[3];     /* '<S2>/Memory3' */
   real_T Product2_DWORK4[9];           /* '<S11>/Product2' */
+  real_T DiscreteTransferFcn_tmp_k;    /* '<S126>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_tmp_o;    /* '<S127>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_tmp_j;    /* '<S128>/Discrete Transfer Fcn' */
   real_T NextOutput_k[3];              /* '<S121>/White Noise' */
+  real_T DiscreteTransferFcn_tmp_g;    /* '<S141>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_tmp_n;    /* '<S142>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_tmp_gx;   /* '<S143>/Discrete Transfer Fcn' */
   real_T NextOutput_p[3];              /* '<S138>/White Noise' */
   int32_T DiscreteFIRFilter_circBuf;   /* '<S5>/Discrete FIR Filter' */
   uint32_T RandSeed;                   /* '<S72>/Random Number' */
@@ -295,14 +328,98 @@ typedef struct {
 
 /* Invariant block signals (auto storage) */
 typedef struct {
+  const real_T UnitConversion;         /* '<S112>/Unit Conversion' */
+  const real_T SinCos_o1;              /* '<S101>/SinCos' */
+  const real_T SinCos_o2;              /* '<S101>/SinCos' */
+  const real_T Sum;                    /* '<S115>/Sum' */
+  const real_T Product1;               /* '<S116>/Product1' */
+  const real_T Sum1;                   /* '<S116>/Sum1' */
+  const real_T sqrt_a;                 /* '<S116>/sqrt' */
+  const real_T Bias;                   /* '<S110>/Bias' */
+  const real_T MathFunction1;          /* '<S110>/Math Function1' */
+  const real_T Bias1;                  /* '<S110>/Bias1' */
+  const real_T Abs;                    /* '<S110>/Abs' */
+  const real_T Switch;                 /* '<S110>/Switch' */
+  const real_T Sign1;                  /* '<S107>/Sign1' */
+  const real_T Abs1;                   /* '<S107>/Abs1' */
+  const real_T Bias_f;                 /* '<S107>/Bias' */
+  const real_T Gain;                   /* '<S107>/Gain' */
+  const real_T Bias1_j;                /* '<S107>/Bias1' */
+  const real_T Divide1;                /* '<S107>/Divide1' */
+  const real_T Switch_h;               /* '<S107>/Switch' */
+  const real_T UnitConversion_j;       /* '<S113>/Unit Conversion' */
+  const real_T TrigonometricFunction1; /* '<S114>/Trigonometric Function1' */
+  const real_T Product1_c;             /* '<S114>/Product1' */
+  const real_T Sum1_j;                 /* '<S114>/Sum1' */
+  const real_T sqrt_b;                 /* '<S111>/sqrt' */
+  const real_T Rn;                     /* '<S111>/Product1' */
+  const real_T Product2;               /* '<S111>/Product2' */
+  const real_T Sum1_c;                 /* '<S111>/Sum1' */
+  const real_T Rm;                     /* '<S111>/Product3' */
+  const real_T TrigonometricFunction1_g;/* '<S111>/Trigonometric Function1' */
+  const real_T TrigonometricFunction;  /* '<S111>/Trigonometric Function' */
+  const real_T Product4;               /* '<S111>/Product4' */
+  const real_T TrigonometricFunction2; /* '<S111>/Trigonometric Function2' */
+  const real_T Switch1;                /* '<S100>/Switch1' */
+  const real_T Sum_c;                  /* '<S100>/Sum' */
+  const real_T Bias_e;                 /* '<S108>/Bias' */
+  const real_T MathFunction1_k;        /* '<S108>/Math Function1' */
+  const real_T Bias1_l;                /* '<S108>/Bias1' */
+  const real_T Abs_b;                  /* '<S108>/Abs' */
   const real_T Switch_d;               /* '<S108>/Switch' */
+  const real_T u[3];                   /* '<S19>/1//2' */
+  const real_T sincos_o1[3];           /* '<S19>/sincos' */
+  const real_T sincos_o2[3];           /* '<S19>/sincos' */
   const real_T q0;                     /* '<S19>/q0' */
   const real_T q1;                     /* '<S19>/q1' */
   const real_T q2;                     /* '<S19>/q2' */
   const real_T q3;                     /* '<S19>/q3' */
+  const real_T UnitConversion_b;       /* '<S160>/Unit Conversion' */
+  const real_T SinCos_o1_f;            /* '<S149>/SinCos' */
+  const real_T SinCos_o2_i;            /* '<S149>/SinCos' */
+  const real_T Sum_l;                  /* '<S163>/Sum' */
+  const real_T Product1_f;             /* '<S164>/Product1' */
+  const real_T Sum1_ja;                /* '<S164>/Sum1' */
+  const real_T sqrt_p;                 /* '<S164>/sqrt' */
+  const real_T Bias_k;                 /* '<S158>/Bias' */
+  const real_T MathFunction1_c;        /* '<S158>/Math Function1' */
+  const real_T Bias1_o;                /* '<S158>/Bias1' */
+  const real_T Abs_m;                  /* '<S158>/Abs' */
+  const real_T Switch_i;               /* '<S158>/Switch' */
+  const real_T Sign1_h;                /* '<S155>/Sign1' */
+  const real_T Abs1_p;                 /* '<S155>/Abs1' */
+  const real_T Bias_c;                 /* '<S155>/Bias' */
+  const real_T Gain_l;                 /* '<S155>/Gain' */
+  const real_T Bias1_p;                /* '<S155>/Bias1' */
+  const real_T Divide1_k;              /* '<S155>/Divide1' */
+  const real_T Switch_c;               /* '<S155>/Switch' */
+  const real_T UnitConversion_d;       /* '<S161>/Unit Conversion' */
+  const real_T TrigonometricFunction1_k;/* '<S162>/Trigonometric Function1' */
+  const real_T Product1_b;             /* '<S162>/Product1' */
+  const real_T Sum1_i;                 /* '<S162>/Sum1' */
+  const real_T sqrt_n;                 /* '<S159>/sqrt' */
+  const real_T Rn_k;                   /* '<S159>/Product1' */
+  const real_T Product2_l;             /* '<S159>/Product2' */
+  const real_T Sum1_p;                 /* '<S159>/Sum1' */
+  const real_T Rm_n;                   /* '<S159>/Product3' */
+  const real_T TrigonometricFunction1_c;/* '<S159>/Trigonometric Function1' */
+  const real_T TrigonometricFunction_j;/* '<S159>/Trigonometric Function' */
+  const real_T Product4_j;             /* '<S159>/Product4' */
+  const real_T TrigonometricFunction2_i;/* '<S159>/Trigonometric Function2' */
+  const real_T Switch1_d;              /* '<S148>/Switch1' */
+  const real_T Sum_j;                  /* '<S148>/Sum' */
+  const real_T Bias_a;                 /* '<S156>/Bias' */
+  const real_T MathFunction1_j;        /* '<S156>/Math Function1' */
+  const real_T Bias1_d;                /* '<S156>/Bias1' */
+  const real_T Abs_mn;                 /* '<S156>/Abs' */
   const real_T Switch_b;               /* '<S156>/Switch' */
+  const real_T Gain_n;                 /* '<S6>/Gain' */
+  const real_T Selector1[9];           /* '<S11>/Selector1' */
   const real_T Selector[9];            /* '<S11>/Selector' */
   const real_T Selector2[9];           /* '<S11>/Selector2' */
+  const real32_T DataTypeConversion17; /* '<S1>/Data Type Conversion17' */
+  const uint8_T Compare;               /* '<S109>/Compare' */
+  const uint8_T Compare_c;             /* '<S157>/Compare' */
 } ConstB_DynModel_T;
 
 #ifndef ODE4_INTG
@@ -320,10 +437,38 @@ typedef struct {
 typedef struct {
   /* Pooled Parameter (Mixed Expressions)
    * Referenced by:
+   *   '<S2>/Memory1'
+   *   '<S2>/Memory3'
+   *   '<S2>/Memory5'
+   *   '<S2>/Memory6'
+   *   '<S3>/center of gravity'
+   *   '<S4>/p,q,r '
+   *   '<S4>/ub,vb,wb'
+   *   '<S4>/xe,ye,ze'
+   *   '<S5>/Constant'
+   *   '<S5>/Constant1'
+   *   '<S5>/Constant3'
+   *   '<S5>/Constant4'
+   *   '<S66>/Measurement bias1'
+   *   '<S10>/Initial Euler Angles'
+   *   '<S118>/Measurement bias'
+   *   '<S118>/wl_ins'
+   *   '<S119>/Measurement bias'
+   *   '<S119>/g-sensitive bias'
+   */
+  real_T pooled11[3];
+
+  /* Pooled Parameter (Mixed Expressions)
+   * Referenced by:
    *   '<S118>/Scale factors & Cross-coupling  errors'
    *   '<S119>/Scale factors & Cross-coupling  errors '
    */
   real_T pooled23[9];
+
+  /* Expression: [1 1 1]
+   * Referenced by: '<S5>/Discrete FIR Filter'
+   */
+  real_T DiscreteFIRFilter_Coefficients[3];
 } ConstP_DynModel_T;
 
 /* External inputs (root inport signals with auto storage) */
@@ -363,6 +508,7 @@ typedef struct {
   real32_T Rotor_Speed[4];             /* '<Root>/Rotor_Speed' */
   real32_T Xe[3];                      /* '<Root>/Xe' */
   real32_T Freact[3];                  /* '<Root>/Freact' */
+  real_T Sample_Time;                  /* '<Root>/Sample_Time' */
 } ExtY_DynModel_T;
 
 /* Real-time Model Data Structure */
@@ -440,6 +586,13 @@ extern const ConstP_DynModel_T DynModel_ConstP;
 extern real_T Kattreact;               /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
+extern real_T Kdiscre;                 /* Variable: Kdiscre
+                                        * Referenced by:
+                                        *   '<S52>/Gain1'
+                                        *   '<S53>/Gain1'
+                                        *   '<S54>/Gain1'
+                                        *   '<S55>/Gain1'
+                                        */
 extern real_T Kdpenetration;           /* Variable: Kdpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain1'
@@ -452,9 +605,6 @@ extern real_T Kpenetration;            /* Variable: Kpenetration
                                         */
 extern real_T Kvreact;                 /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
-                                        */
-extern real_T Kwreact;                 /* Variable: Kwreact
-                                        * Referenced by: '<S5>/Gain4'
                                         */
 
 /* External data declarations for dependent source files */
