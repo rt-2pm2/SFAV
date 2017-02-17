@@ -113,22 +113,22 @@ int UE_Interface::setBaseWritePort(unsigned int port)
 //
 int UE_Interface::sendData(int Id)
 {
-	int bytes_sent = -1;
+    int bytes_sent = -1;
 
-	struct UE_SendData tempData;
+    struct UE_SendData tempData;
     Udp_Port* port;
 
-	// Comping the data in a temp structure
-	pthread_mutex_lock(&mut_sendData);
-	tempData = UEDataOut;
-	pthread_mutex_unlock(&mut_sendData);
+    // Comping the data in a temp structure
+    pthread_mutex_lock(&mut_sendData);
+    tempData = UEDataOut;
+    pthread_mutex_unlock(&mut_sendData);
     
     port = getPortInstance(Id);
-	// Sending the data
+    // Sending the data
     if (port != NULL)
         bytes_sent = port->writeBytes((char* )&tempData, sizeof(struct UE_SendData));
 
-	return bytes_sent;
+    return bytes_sent;
 }
 
 //
@@ -171,11 +171,11 @@ Udp_Port* UE_Interface::getPortInstance(int id)
 //
 int UE_Interface::setData(struct UE_SendData Data)
 {
-	pthread_mutex_lock(&mut_sendData);
-	UEDataOut = Data;
-	pthread_mutex_unlock(&mut_sendData);
-		
-	return 1;
+    pthread_mutex_lock(&mut_sendData);
+    UEDataOut = Data;
+    pthread_mutex_unlock(&mut_sendData);
+
+    return 1;
 }
 
 

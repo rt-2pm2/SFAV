@@ -116,7 +116,7 @@ int start_ue_thread(struct UeThreadArg* UEarg, Sim_Manager* sm, UE_Interface* ue
     
     if(ueT_id == -1)
     {
-        printf("Error creating the Ground Station thread\n");
+        printf("Error creating the Unreal Engine thread\n");
     }
     
     return ueT_id;
@@ -189,13 +189,12 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     SArg->params.arg = (void *) SArg;
     
     // Load the pointers to the Interface Classes
-    //SArg->aut = ma->getAutopilotInstance(Agent_Id);
-    //SArg->sim = sm->getSimulatorInstance(Agent_Id);
-    VectSimThreadArg.push_back(SArg);
     SArg->aut = pA;
     SArg->sim = pS;
     
-    // start_sim_thread(VectSimThreadArg.back());
+    // Save the pointer to memory
+    VectSimThreadArg.push_back(SArg);
+
     start_sim_thread(SArg);
     
     //
@@ -273,13 +272,12 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     SArg->params.arg = (void *) SArg;
 
     // Load the pointers to the Interface Classes
-    //SArg->aut = ma->getAutopilotInstance(Agent_Id);
-    //SArg->sim = sm->getSimulatorInstance(Agent_Id);
-    //VectSimThreadArg.push_back(SArg);
     SArg->aut = pA;
     SArg->sim = pS;
     
-    // start_sim_thread(VectSimThreadArg.back());
+    // Save the pointer to memory
+    VectSimThreadArg.push_back(SArg);
+    
     start_sim_thread(SArg);
     
     //
@@ -513,7 +511,7 @@ int main(int argc, char *argv[])
     //======================================================================
 
     gsT_id = start_gs_thread(&GSarg, &ma_manager, &gs_interface);
-    //ueT_id = start_ue_thread(&UEarg, &sim_ma, &ue_interface);
+    ueT_id = start_ue_thread(&UEarg, &sim_manager, &ue_interface);
     
     /*
     for(;;)
@@ -931,17 +929,17 @@ void ue_thread()
     int i, Ns;
     int SysId;
     int port;
-	printf("***  Starting UE Communicator Thread  ***\n");
+    printf("***  Starting UE Communicator Thread  ***\n");
 
-	struct UE_SendData dataOut;
-	struct UE_RecData dataIn;
+    struct UE_SendData dataOut;
+    struct UE_RecData dataIn;
     
     Simulator_Interface* SimInt = NULL;
-	
-	int tid = ptask_get_index();
-	struct UeThreadArg* p = (struct UeThreadArg*)ptask_get_argument();
-		
-	dataOut.Id = 1;
+
+    int tid = ptask_get_index();
+    struct UeThreadArg* p = (struct UeThreadArg*)ptask_get_argument();
+
+    dataOut.Id = 1;
     
     float X[3]; /// Position
     float A[3]; /// Attitude
@@ -951,19 +949,20 @@ void ue_thread()
     
     int first = 1;
     
-	ue_thread_active = true;
+    ue_thread_active = true;
 
-	// Check the initialization of the necessary classes
-	while (!time_to_exit)
-	{
+    // Check the initialization of the necessary classes
+    while (!time_to_exit)
+    {
         if (first)
-		{
-			first = false;
-			printf("UE Thread STARTED! \n");
-		}
-		
-		Ns = p->sm->getNumberOfSimulator();
-		for (i = 0; i < Ns; i++)
+        {
+            first = false;
+            printf("UE Thread STARTED! \n");
+        }
+
+        Ns = p->sm->getNumberOfSimulator();
+
+        for (i = 0; i < Ns; i++)
         {
             SysId = p->sm->getSimulatorId(i);
             SimInt = p->sm->getSimulatorInstance(SysId);
@@ -977,29 +976,30 @@ void ue_thread()
             dataOut.r = A[0];
             dataOut.p = A[1];
             dataOut.y = A[2];
-
+            
             p->ue->setData(dataOut);
             // Send all the pending data to Unreal Engine
             p->ue->sendData(SysId);
-        }
-        //printf("Z = %3.2f\n", dataOut.Z);
 
-        if(p->ue->receiveData())
-        {
-            // Read data from the Synthetic Environment
-            //p->ue->getData(&dataIn);
-            p->ue->getCollision(impnorm, pen);
-            
-            printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f \n", impnorm[0], impnorm[1], impnorm[2]);
+            //printf("Z = %3.2f\n", dataOut.Z);
+
+            if(p->ue->receiveData())
+            {
+                // Read data from the Synthetic Environment
+                //p->ue->getData(&dataIn);
+                p->ue->getCollision(impnorm, pen);
+
+                printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f \n", impnorm[0], impnorm[1], impnorm[2]);
+            }
+            else
+            {
+                impnorm[0] = 0.0;
+                impnorm[1] = 0.0;
+                impnorm[2] = 0.0;
+                pen = 0.0;
+            }
+            SimInt->updateCollision(impnorm, pen);
         }
-        else
-        {
-            impnorm[0] = 0.0;
-            impnorm[1] = 0.0;
-            impnorm[2] = 0.0;
-            pen = 0.0;
-        }
-        SimInt->updateCollision(impnorm, pen);  
         ptask_wait_for_period();
     }
     //delete p;
