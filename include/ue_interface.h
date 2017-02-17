@@ -78,6 +78,7 @@ public:
 
     int receiveData();
     int getData(struct UE_RecData* data);
+    int getCollision(float impV[3], float pen);
     
     Udp_Port* getPortInstance(int id);
 

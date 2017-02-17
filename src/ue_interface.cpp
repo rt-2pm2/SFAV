@@ -193,7 +193,7 @@ int UE_Interface::receiveData()
 
 	if (ret < 0) 
 	{ 
-		printf("UE_Interface::receiveData : ERROR IN READING UDP PORT\n");
+		printf("UE_Interface::receiveData : ERROR IN READING UDP PORT \n");
 		return -1;
 	}
 
@@ -209,9 +209,10 @@ int UE_Interface::receiveData()
 		//printf("Got Data, %d Bytes\n", read_bytes);
 		if (read_bytes == sizeof(UE_RecData))
 		{
-			memcpy((void*) &UEDataIn, (void* ) &rbuff[0], read_bytes);
-			
-		//	printf("Nx = %1.2f, Ny = %1.2f, Nz = %1.2f, Pen = %3.2f\n", UEDataIn.Nx, UEDataIn.Ny, UEDataIn.Nz, UEDataIn.PenDepth);
+            memcpy((void*) &UEDataIn, (void* ) &rbuff[0], read_bytes);
+
+        //  printf("Nx = %1.2f, Ny = %1.2f, Nz = %1.2f, Pen = %3.2f\n", 
+        //        UEDataIn.Nx, UEDataIn.Ny, UEDataIn.Nz, UEDataIn.PenDepth);
 		}
 	}
 	return 1;
@@ -222,10 +223,22 @@ int UE_Interface::receiveData()
 //
 int UE_Interface::getData(struct UE_RecData* data)
 {
-	pthread_mutex_lock(&mut_recData);
-	memcpy((void*) data, (void*) &UEDataIn, sizeof(UE_RecData));
-	pthread_mutex_unlock(&mut_recData);
+    pthread_mutex_lock(&mut_recData);
+    memcpy((void*) data, (void*) &UEDataIn, sizeof(UE_RecData));
+    pthread_mutex_unlock(&mut_recData);
 
-	return 1;
+    return 1;
+}
+
+int UE_Interface::getCollision(float impV[3], float pen)
+{
+    pthread_mutex_lock(&mut_recData);
+    impV[0] = UEDataIn.Nx;
+    impV[1] = UEDataIn.Ny;
+    impV[2] = UEDataIn.Nz;
+    
+    pen = 1e-2 * UEDataIn.PenDepth;
+    pthread_mutex_unlock(&mut_recData);
+    return 1;
 }
 

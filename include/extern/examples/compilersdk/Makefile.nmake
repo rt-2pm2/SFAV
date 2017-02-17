@@ -1,0 +1,100 @@
+#
+# file : Makefile (NT--Microsoft )
+#
+#  Example of a stand-alone makefile for compiler-generated M files
+#
+#  Copyright 1999-2006 The MathWorks, Inc.
+#  $Revision.4 $  
+#
+
+#
+# You can invoke this Makefile using 
+#  nmake /f Makefile.nmake MATLABROOT=[directory where MATLAB is installed]
+#
+# If you do not want to specify the MATLABROOT at the gmake command line 
+# every single time, you can define it by uncommenting the line below
+# and assigning the correct root of MATLAB (with no trailing '/') on
+# the right hand side.
+#
+# MATLABROOT	=
+#
+
+#
+# Defaults
+#
+
+MCC=$(MATLABROOT)\bin\win32\mcc
+MBUILD=$(MATLABROOT)\bin\mbuild
+#
+
+C_TARGETS=matrixdriver.exe triangle.exe 
+
+CPP_TARGETS=trianglep.exe matrixdriverp.exe
+
+STANDALONE_TARGETS=$(C_TARGETS) $(CPP_TARGETS)
+
+
+# Use the following target to build and test all the executables
+bnt_exes: build_all
+	@echo "*********** testing matrixdriver ***********"
+	matrixdriver 
+	@echo "*********** testing triangle ***********"
+	triangle 
+	@echo "*********** testing trianglep ***********"
+	trianglep 
+	@echo "*********** testing matrixdriverp ***********"
+	matrixdriverp
+	
+# This target will only build all the executables
+build_all: $(STANDALONE_TARGETS)
+
+# This target will only build the C++ targets
+only_cpp: $(CPP_TARGETS)
+
+# This target will only build the C targets
+only_c: $(C_TARGETS)
+
+# The following are each individual targets
+
+# This command will create the wrapper files and then compile all the source files
+# including the wrapper code and the user supplied C/C++ code into a single executable
+# binary. There is no seperate shared library created in this process.  
+
+triangle.exe: triangle.c main_for_lib.c main_for_lib.h sierpinski.m
+	$(MCC) -l -o libtriangle sierpinski.m
+	$(MBUILD) triangle.c main_for_lib.c  libtriangle.lib
+
+# See the comments for the triangle target above for details.
+
+matrixdriver.exe: matrixdriver.c addmatrix.m eigmatrix.m multiplymatrix.m
+	$(MCC) -l -o libmatrix addmatrix.m eigmatrix.m multiplymatrix.m
+	$(MBUILD) matrixdriver.c -L. -lmatrix
+
+
+# The next two targets are for the CPP shared library target example
+trianglep.exe: triangle.cpp main_for_lib.c main_for_lib.h  sierpinski.m
+	$(MCC) -B cpplib:libtrianglep sierpinski.m
+	$(MBUILD) triangle.cpp main_for_lib.c libtrianglep.lib -output $@
+
+matrixdriverp.exe: matrixdriver.cpp addmatrix.m eigmatrix.m multiplymatrix.m
+	$(MCC) -B cpplib:libmatrixp addmatrix.m eigmatrix.m multiplymatrix.m
+	$(MBUILD) matrixdriver.cpp libmatrixp.lib -output $@
+
+
+clean: pseudotarget
+	del /f $(STANDALONE_TARGETS)
+
+reallyclean: pseudotarget 
+	del /s /q /f $(STANDALONE_TARGETS)                     	\
+	    magicsquare.h magicsquare.c magicsquare_main.c	\
+		libPkg* libMult* libtriangle* libmatrix*	\
+		*.xml *.ctf *_mcr \
+		*_main.c *.exports lib*                         \
+		collect_one_external.h mccExcludedFIles.log \
+		output\*
+	rmdir /s /q libPkg_mcr \
+		libMultpkg_mcr libmatrix_mcr 	\
+		libtrianglp_mcr libtriangle_mcr	\
+		libmatrixp_mcr output
+
+pseudotarget:

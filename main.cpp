@@ -749,6 +749,7 @@ void simulator_thread()
     p->sim->simulationActive();
     
     ptime send_time = 0;
+    ptime old_send_time = 0;
     ptime diff = 0;
 
     // Check the initialization of the necessary classes
@@ -796,17 +797,21 @@ void simulator_thread()
         // SEND
         if (p->aut->is_hil())
         {
-//             if (p->aut->getSystemId() == 1)
-//                 printf("Here\n");
             if (p->aut->getSynchActive())
             {
                 send_time = ptask_gettime(MICRO);
                 diff = send_time - p->aut->t_ctr;
                 //printf("%ld \n", diff);
                 fprintf(outfile, "%ld \n", diff);
+                
                 // Sensors
                 ret_sens = p->aut->send_message(&sensor_msg);
-                //ret_gps = p->aut->send_message(&gps_msg);
+                
+                if ((send_time - old_send_time) > 10000)
+                {
+                    ret_gps = p->aut->send_message(&gps_msg);
+                    old_send_time = send_time;
+                }
             }
             else
             {
@@ -847,7 +852,7 @@ void simulator_thread()
 // ----------------------------------------------------------------------
 /*
  * This thread takes the information from the simulator and ground 
- * station and directs them towards the PX4. 
+ * station and directs them towards the autopilot. 
  *
  *                         
  *
@@ -941,6 +946,9 @@ void ue_thread()
     float X[3]; /// Position
     float A[3]; /// Attitude
     
+    float impnorm[3]; /// Impact versor
+    float pen; /// Impact penetration
+    
     int first = 1;
     
 	ue_thread_active = true;
@@ -959,13 +967,13 @@ void ue_thread()
         {
             SysId = p->sm->getSimulatorId(i);
             SimInt = p->sm->getSimulatorInstance(SysId);
-            
+
             dataOut.Id = SysId;
-            SimInt->getSimPosAtt(X,A);
-            dataOut.X = X[0];
-            dataOut.Y = X[1];
+            SimInt->getSimPosAtt(X, A);
+            dataOut.X = X[0] + SysId * 2; // XXX Piggy trick to displace the objects
+            dataOut.Y = X[1] + SysId * 2;
             dataOut.Z = X[2];
-	
+
             dataOut.r = A[0];
             dataOut.p = A[1];
             dataOut.y = A[2];
@@ -974,33 +982,26 @@ void ue_thread()
             // Send all the pending data to Unreal Engine
             p->ue->sendData(SysId);
         }
-		//printf("Z = %3.2f\n", dataOut.Z);
-		/*
-		if(p->ue->receiveData())
-		{	
-            // Read data from the Synthetic Environment
-			p->ue->getData(&dataIn);
-			printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f\n", dataIn.Nx, dataIn.Ny, dataIn.Nz);
-			printf("Reaction = [%2.2f | %2.2f | %2.2f]\n\n", 
-					DynModel_Y.Freact[0], DynModel_Y.Freact[1], DynModel_Y.Freact[2]);
-            
-            
-			DynModel_U.n_collision[0] = dataIn.Nx;
-			DynModel_U.n_collision[1] = dataIn.Ny;
-			DynModel_U.n_collision[2] = - dataIn.Nz;
-			DynModel_U.pen_collision = 1e-2 * dataIn.PenDepth;	
-		}
-		else
-		{
-			DynModel_U.n_collision[0] = 0.0;
-			DynModel_U.n_collision[1] = 0.0;
-			DynModel_U.n_collision[2] = 0.0;
-			DynModel_U.pen_collision = 0.0; 
+        //printf("Z = %3.2f\n", dataOut.Z);
 
-		}
-		*/
+        if(p->ue->receiveData())
+        {
+            // Read data from the Synthetic Environment
+            //p->ue->getData(&dataIn);
+            p->ue->getCollision(impnorm, pen);
+            
+            printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f \n", impnorm[0], impnorm[1], impnorm[2]);
+        }
+        else
+        {
+            impnorm[0] = 0.0;
+            impnorm[1] = 0.0;
+            impnorm[2] = 0.0;
+            pen = 0.0;
+        }
+        SimInt->updateCollision(impnorm, pen);  
         ptask_wait_for_period();
-	}
+    }
     //delete p;
 }
 

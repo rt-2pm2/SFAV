@@ -73,7 +73,7 @@
 #endif
 
 #ifndef V2_IP
-#define V2_IP ("192.168.1.2")
+#define V2_IP ("192.168.1.3")
 #define V2_PORT (4002)
 #endif
 

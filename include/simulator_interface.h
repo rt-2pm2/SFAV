@@ -108,14 +108,14 @@ class Simulator_Interface {
          */
         void setInitialCoordinates(float Lat, float Lon);
         
+        /*! Update collision information */
+        void updateCollision(float impnorm[3], float pen_collision);
+        
     private:
         double Initial_LL[2]; 
         
         /*! Initialize the interface with default values */
         void Initialize_Interface();
-        
-        /*! Update collision information */
-        void updateCollision(float impnorm[3], float pen_collision);
         
         /*! Update external forces */
         void updateFext(float Fext[3]);

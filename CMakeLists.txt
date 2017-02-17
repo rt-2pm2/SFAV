@@ -16,8 +16,10 @@ include_directories(${CMAKE_SOURCE_DIR}/include/ptask/src)
 include_directories(${CMAKE_SOURCE_DIR}/include/DynModel_grt_rtw)
 
 # Directory to compile the Matlab generated code
-include_directories(/usr/local/MATLAB/R2016a/simulink/include)
-include_directories(/usr/local/MATLAB/R2016a/extern/include)
+#include_directories(/usr/local/MATLAB/R2016a/simulink/include)
+#include_directories(/usr/local/MATLAB/R2016a/extern/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/simulink/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/extern/include)
 
 get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 message("Included Directories = \n${inc_dirs}\n\n")
