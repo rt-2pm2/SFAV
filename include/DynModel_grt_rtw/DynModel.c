@@ -5,7 +5,7 @@
  *
  * Model version              : 1.744
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 18:22:28 2017
+ * C source code generated on : Fri Feb 17 18:44:54 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -47,6 +47,9 @@ real_T Kpenetration = 2000.0;          /* Variable: Kpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain12'
                                         *   '<S5>/Gain3'
+                                        */
+real_T Kt = 5.2115252211870358E-6;     /* Variable: Kt
+                                        * Referenced by: '<S6>/Constant1'
                                         */
 real_T Kvreact = 300.0;                /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
@@ -1535,7 +1538,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* ==============================  Forces  ==================================  */
     /* --------------------------------Thrust Model------------------------------ */
     /* '<S51>:1:26' */
-    rtb_Saturation = 5.2115252211870358E-6 * rtb_Memory2;
+    rtb_Saturation = Kt * rtb_Memory2;
     rtb_thrust_idx_0 = rtb_DiscreteTransferFcn * rtb_DiscreteTransferFcn *
       rtb_Saturation;
     rtb_thrust_idx_1 = rtb_DiscreteTransferFcn_b * rtb_DiscreteTransferFcn_b *

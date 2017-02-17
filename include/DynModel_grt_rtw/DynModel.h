@@ -5,7 +5,7 @@
  *
  * Model version              : 1.744
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 18:22:28 2017
+ * C source code generated on : Fri Feb 17 18:44:54 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -610,6 +610,9 @@ extern real_T Kpenetration;            /* Variable: Kpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain12'
                                         *   '<S5>/Gain3'
+                                        */
+extern real_T Kt;                      /* Variable: Kt
+                                        * Referenced by: '<S6>/Constant1'
                                         */
 extern real_T Kvreact;                 /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
