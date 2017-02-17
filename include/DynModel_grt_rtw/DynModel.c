@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.743
+ * Model version              : 1.744
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 17:33:22 2017
+ * C source code generated on : Fri Feb 17 18:22:28 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -20,6 +20,14 @@
 #include "DynModel_private.h"
 
 /* Exported block parameters */
+real_T Cdrag = 0.2;                    /* Variable: Cdrag
+                                        * Referenced by:
+                                        *   '<S6>/h_ref1'
+                                        *   '<S6>/h_ref3'
+                                        */
+real_T Crotdrag = 0.3;                 /* Variable: Crotdrag
+                                        * Referenced by: '<S6>/h_ref6'
+                                        */
 real_T Kattreact = 2.0;                /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
@@ -30,17 +38,17 @@ real_T Kdiscre = 0.01477832512315271;  /* Variable: Kdiscre
                                         *   '<S54>/Gain1'
                                         *   '<S55>/Gain1'
                                         */
-real_T Kdpenetration = 120.0;          /* Variable: Kdpenetration
+real_T Kdpenetration = 50.0;           /* Variable: Kdpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain1'
                                         *   '<S5>/Gain7'
                                         */
-real_T Kpenetration = 3000.0;          /* Variable: Kpenetration
+real_T Kpenetration = 2000.0;          /* Variable: Kpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain12'
                                         *   '<S5>/Gain3'
                                         */
-real_T Kvreact = 120.0;                /* Variable: Kvreact
+real_T Kvreact = 300.0;                /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
                                         */
 
@@ -1385,6 +1393,11 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   DynModel_B->Submatrix[1L] = DynModel_B->Reshape9to3x3columnmajor[7L];
   DynModel_B->Submatrix[2L] = DynModel_B->Reshape9to3x3columnmajor[8L];
   if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* Gain: '<S6>/Gain' incorporates:
+     *  Constant: '<S6>/h_ref3'
+     */
+    DynModel_B->Gain = 0.5 * Cdrag;
+
     /* Memory: '<S2>/Memory2' */
     rtb_Memory2 = DynModel_DW->Memory2_PreviousInput;
 
@@ -1522,7 +1535,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* ==============================  Forces  ==================================  */
     /* --------------------------------Thrust Model------------------------------ */
     /* '<S51>:1:26' */
-    rtb_Saturation = 6.1235421348947671E-6 * rtb_Memory2;
+    rtb_Saturation = 5.2115252211870358E-6 * rtb_Memory2;
     rtb_thrust_idx_0 = rtb_DiscreteTransferFcn * rtb_DiscreteTransferFcn *
       rtb_Saturation;
     rtb_thrust_idx_1 = rtb_DiscreteTransferFcn_b * rtb_DiscreteTransferFcn_b *
@@ -1592,22 +1605,22 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    */
   rtb_Add7_idx_0 = (((DynModel_B->UnitConversion[0] * fabs
                       (DynModel_B->UnitConversion[0]) * (-1.0) *
-                      DynModel_ConstB.Gain_n + (-1.0) *
-                      DynModel_B->UnitConversion[0] * 0.1) * DynModel_B->Gain1[0]
-                     + 11.772 * DynModel_B->Submatrix[0]) + DynModel_B->force[0])
-    + (DynModel_U->Fext[0] + rtb_Add3_j[0]);
+                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[0] *
+                      Cdrag) * DynModel_B->Gain1[0] + 11.772 *
+                     DynModel_B->Submatrix[0]) + DynModel_B->force[0]) +
+    (DynModel_U->Fext[0] + rtb_Add3_j[0]);
   rtb_Add7_idx_1 = (((DynModel_B->UnitConversion[1] * fabs
                       (DynModel_B->UnitConversion[1]) * (-1.0) *
-                      DynModel_ConstB.Gain_n + (-1.0) *
-                      DynModel_B->UnitConversion[1] * 0.1) * DynModel_B->Gain1[1]
-                     + 11.772 * DynModel_B->Submatrix[1]) + DynModel_B->force[1])
-    + (DynModel_U->Fext[1] + rtb_Add3_j[1]);
+                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[1] *
+                      Cdrag) * DynModel_B->Gain1[1] + 11.772 *
+                     DynModel_B->Submatrix[1]) + DynModel_B->force[1]) +
+    (DynModel_U->Fext[1] + rtb_Add3_j[1]);
   rtb_Add7_idx_2 = (((DynModel_B->UnitConversion[2] * fabs
                       (DynModel_B->UnitConversion[2]) * (-1.0) *
-                      DynModel_ConstB.Gain_n + (-1.0) *
-                      DynModel_B->UnitConversion[2] * 0.1) * DynModel_B->Gain1[2]
-                     + 11.772 * DynModel_B->Submatrix[2]) + DynModel_B->force[2])
-    + (DynModel_U->Fext[2] + rtb_Add3_j[2]);
+                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[2] *
+                      Cdrag) * DynModel_B->Gain1[2] + 11.772 *
+                     DynModel_B->Submatrix[2]) + DynModel_B->force[2]) +
+    (DynModel_U->Fext[2] + rtb_Add3_j[2]);
 
   /* Product: '<S4>/Product' incorporates:
    *  Constant: '<S12>/Constant'
@@ -1800,9 +1813,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Constant: '<S6>/h_ref6'
      *  Product: '<S47>/Product1'
      */
-    DynModel_B->Product2_p[0] = 0.016813708498984763 * rtb_Memory2 * 0.3;
-    DynModel_B->Product2_p[1] = 0.018813708498984762 * rtb_Memory2 * 0.3;
-    DynModel_B->Product2_p[2] = 0.18845573684677208 * rtb_Memory2 * 0.3;
+    DynModel_B->Product2_p[0] = 0.016813708498984763 * rtb_Memory2 * Crotdrag;
+    DynModel_B->Product2_p[1] = 0.018813708498984762 * rtb_Memory2 * Crotdrag;
+    DynModel_B->Product2_p[2] = 0.18845573684677208 * rtb_Memory2 * Crotdrag;
   }
 
   /* Sum: '<S2>/Add6' incorporates:

@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.743
+ * Model version              : 1.744
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 17:33:22 2017
+ * C source code generated on : Fri Feb 17 18:22:28 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -221,6 +221,7 @@ typedef struct {
   real_T Product2_n[3];                /* '<S5>/Product2' */
   real_T Saturation[3];                /* '<S5>/Saturation' */
   real_T Submatrix[3];                 /* '<S50>/Submatrix' */
+  real_T Gain;                         /* '<S6>/Gain' */
   real_T Gain1[3];                     /* '<S48>/Gain1' */
   real_T Product[3];                   /* '<S4>/Product' */
   real_T MatrixMultiply1[3];           /* '<S3>/Matrix Multiply1' */
@@ -413,7 +414,6 @@ typedef struct {
   const real_T Bias1_d;                /* '<S156>/Bias1' */
   const real_T Abs_mn;                 /* '<S156>/Abs' */
   const real_T Switch_b;               /* '<S156>/Switch' */
-  const real_T Gain_n;                 /* '<S6>/Gain' */
   const real_T Selector1[9];           /* '<S11>/Selector1' */
   const real_T Selector[9];            /* '<S11>/Selector' */
   const real_T Selector2[9];           /* '<S11>/Selector2' */
@@ -583,6 +583,14 @@ extern const ConstP_DynModel_T DynModel_ConstP;
  * these parameters and exports their symbols.
  *
  */
+extern real_T Cdrag;                   /* Variable: Cdrag
+                                        * Referenced by:
+                                        *   '<S6>/h_ref1'
+                                        *   '<S6>/h_ref3'
+                                        */
+extern real_T Crotdrag;                /* Variable: Crotdrag
+                                        * Referenced by: '<S6>/h_ref6'
+                                        */
 extern real_T Kattreact;               /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
