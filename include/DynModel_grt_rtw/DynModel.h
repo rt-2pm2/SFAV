@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.744
+ * Model version              : 1.747
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 18:44:54 2017
+ * C source code generated on : Wed Feb 22 09:26:06 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -221,7 +221,6 @@ typedef struct {
   real_T Product2_n[3];                /* '<S5>/Product2' */
   real_T Saturation[3];                /* '<S5>/Saturation' */
   real_T Submatrix[3];                 /* '<S50>/Submatrix' */
-  real_T Gain;                         /* '<S6>/Gain' */
   real_T Gain1[3];                     /* '<S48>/Gain1' */
   real_T Product[3];                   /* '<S4>/Product' */
   real_T MatrixMultiply1[3];           /* '<S3>/Matrix Multiply1' */
@@ -583,11 +582,6 @@ extern const ConstP_DynModel_T DynModel_ConstP;
  * these parameters and exports their symbols.
  *
  */
-extern real_T Cdrag;                   /* Variable: Cdrag
-                                        * Referenced by:
-                                        *   '<S6>/h_ref1'
-                                        *   '<S6>/h_ref3'
-                                        */
 extern real_T Crotdrag;                /* Variable: Crotdrag
                                         * Referenced by: '<S6>/h_ref6'
                                         */
@@ -616,6 +610,12 @@ extern real_T Kt;                      /* Variable: Kt
                                         */
 extern real_T Kvreact;                 /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
+                                        */
+extern real_T LCdrag;                  /* Variable: LCdrag
+                                        * Referenced by: '<S6>/h_ref1'
+                                        */
+extern real_T QCdrag;                  /* Variable: QCdrag
+                                        * Referenced by: '<S6>/h_ref3'
                                         */
 
 /* External data declarations for dependent source files */

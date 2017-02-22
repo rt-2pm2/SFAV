@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.744
+ * Model version              : 1.747
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Fri Feb 17 18:44:54 2017
+ * C source code generated on : Wed Feb 22 09:26:06 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -20,18 +20,13 @@
 #include "DynModel_private.h"
 
 /* Exported block parameters */
-real_T Cdrag = 0.2;                    /* Variable: Cdrag
-                                        * Referenced by:
-                                        *   '<S6>/h_ref1'
-                                        *   '<S6>/h_ref3'
-                                        */
 real_T Crotdrag = 0.3;                 /* Variable: Crotdrag
                                         * Referenced by: '<S6>/h_ref6'
                                         */
 real_T Kattreact = 2.0;                /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
-real_T Kdiscre = 0.01477832512315271;  /* Variable: Kdiscre
+real_T Kdiscre = 0.0079365079365079361;/* Variable: Kdiscre
                                         * Referenced by:
                                         *   '<S52>/Gain1'
                                         *   '<S53>/Gain1'
@@ -53,6 +48,12 @@ real_T Kt = 5.2115252211870358E-6;     /* Variable: Kt
                                         */
 real_T Kvreact = 300.0;                /* Variable: Kvreact
                                         * Referenced by: '<S5>/Gain8'
+                                        */
+real_T LCdrag = 0.2;                   /* Variable: LCdrag
+                                        * Referenced by: '<S6>/h_ref1'
+                                        */
+real_T QCdrag = 0.2;                   /* Variable: QCdrag
+                                        * Referenced by: '<S6>/h_ref3'
                                         */
 
 /*
@@ -1396,11 +1397,6 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   DynModel_B->Submatrix[1L] = DynModel_B->Reshape9to3x3columnmajor[7L];
   DynModel_B->Submatrix[2L] = DynModel_B->Reshape9to3x3columnmajor[8L];
   if (rtmIsMajorTimeStep(DynModel_M)) {
-    /* Gain: '<S6>/Gain' incorporates:
-     *  Constant: '<S6>/h_ref3'
-     */
-    DynModel_B->Gain = 0.5 * Cdrag;
-
     /* Memory: '<S2>/Memory2' */
     rtb_Memory2 = DynModel_DW->Memory2_PreviousInput;
 
@@ -1434,7 +1430,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
 
     /* DiscreteTransferFcn: '<S52>/Discrete Transfer Fcn' */
     DynModel_DW->DiscreteTransferFcn_tmp = (rtb_Saturation -
-      (-0.97044334975369462) * DynModel_DW->DiscreteTransferFcn_states) / 1.0;
+      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states) / 1.0;
     rtb_DiscreteTransferFcn = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp + 1.0 *
       DynModel_DW->DiscreteTransferFcn_states;
 
@@ -1460,7 +1456,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
 
     /* DiscreteTransferFcn: '<S53>/Discrete Transfer Fcn' */
     DynModel_DW->DiscreteTransferFcn_tmp_i = (rtb_Saturation -
-      (-0.97044334975369462) * DynModel_DW->DiscreteTransferFcn_states_m) / 1.0;
+      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_m) / 1.0;
     rtb_DiscreteTransferFcn_b = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_i +
       1.0 * DynModel_DW->DiscreteTransferFcn_states_m;
 
@@ -1486,7 +1482,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
 
     /* DiscreteTransferFcn: '<S54>/Discrete Transfer Fcn' */
     DynModel_DW->DiscreteTransferFcn_tmp_b = (rtb_Saturation -
-      (-0.97044334975369462) * DynModel_DW->DiscreteTransferFcn_states_c) / 1.0;
+      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_c) / 1.0;
     rtb_DiscreteTransferFcn_j = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_b +
       1.0 * DynModel_DW->DiscreteTransferFcn_states_c;
 
@@ -1512,7 +1508,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
 
     /* DiscreteTransferFcn: '<S55>/Discrete Transfer Fcn' */
     DynModel_DW->DiscreteTransferFcn_tmp_e = (rtb_Saturation -
-      (-0.97044334975369462) * DynModel_DW->DiscreteTransferFcn_states_a) / 1.0;
+      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_a) / 1.0;
     rtb_DiscreteTransferFcn_i = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_e +
       1.0 * DynModel_DW->DiscreteTransferFcn_states_a;
 
@@ -1593,6 +1589,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    *  Abs: '<S48>/Abs1'
    *  Abs: '<S48>/Abs2'
    *  Constant: '<S6>/h_ref1'
+   *  Constant: '<S6>/h_ref3'
    *  Constant: '<S6>/h_ref7'
    *  Gain: '<S48>/Gain'
    *  Gain: '<S48>/Gain2'
@@ -1607,23 +1604,20 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    *  Sum: '<S6>/Add'
    */
   rtb_Add7_idx_0 = (((DynModel_B->UnitConversion[0] * fabs
-                      (DynModel_B->UnitConversion[0]) * (-1.0) *
-                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[0] *
-                      Cdrag) * DynModel_B->Gain1[0] + 11.772 *
-                     DynModel_B->Submatrix[0]) + DynModel_B->force[0]) +
-    (DynModel_U->Fext[0] + rtb_Add3_j[0]);
+                      (DynModel_B->UnitConversion[0]) * (-1.0) * QCdrag + (-1.0)
+                      * DynModel_B->UnitConversion[0] * LCdrag) *
+                     DynModel_B->Gain1[0] + 11.772 * DynModel_B->Submatrix[0]) +
+                    DynModel_B->force[0]) + (DynModel_U->Fext[0] + rtb_Add3_j[0]);
   rtb_Add7_idx_1 = (((DynModel_B->UnitConversion[1] * fabs
-                      (DynModel_B->UnitConversion[1]) * (-1.0) *
-                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[1] *
-                      Cdrag) * DynModel_B->Gain1[1] + 11.772 *
-                     DynModel_B->Submatrix[1]) + DynModel_B->force[1]) +
-    (DynModel_U->Fext[1] + rtb_Add3_j[1]);
+                      (DynModel_B->UnitConversion[1]) * (-1.0) * QCdrag + (-1.0)
+                      * DynModel_B->UnitConversion[1] * LCdrag) *
+                     DynModel_B->Gain1[1] + 11.772 * DynModel_B->Submatrix[1]) +
+                    DynModel_B->force[1]) + (DynModel_U->Fext[1] + rtb_Add3_j[1]);
   rtb_Add7_idx_2 = (((DynModel_B->UnitConversion[2] * fabs
-                      (DynModel_B->UnitConversion[2]) * (-1.0) *
-                      DynModel_B->Gain + (-1.0) * DynModel_B->UnitConversion[2] *
-                      Cdrag) * DynModel_B->Gain1[2] + 11.772 *
-                     DynModel_B->Submatrix[2]) + DynModel_B->force[2]) +
-    (DynModel_U->Fext[2] + rtb_Add3_j[2]);
+                      (DynModel_B->UnitConversion[2]) * (-1.0) * QCdrag + (-1.0)
+                      * DynModel_B->UnitConversion[2] * LCdrag) *
+                     DynModel_B->Gain1[2] + 11.772 * DynModel_B->Submatrix[2]) +
+                    DynModel_B->force[2]) + (DynModel_U->Fext[2] + rtb_Add3_j[2]);
 
   /* Product: '<S4>/Product' incorporates:
    *  Constant: '<S12>/Constant'
