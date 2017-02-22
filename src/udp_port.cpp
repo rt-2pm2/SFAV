@@ -90,6 +90,9 @@ void Udp_Port::InitializeInputPort(const char* ip_addr, uint32_t r_port)
 
 Udp_Port::Udp_Port(const char* ip_addr, uint32_t r_port, uint32_t w_port)
 {
+    read_port = r_port;
+    write_port = w_port;
+    
     //printf("Setting UDP Input/Output port : \n IP_DEST %s | READ PORT %d | WRITE PORT %d\n", 
     //       ip_addr, r_port, w_port);
     // Endpoint for communication file descriptor

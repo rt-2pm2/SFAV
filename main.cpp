@@ -245,7 +245,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     IArg->params.arg = (void *) IArg;
     
     // Put the Pointer to the Structure in the Vector and set the thread parameter to point to that
-    //VectInflowArg.push_back(IArg);
+    VectInflowArg.push_back(IArg);
     
     // Start the InflowThread
     Agent_Id = start_inflow_thread(IArg);

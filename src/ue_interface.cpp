@@ -4,6 +4,8 @@
  * \author Luigi Pannocchi, <l.pannocchi@gmail.com>
  */
 
+#define DEBUG
+
 #include "ue_interface.h"
 
 struct UE_SendData UEDataOut;
@@ -63,7 +65,7 @@ UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
 
 UE_Interface::~UE_Interface()
 {
-	printf("UE Destructor\n");
+    printf("UE Destructor\n");
 }
 
 // ----------------------------------------------------------------
@@ -120,6 +122,9 @@ int UE_Interface::sendData(int Id)
 int UE_Interface::add_port(int index)
 {
     // Create a new Autopilot Interface class and add it to the list
+#ifdef DEBUG
+    printf("UE_Interface::add_port | Creating Port for UAV %d\n", index);
+#endif
     Udp_Port* pP;
     pP = new Udp_Port(net_ip, r_port + index, w_port + index);
     //pP->InitializeOutputPort(net_ip, w_port + index);
@@ -174,7 +179,7 @@ int UE_Interface::receiveData(int SysId)
     
     port = getPortInstance(SysId);
     
-    if (port)
+    if (port != NULL)
     {
     // Receive data num bytes over UDP and put them at the sensors address
     read_bytes = port->readBytes(rbuff, sizeof(struct UE_RecData));
