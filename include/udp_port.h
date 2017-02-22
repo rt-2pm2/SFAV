@@ -64,12 +64,18 @@ public:
 	~Udp_Port();
  
     
-    //! Initialization Function
+    //! Initialization Functions
     /*!
     *     \param target_ip Target Ip String
     *     \param w_port Remote Port for Sending
     */
     void InitializeOutputPort(const char* target_ip, uint32_t w_port);
+    
+    /*!
+    *     \param target_ip Target Ip String
+    *     \param r_port Local Port for Reading
+    */
+    void InitializeInputPort(const char* ip_addr, uint32_t r_port);
     
 	//! Send a Mavlink Message to the Remote Target 
 	/*!

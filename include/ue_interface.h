@@ -76,7 +76,7 @@ public:
     int sendData(int Id);
     int setData(struct UE_SendData);
 
-    int receiveData();
+    int receiveData(int SysId);
     int getData(struct UE_RecData* data);
     int getCollision(float impV[3], float pen);
     
@@ -97,8 +97,8 @@ private:
     pthread_mutex_t mut_sendData;
     pthread_mutex_t mut_recData;
 
-    struct pollfd fdsR[1];
-    struct pollfd fdsW[1];
+    struct pollfd fdsR[256];
+    struct pollfd fdsW[256];
 
     std::vector<Udp_Port*> pPorts; /*!< Pointer to the dynamically allocated communication ports */
 

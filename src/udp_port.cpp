@@ -43,16 +43,40 @@ void Udp_Port::InitializeOutputPort(const char* ip_addr, uint32_t w_port)
     remAddr.sin_port = htons(w_port);
     remAddr.sin_addr.s_addr = inet_addr(ip_addr);
     
-    // Binding the socket to read
-    /*
-    if (-1 == bind(sock,(struct sockaddr *)&remAddr,sizeof(struct sockaddr)))
+    // Perfoming a non blocking access
+    if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0)
     {
-        fprintf(stderr,"Udp_Port::Udp_Port error: bind failed! (IP %s | W %d)\n", 
-                ip_addr, w_port);
+        fprintf(stderr, "Udp_Port::Udp_Port error: unable to set nonblocking %s\n",
+                    strerror(errno));
+        close(sock);
+        exit(EXIT_FAILURE);
+    } 
+}
+
+void Udp_Port::InitializeInputPort(const char* ip_addr, uint32_t r_port)
+{
+    //printf("Setting UDP Input port : IP_DEST %s | PORT %d\n", ip_addr, r_port);
+    read_port = r_port;
+    write_port = -1;
+    
+    // Endpoint for communication file descriptor
+    sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    
+    // Initialize local sockaddr_in structure
+    memset(&locAddr, 0, sizeof(locAddr));
+
+    locAddr.sin_family = AF_INET;
+    locAddr.sin_port = htons(r_port);
+    locAddr.sin_addr.s_addr = INADDR_ANY;
+    
+    // Binding the socket to read
+    if (-1 == bind(sock,(struct sockaddr *)&locAddr,sizeof(struct sockaddr)))
+    {
+        fprintf(stderr,"Udp_Port::Udp_Port error: bind failed! (IP %s | R %d | W %d)\n", 
+                ip_addr, read_port, write_port);
         close(sock);
         exit(EXIT_FAILURE);
     }
-    */
     
     // Perfoming a non blocking access
     if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0)

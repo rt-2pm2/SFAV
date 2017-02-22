@@ -422,7 +422,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     }
     
     
-    //fill_launcher_serial(ma, sm, gs, ue, baudrate, false, uart_name);
+    fill_launcher_serial(ma, sm, gs, ue, baudrate, false, uart_name);
 
     return 0;
 }
@@ -983,7 +983,7 @@ void ue_thread()
 
             //printf("Z = %3.2f\n", dataOut.Z);
 
-            if(p->ue->receiveData())
+            if(p->ue->receiveData(SysId))
             {
                 // Read data from the Synthetic Environment
                 //p->ue->getData(&dataIn);

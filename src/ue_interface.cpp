@@ -20,8 +20,7 @@ struct UE_RecData UEDataIn;
  *  UDP (8000)  ----->|                |
  *                    +----------------+
  */
-UE_Interface::UE_Interface():
-	udp_port((const char *)"127.0.0.1", (uint32_t)9000, (uint32_t)8000) 
+UE_Interface::UE_Interface()
 {
 	int i;
     
@@ -30,13 +29,6 @@ UE_Interface::UE_Interface():
 	// Inizialize UDP
 	setReadPort(9000);
 	setBaseWritePort(8000);
-
-	// Define the structure for the polling
-	fdsR[0].fd = udp_port.sock;
-	fdsR[0].events = POLLIN;
-
-	fdsW[0].fd = udp_port.sock;
-	fdsW[0].events = POLLOUT;
 
 	// Initialize Mutexes
 	pthread_mutex_init(&mut_sendData, 0);
@@ -47,27 +39,18 @@ UE_Interface::UE_Interface():
 		rbuff[i] = 0;
 }
 
-UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port):
-	udp_port(ip, r_port, w_port)
+UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
 {
 	int i;
     
     NVehicles = 0;
-
-	printf("UE_Interface: Read Port = %d | Write Port = %d\n", r_port, w_port);
+    
 	// Initialize UDP
     for (i = 0; i < strlen(ip); i++)
         net_ip[i] = ip[i];
     
 	setReadPort(r_port);
 	setBaseWritePort(w_port);
-
-	// Define the structure for the polling
-	fdsR[0].fd = udp_port.sock;
-	fdsR[0].events = POLLIN;
-
-	fdsW[0].fd = udp_port.sock;
-	fdsW[0].events = POLLOUT;
 
 	// Initilize Mutexes
 	pthread_mutex_init(&mut_sendData, 0);
@@ -138,8 +121,8 @@ int UE_Interface::add_port(int index)
 {
     // Create a new Autopilot Interface class and add it to the list
     Udp_Port* pP;
-    pP = new Udp_Port();
-    pP->InitializeOutputPort(net_ip, w_port + index);
+    pP = new Udp_Port(net_ip, r_port + index, w_port + index);
+    //pP->InitializeOutputPort(net_ip, w_port + index);
     pPorts.push_back(pP);
     NVehicles++;
     return 1;
@@ -183,39 +166,28 @@ int UE_Interface::setData(struct UE_SendData Data)
 // receiveData
 // Wait for data on the UDP and receive one message from the Unreal Engine 
 //
-int UE_Interface::receiveData()
+int UE_Interface::receiveData(int SysId)
 {
-	int i;
-	uint16_t timeout = 0;  // ms
-	int8_t read_bytes = 0;
+    int i;
+    int8_t read_bytes = 0;
+    Udp_Port* port;
+    
+    port = getPortInstance(SysId);
+    
 
-	int ret = poll(fdsR, 1, timeout);
 
-	if (ret < 0) 
-	{ 
-		printf("UE_Interface::receiveData : ERROR IN READING UDP PORT \n");
-		return -1;
-	}
-
-	if (ret == 0)
-	{
-		//printf("UE_Interface::receiveData : NO DATA RETURNED\n");
-		return 0;
-	}
-	else
-	{
-		// Receive data num bytes over UDP and put them at the sensors address
-		read_bytes = udp_port.readBytes(rbuff, sizeof(struct UE_RecData));
-		//printf("Got Data, %d Bytes\n", read_bytes);
-		if (read_bytes == sizeof(UE_RecData))
-		{
-            memcpy((void*) &UEDataIn, (void* ) &rbuff[0], read_bytes);
-
+    // Receive data num bytes over UDP and put them at the sensors address
+    read_bytes = udp_port.readBytes(rbuff, sizeof(struct UE_RecData));
+    //printf("Got Data, %d Bytes\n", read_bytes);
+    if (read_bytes == sizeof(UE_RecData))
+    {
+        memcpy((void*) &UEDataIn, (void* ) &rbuff[0], read_bytes);
         //  printf("Nx = %1.2f, Ny = %1.2f, Nz = %1.2f, Pen = %3.2f\n", 
-        //        UEDataIn.Nx, UEDataIn.Ny, UEDataIn.Nz, UEDataIn.PenDepth);
-		}
-	}
-	return 1;
+        //  UEDataIn.Nx, UEDataIn.Ny, UEDataIn.Nz, UEDataIn.PenDepth);
+        return 1;
+    }
+    else
+        return -1;
 }
 
 // 
