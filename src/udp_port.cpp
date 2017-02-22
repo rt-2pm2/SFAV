@@ -50,7 +50,7 @@ void Udp_Port::InitializeOutputPort(const char* ip_addr, uint32_t w_port)
                     strerror(errno));
         close(sock);
         exit(EXIT_FAILURE);
-    } 
+    }
 }
 
 void Udp_Port::InitializeInputPort(const char* ip_addr, uint32_t r_port)
