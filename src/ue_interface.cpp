@@ -174,9 +174,13 @@ int UE_Interface::receiveData(int SysId)
     
     port = getPortInstance(SysId);
     
+    if (port)
+    {
     // Receive data num bytes over UDP and put them at the sensors address
     read_bytes = port->readBytes(rbuff, sizeof(struct UE_RecData));
     //printf("Got Data, %d Bytes\n", read_bytes);
+    }
+    
     if (read_bytes == sizeof(UE_RecData))
     {
         memcpy((void*) &UEDataIn, (void* ) &rbuff[0], read_bytes);

@@ -85,8 +85,6 @@ public:
     int started;
 
     int add_port(int offset);
-    Udp_Port udp_port;
-
 
 private:
 
