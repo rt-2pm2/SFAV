@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.747
+ * Model version              : 1.756
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Wed Feb 22 09:26:06 2017
+ * C source code generated on : Wed Feb 22 10:10:11 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -25,13 +25,6 @@ real_T Crotdrag = 0.3;                 /* Variable: Crotdrag
                                         */
 real_T Kattreact = 2.0;                /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
-                                        */
-real_T Kdiscre = 0.0079365079365079361;/* Variable: Kdiscre
-                                        * Referenced by:
-                                        *   '<S52>/Gain1'
-                                        *   '<S53>/Gain1'
-                                        *   '<S54>/Gain1'
-                                        *   '<S55>/Gain1'
                                         */
 real_T Kdpenetration = 50.0;           /* Variable: Kdpenetration
                                         * Referenced by:
@@ -55,6 +48,13 @@ real_T LCdrag = 0.2;                   /* Variable: LCdrag
 real_T QCdrag = 0.2;                   /* Variable: QCdrag
                                         * Referenced by: '<S6>/h_ref3'
                                         */
+real_T motpole = 15.0;                 /* Variable: motpole
+                                        * Referenced by:
+                                        *   '<S52>/Gain2'
+                                        *   '<S53>/Gain2'
+                                        *   '<S54>/Gain2'
+                                        *   '<S55>/Gain2'
+                                        */
 
 /*
  * This function updates continuous states using the ODE4 fixed-step
@@ -75,7 +75,7 @@ static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si ,
   real_T *f3 = id->f[3];
   real_T temp;
   int_T i;
-  int_T nXc = 13;
+  int_T nXc = 17;
   rtsiSetSimTimeStep(si,MINOR_TIME_STEP);
 
   /* Save the state values at time t in y, we'll use x as ynew. */
@@ -288,7 +288,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real_T rtb_Saturation;
   real_T rtb_jxi;
   real_T rtb_ixk;
-  real_T rtb_ZeroOrderHold1;
+  real_T rtb_ZeroOrderHold1_p;
   real_T rtb_Sum_j;
   real_T rtb_VectorConcatenate[9];
   real_T rtb_Add2[3];
@@ -300,21 +300,22 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real_T rtb_Memory2;
   real_T rtb_WhiteNoise[3];
   int8_T rtAction;
-  real_T rtb_DiscreteTransferFcn;
-  real_T rtb_DiscreteTransferFcn_b;
-  real_T rtb_DiscreteTransferFcn_j;
-  real_T rtb_DiscreteTransferFcn_i;
+  real_T rtb_ZeroOrderHold1;
   real_T rtb_Add6_0[3];
   int16_T i;
   real_T tmp[3];
+  real_T rtb_RPM2RADS_idx_0;
+  real_T rtb_RPM2RADS_idx_1;
+  real_T rtb_RPM2RADS_idx_2;
+  real_T rtb_RPM2RADS_idx_3;
   real32_T rtb_DataTypeConversion21_idx_0;
   real32_T rtb_DataTypeConversion21_idx_1;
   real32_T rtb_DataTypeConversion21_idx_2;
   real32_T rtb_DataTypeConversion21_idx_3;
   real_T rtb_Sum_c_idx_0;
-  real_T rtb_Sum_h_idx_0;
-  real_T rtb_Sum_h_idx_1;
-  real_T rtb_Sum_h_idx_2;
+  real_T rtb_Sum_hw_idx_0;
+  real_T rtb_Sum_hw_idx_1;
+  real_T rtb_Sum_hw_idx_2;
   real_T rtb_Add1_h_idx_0;
   real_T rtb_Add1_h_idx_1;
   real_T rtb_thrust_idx_0;
@@ -342,12 +343,12 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real32_T rtb_DataTypeConversion14_idx_0;
   real32_T rtb_DataTypeConversion14_idx_1;
   real32_T rtb_DataTypeConversion14_idx_2;
-  real32_T rtb_DataTypeConversion15_idx_0;
-  real32_T rtb_DataTypeConversion15_idx_1;
-  real32_T rtb_DataTypeConversion15_idx_2;
   real32_T rtb_DataTypeConversion12_idx_0;
   real32_T rtb_DataTypeConversion12_idx_1;
   real32_T rtb_DataTypeConversion12_idx_2;
+  real32_T rtb_DataTypeConversion15_idx_0;
+  real32_T rtb_DataTypeConversion15_idx_1;
+  real32_T rtb_DataTypeConversion15_idx_2;
   real32_T rtb_DataTypeConversion20_idx_0;
   real32_T rtb_DataTypeConversion20_idx_1;
   real32_T rtb_DataTypeConversion20_idx_2;
@@ -551,20 +552,20 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S67>/Random Number'
      *  Sum: '<S67>/Sum2'
      */
-    rtb_ZeroOrderHold1 = (((DynModel_B->RateTransition1_p[0] *
+    rtb_ZeroOrderHold1_p = (((DynModel_B->RateTransition1_p[0] *
       DynModel_B->RateTransition1_p[0] + DynModel_B->RateTransition1_p[1] *
       DynModel_B->RateTransition1_p[1]) + DynModel_B->RateTransition1_p[2] *
       DynModel_B->RateTransition1_p[2]) * DynModel_B->RateTransition_b * 0.5 *
-                          1.0E-5 * 1000.0 + DynModel_DW->NextOutput_l) + 0.0;
+      1.0E-5 * 1000.0 + DynModel_DW->NextOutput_l) + 0.0;
 
     /* Saturate: '<S67>/Saturation' */
-    if (rtb_ZeroOrderHold1 > 1000.0) {
+    if (rtb_ZeroOrderHold1_p > 1000.0) {
       /* ZeroOrderHold: '<S67>/Zero-Order Hold1' */
-      rtb_ZeroOrderHold1 = 1000.0;
+      rtb_ZeroOrderHold1_p = 1000.0;
     } else {
-      if (rtb_ZeroOrderHold1 < 0.0) {
+      if (rtb_ZeroOrderHold1_p < 0.0) {
         /* ZeroOrderHold: '<S67>/Zero-Order Hold1' */
-        rtb_ZeroOrderHold1 = 0.0;
+        rtb_ZeroOrderHold1_p = 0.0;
       }
     }
 
@@ -606,9 +607,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->RateTransition1_a[0] = DynModel_B->xeyeze[0];
     DynModel_B->RateTransition1_a[1] = DynModel_B->xeyeze[1];
     DynModel_B->RateTransition1_a[2] = DynModel_B->xeyeze[2];
-    rtb_Sum_h_idx_0 = DynModel_DW->NextOutput_o[0] +
+    rtb_Sum_hw_idx_0 = DynModel_DW->NextOutput_o[0] +
       DynModel_B->RateTransition1_a[0];
-    rtb_Sum_h_idx_1 = DynModel_DW->NextOutput_o[1] +
+    rtb_Sum_hw_idx_1 = DynModel_DW->NextOutput_o[1] +
       DynModel_B->RateTransition1_a[1];
 
     /* Sum: '<S98>/Sum' incorporates:
@@ -620,8 +621,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Sum: '<S101>/Sum'
      *  Sum: '<S63>/Add1'
      */
-    rtb_Sum_c_idx_0 = (rtb_Sum_h_idx_0 * DynModel_ConstB.SinCos_o2 -
-                       rtb_Sum_h_idx_1 * DynModel_ConstB.SinCos_o1) *
+    rtb_Sum_c_idx_0 = (rtb_Sum_hw_idx_0 * DynModel_ConstB.SinCos_o2 -
+                       rtb_Sum_hw_idx_1 * DynModel_ConstB.SinCos_o1) *
       DynModel_ConstB.TrigonometricFunction1_g * 57.295779513082323 +
       DynModel_ConstB.Switch_h;
 
@@ -679,8 +680,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Sum: '<S101>/Sum1'
      *  Sum: '<S98>/Sum'
      */
-    rtb_Sum_j = ((rtb_Sum_h_idx_0 * DynModel_ConstB.SinCos_o1 + rtb_Sum_h_idx_1 *
-                  DynModel_ConstB.SinCos_o2) *
+    rtb_Sum_j = ((rtb_Sum_hw_idx_0 * DynModel_ConstB.SinCos_o1 +
+                  rtb_Sum_hw_idx_1 * DynModel_ConstB.SinCos_o2) *
                  DynModel_ConstB.TrigonometricFunction2 * 57.295779513082323 +
                  DynModel_ConstB.Switch_d) + rtb_DiscreteTransferFcn_n;
 
@@ -723,9 +724,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* End of RateTransition: '<S63>/Rate Transition5' */
 
     /* RandomNumber: '<S63>/Random Number1' */
-    rtb_Sum_h_idx_0 = DynModel_DW->NextOutput_h[0];
-    rtb_Sum_h_idx_1 = DynModel_DW->NextOutput_h[1];
-    rtb_Sum_h_idx_2 = DynModel_DW->NextOutput_h[2];
+    rtb_Sum_hw_idx_0 = DynModel_DW->NextOutput_h[0];
+    rtb_Sum_hw_idx_1 = DynModel_DW->NextOutput_h[1];
+    rtb_Sum_hw_idx_2 = DynModel_DW->NextOutput_h[2];
   }
 
   /* End of RateTransition: '<S67>/Rate Transition1' */
@@ -874,9 +875,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->RateTransition2_l[2] = DynModel_B->UnitConversion_j[2];
 
     /* Sum: '<S63>/Add2' */
-    rtb_Add2[0] = rtb_Sum_h_idx_0 + DynModel_B->RateTransition2_l[0];
-    rtb_Add2[1] = rtb_Sum_h_idx_1 + DynModel_B->RateTransition2_l[1];
-    rtb_Add2[2] = rtb_Sum_h_idx_2 + DynModel_B->RateTransition2_l[2];
+    rtb_Add2[0] = rtb_Sum_hw_idx_0 + DynModel_B->RateTransition2_l[0];
+    rtb_Add2[1] = rtb_Sum_hw_idx_1 + DynModel_B->RateTransition2_l[1];
+    rtb_Add2[2] = rtb_Sum_hw_idx_2 + DynModel_B->RateTransition2_l[2];
 
     /* RateTransition: '<S63>/Rate Transition6' incorporates:
      *  Inport: '<Root>/Initial_LL'
@@ -1109,18 +1110,18 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->Output = 0.00027386127875258305 * DynModel_DW->NextOutput_lh;
 
     /* Memory: '<S2>/Memory1' */
-    rtb_Sum_h_idx_0 = DynModel_DW->Memory1_PreviousInput[0];
-    rtb_Sum_h_idx_1 = DynModel_DW->Memory1_PreviousInput[1];
-    rtb_Sum_h_idx_2 = DynModel_DW->Memory1_PreviousInput[2];
+    rtb_Sum_hw_idx_0 = DynModel_DW->Memory1_PreviousInput[0];
+    rtb_Sum_hw_idx_1 = DynModel_DW->Memory1_PreviousInput[1];
+    rtb_Sum_hw_idx_2 = DynModel_DW->Memory1_PreviousInput[2];
 
     /* SampleTimeMath: '<S45>/TSamp'
      *
      * About '<S45>/TSamp':
      *  y = u * K where K = 1 / ( w * Ts )
      */
-    rtb_TSamp[0] = rtb_Sum_h_idx_0 * 500.0;
-    rtb_TSamp[1] = rtb_Sum_h_idx_1 * 500.0;
-    rtb_TSamp[2] = rtb_Sum_h_idx_2 * 500.0;
+    rtb_TSamp[0] = rtb_Sum_hw_idx_0 * 500.0;
+    rtb_TSamp[1] = rtb_Sum_hw_idx_1 * 500.0;
+    rtb_TSamp[2] = rtb_Sum_hw_idx_2 * 500.0;
 
     /* UnitDelay: '<S45>/UD' */
     rtb_Uk1[0] = DynModel_DW->UD_DSTATE[0];
@@ -1138,25 +1139,25 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Gain: '<S5>/Gain7'
      *  Sum: '<S5>/Add8'
      */
-    DynModel_B->Gain13[0] = ((Kpenetration * rtb_Sum_h_idx_0 + (-11.772)) +
+    DynModel_B->Gain13[0] = ((Kpenetration * rtb_Sum_hw_idx_0 + (-11.772)) +
       Kdpenetration * rtb_Diff[0]) * 0.0;
-    DynModel_B->Gain13[1] = ((Kpenetration * rtb_Sum_h_idx_1 + (-11.772)) +
+    DynModel_B->Gain13[1] = ((Kpenetration * rtb_Sum_hw_idx_1 + (-11.772)) +
       Kdpenetration * rtb_Diff[1]) * 0.0;
-    DynModel_B->Gain13[2] = ((Kpenetration * rtb_Sum_h_idx_2 + (-11.772)) +
+    DynModel_B->Gain13[2] = ((Kpenetration * rtb_Sum_hw_idx_2 + (-11.772)) +
       Kdpenetration * rtb_Diff[2]) * 1.0;
 
     /* Gain: '<S5>/Gain11' */
-    DynModel_B->Gain11[0] = (-1.0) * rtb_Sum_h_idx_0;
-    DynModel_B->Gain11[1] = (-1.0) * rtb_Sum_h_idx_1;
-    DynModel_B->Gain11[2] = (-1.0) * rtb_Sum_h_idx_2;
+    DynModel_B->Gain11[0] = (-1.0) * rtb_Sum_hw_idx_0;
+    DynModel_B->Gain11[1] = (-1.0) * rtb_Sum_hw_idx_1;
+    DynModel_B->Gain11[2] = (-1.0) * rtb_Sum_hw_idx_2;
   }
 
   /* End of RateTransition: '<S66>/Rate Transition1' */
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* Memory: '<S2>/Memory6' */
-    rtb_Sum_h_idx_0 = DynModel_DW->Memory6_PreviousInput[0];
-    rtb_Sum_h_idx_1 = DynModel_DW->Memory6_PreviousInput[1];
-    rtb_Sum_h_idx_2 = DynModel_DW->Memory6_PreviousInput[2];
+    rtb_Sum_hw_idx_0 = DynModel_DW->Memory6_PreviousInput[0];
+    rtb_Sum_hw_idx_1 = DynModel_DW->Memory6_PreviousInput[1];
+    rtb_Sum_hw_idx_2 = DynModel_DW->Memory6_PreviousInput[2];
 
     /* Switch: '<S5>/Switch2' incorporates:
      *  Constant: '<S5>/Constant3'
@@ -1164,19 +1165,19 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Gain: '<S5>/Gain9'
      */
     if (DynModel_B->Gain11[0] >= 0.0) {
-      DynModel_B->Switch2[0] = (-1.0) * rtb_Sum_h_idx_0 * Kvreact;
+      DynModel_B->Switch2[0] = (-1.0) * rtb_Sum_hw_idx_0 * Kvreact;
     } else {
       DynModel_B->Switch2[0] = 0.0;
     }
 
     if (DynModel_B->Gain11[1] >= 0.0) {
-      DynModel_B->Switch2[1] = (-1.0) * rtb_Sum_h_idx_1 * Kvreact;
+      DynModel_B->Switch2[1] = (-1.0) * rtb_Sum_hw_idx_1 * Kvreact;
     } else {
       DynModel_B->Switch2[1] = 0.0;
     }
 
     if (DynModel_B->Gain11[2] >= 0.0) {
-      DynModel_B->Switch2[2] = (-1.0) * rtb_Sum_h_idx_2 * Kvreact;
+      DynModel_B->Switch2[2] = (-1.0) * rtb_Sum_hw_idx_2 * Kvreact;
     } else {
       DynModel_B->Switch2[2] = 0.0;
     }
@@ -1203,9 +1204,10 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Inport: '<Root>/pen_collision'
      *  Sum: '<S5>/Add2'
      */
-    DynModel_DW->DiscreteFilter_tmp = ((Kpenetration * DynModel_U->pen_collision
-      + Kdpenetration * rtb_Diff_o) - (-0.8) *
-      DynModel_DW->DiscreteFilter_states) / 1.0;
+    rtb_Saturation = Kpenetration * DynModel_U->pen_collision + Kdpenetration *
+      rtb_Diff_o;
+    rtb_Saturation -= (-0.8) * DynModel_DW->DiscreteFilter_states;
+    DynModel_DW->DiscreteFilter_tmp = rtb_Saturation / 1.0;
     rtb_Saturation = 0.2 * DynModel_DW->DiscreteFilter_tmp;
     DynModel_B->DiscreteFilter = rtb_Saturation;
   }
@@ -1243,7 +1245,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       loop++;
     }
 
-    rtb_Sum_h_idx_0 = rtb_Saturation;
+    rtb_Sum_hw_idx_0 = rtb_Saturation;
     rtb_Saturation = DynModel_B->Product2_n[1L] * 1.0;
     loop = 1L;
     for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 2L; j++) {
@@ -1258,7 +1260,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       loop++;
     }
 
-    rtb_Sum_h_idx_1 = rtb_Saturation;
+    rtb_Sum_hw_idx_1 = rtb_Saturation;
     rtb_Saturation = DynModel_B->Product2_n[2L] * 1.0;
     loop = 1L;
     for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 2L; j++) {
@@ -1273,7 +1275,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       loop++;
     }
 
-    rtb_Sum_h_idx_2 = rtb_Saturation;
+    rtb_Sum_hw_idx_2 = rtb_Saturation;
 
     /* End of DiscreteFir: '<S5>/Discrete FIR Filter' */
 
@@ -1329,40 +1331,40 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Gain: '<S5>/Gain10'
      */
     if (rtb_Saturation >= 0.0) {
-      rtb_Sum_h_idx_0 *= 0.33333333333333331;
-      rtb_Sum_h_idx_1 *= 0.33333333333333331;
-      rtb_Sum_h_idx_2 *= 0.33333333333333331;
+      rtb_Sum_hw_idx_0 *= 0.33333333333333331;
+      rtb_Sum_hw_idx_1 *= 0.33333333333333331;
+      rtb_Sum_hw_idx_2 *= 0.33333333333333331;
     } else {
-      rtb_Sum_h_idx_0 = 0.0;
-      rtb_Sum_h_idx_1 = 0.0;
-      rtb_Sum_h_idx_2 = 0.0;
+      rtb_Sum_hw_idx_0 = 0.0;
+      rtb_Sum_hw_idx_1 = 0.0;
+      rtb_Sum_hw_idx_2 = 0.0;
     }
 
     /* End of Switch: '<S5>/Switch' */
 
     /* Saturate: '<S5>/Saturation' */
-    if (rtb_Sum_h_idx_0 > 500.0) {
+    if (rtb_Sum_hw_idx_0 > 500.0) {
       DynModel_B->Saturation[0] = 500.0;
-    } else if (rtb_Sum_h_idx_0 < (-500.0)) {
+    } else if (rtb_Sum_hw_idx_0 < (-500.0)) {
       DynModel_B->Saturation[0] = (-500.0);
     } else {
-      DynModel_B->Saturation[0] = rtb_Sum_h_idx_0;
+      DynModel_B->Saturation[0] = rtb_Sum_hw_idx_0;
     }
 
-    if (rtb_Sum_h_idx_1 > 500.0) {
+    if (rtb_Sum_hw_idx_1 > 500.0) {
       DynModel_B->Saturation[1] = 500.0;
-    } else if (rtb_Sum_h_idx_1 < (-500.0)) {
+    } else if (rtb_Sum_hw_idx_1 < (-500.0)) {
       DynModel_B->Saturation[1] = (-500.0);
     } else {
-      DynModel_B->Saturation[1] = rtb_Sum_h_idx_1;
+      DynModel_B->Saturation[1] = rtb_Sum_hw_idx_1;
     }
 
-    if (rtb_Sum_h_idx_2 > 500.0) {
+    if (rtb_Sum_hw_idx_2 > 500.0) {
       DynModel_B->Saturation[2] = 500.0;
-    } else if (rtb_Sum_h_idx_2 < (-500.0)) {
+    } else if (rtb_Sum_hw_idx_2 < (-500.0)) {
       DynModel_B->Saturation[2] = (-500.0);
     } else {
-      DynModel_B->Saturation[2] = rtb_Sum_h_idx_2;
+      DynModel_B->Saturation[2] = rtb_Sum_hw_idx_2;
     }
 
     /* End of Saturate: '<S5>/Saturation' */
@@ -1407,116 +1409,47 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->Gain1[0] = 0.016813708498984763 * rtb_Memory2 * 0.5;
     DynModel_B->Gain1[1] = 0.018813708498984762 * rtb_Memory2 * 0.5;
     DynModel_B->Gain1[2] = 0.18845573684677208 * rtb_Memory2 * 0.5;
+  }
 
-    /* Saturate: '<S2>/Saturation' incorporates:
-     *  Inport: '<Root>/PWM1'
-     */
-    if (DynModel_U->PWM1 > 1.0) {
-      rtb_DiscreteTransferFcn_n = 1.0;
-    } else if (DynModel_U->PWM1 < 0.0) {
-      rtb_DiscreteTransferFcn_n = 0.0;
-    } else {
-      rtb_DiscreteTransferFcn_n = DynModel_U->PWM1;
-    }
+  /* Integrator: '<S52>/Integrator' */
+  DynModel_B->Integrator = DynModel_X->Integrator_CSTATE;
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* ZeroOrderHold: '<S52>/Zero-Order Hold1' */
+    rtb_ZeroOrderHold1 = DynModel_B->Integrator;
+  }
 
-    /* Gain: '<S52>/Gain1' incorporates:
-     *  Gain: '<S8>/PWM2V'
-     *  Gain: '<S8>/RPM2RADS'
-     *  Gain: '<S8>/V2RPM'
-     *  Saturate: '<S2>/Saturation'
-     */
-    rtb_Saturation = 12.0 * rtb_DiscreteTransferFcn_n * 950.0 *
-      0.10471975511965977 * Kdiscre;
+  /* Integrator: '<S53>/Integrator' */
+  DynModel_B->Integrator_m = DynModel_X->Integrator_CSTATE_k;
 
-    /* DiscreteTransferFcn: '<S52>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp = (rtb_Saturation -
-      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states) / 1.0;
-    rtb_DiscreteTransferFcn = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp + 1.0 *
-      DynModel_DW->DiscreteTransferFcn_states;
+  /* RateTransition: '<S53>/Rate Transition' */
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    DynModel_B->RateTransition_o = DynModel_B->Integrator_m;
+  }
 
-    /* Saturate: '<S2>/Saturation' incorporates:
-     *  Inport: '<Root>/PWM2'
-     */
-    if (DynModel_U->PWM2 > 1.0) {
-      rtb_DiscreteTransferFcn_n = 1.0;
-    } else if (DynModel_U->PWM2 < 0.0) {
-      rtb_DiscreteTransferFcn_n = 0.0;
-    } else {
-      rtb_DiscreteTransferFcn_n = DynModel_U->PWM2;
-    }
+  /* End of RateTransition: '<S53>/Rate Transition' */
 
-    /* Gain: '<S53>/Gain1' incorporates:
-     *  Gain: '<S8>/PWM2V'
-     *  Gain: '<S8>/RPM2RADS'
-     *  Gain: '<S8>/V2RPM'
-     *  Saturate: '<S2>/Saturation'
-     */
-    rtb_Saturation = 12.0 * rtb_DiscreteTransferFcn_n * 950.0 *
-      0.10471975511965977 * Kdiscre;
+  /* Integrator: '<S54>/Integrator' */
+  DynModel_B->Integrator_e = DynModel_X->Integrator_CSTATE_m;
 
-    /* DiscreteTransferFcn: '<S53>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_i = (rtb_Saturation -
-      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_m) / 1.0;
-    rtb_DiscreteTransferFcn_b = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_i +
-      1.0 * DynModel_DW->DiscreteTransferFcn_states_m;
+  /* RateTransition: '<S54>/Rate Transition' */
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    DynModel_B->RateTransition_f = DynModel_B->Integrator_e;
+  }
 
-    /* Saturate: '<S2>/Saturation' incorporates:
-     *  Inport: '<Root>/PWM3'
-     */
-    if (DynModel_U->PWM3 > 1.0) {
-      rtb_DiscreteTransferFcn_n = 1.0;
-    } else if (DynModel_U->PWM3 < 0.0) {
-      rtb_DiscreteTransferFcn_n = 0.0;
-    } else {
-      rtb_DiscreteTransferFcn_n = DynModel_U->PWM3;
-    }
+  /* End of RateTransition: '<S54>/Rate Transition' */
 
-    /* Gain: '<S54>/Gain1' incorporates:
-     *  Gain: '<S8>/PWM2V'
-     *  Gain: '<S8>/RPM2RADS'
-     *  Gain: '<S8>/V2RPM'
-     *  Saturate: '<S2>/Saturation'
-     */
-    rtb_Saturation = 12.0 * rtb_DiscreteTransferFcn_n * 950.0 *
-      0.10471975511965977 * Kdiscre;
+  /* Integrator: '<S55>/Integrator' */
+  DynModel_B->Integrator_i = DynModel_X->Integrator_CSTATE_e;
 
-    /* DiscreteTransferFcn: '<S54>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_b = (rtb_Saturation -
-      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_c) / 1.0;
-    rtb_DiscreteTransferFcn_j = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_b +
-      1.0 * DynModel_DW->DiscreteTransferFcn_states_c;
-
-    /* Saturate: '<S2>/Saturation' incorporates:
-     *  Inport: '<Root>/PWM4'
-     */
-    if (DynModel_U->PWM4 > 1.0) {
-      rtb_DiscreteTransferFcn_n = 1.0;
-    } else if (DynModel_U->PWM4 < 0.0) {
-      rtb_DiscreteTransferFcn_n = 0.0;
-    } else {
-      rtb_DiscreteTransferFcn_n = DynModel_U->PWM4;
-    }
-
-    /* Gain: '<S55>/Gain1' incorporates:
-     *  Gain: '<S8>/PWM2V'
-     *  Gain: '<S8>/RPM2RADS'
-     *  Gain: '<S8>/V2RPM'
-     *  Saturate: '<S2>/Saturation'
-     */
-    rtb_Saturation = 12.0 * rtb_DiscreteTransferFcn_n * 950.0 *
-      0.10471975511965977 * Kdiscre;
-
-    /* DiscreteTransferFcn: '<S55>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_e = (rtb_Saturation -
-      (-0.98412698412698407) * DynModel_DW->DiscreteTransferFcn_states_a) / 1.0;
-    rtb_DiscreteTransferFcn_i = 1.0 * DynModel_DW->DiscreteTransferFcn_tmp_e +
-      1.0 * DynModel_DW->DiscreteTransferFcn_states_a;
+  /* RateTransition: '<S55>/Rate Transition' incorporates:
+   *  MATLAB Function: '<S6>/multicopter'
+   *  SignalConversion: '<S51>/TmpSignal ConversionAt SFunction Inport2'
+   */
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    DynModel_B->RateTransition_i = DynModel_B->Integrator_i;
 
     /* MATLAB Function: '<S6>/multicopter' incorporates:
-     *  Constant: '<S6>/Constant'
      *  Constant: '<S6>/Constant1'
-     *  Constant: '<S6>/Constant2'
-     *  SignalConversion: '<S51>/TmpSignal ConversionAt SFunction Inport2'
      */
     /* MATLAB Function 'DynModel/Dynamics/Dynamics/multicopter': '<S51>:1' */
     /* ===============================Parameters================================= */
@@ -1535,14 +1468,19 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* --------------------------------Thrust Model------------------------------ */
     /* '<S51>:1:26' */
     rtb_Saturation = Kt * rtb_Memory2;
-    rtb_thrust_idx_0 = rtb_DiscreteTransferFcn * rtb_DiscreteTransferFcn *
-      rtb_Saturation;
-    rtb_thrust_idx_1 = rtb_DiscreteTransferFcn_b * rtb_DiscreteTransferFcn_b *
-      rtb_Saturation;
-    rtb_thrust_idx_2 = rtb_DiscreteTransferFcn_j * rtb_DiscreteTransferFcn_j *
-      rtb_Saturation;
-    rtb_thrust_idx_3 = rtb_DiscreteTransferFcn_i * rtb_DiscreteTransferFcn_i *
-      rtb_Saturation;
+    rtb_thrust_idx_0 = rtb_ZeroOrderHold1 * rtb_ZeroOrderHold1 * rtb_Saturation;
+    rtb_thrust_idx_1 = DynModel_B->RateTransition_o *
+      DynModel_B->RateTransition_o * rtb_Saturation;
+    rtb_thrust_idx_2 = DynModel_B->RateTransition_f *
+      DynModel_B->RateTransition_f * rtb_Saturation;
+
+    /* MATLAB Function: '<S6>/multicopter' incorporates:
+     *  Constant: '<S6>/Constant'
+     *  Constant: '<S6>/Constant2'
+     *  SignalConversion: '<S51>/TmpSignal ConversionAt SFunction Inport2'
+     */
+    rtb_thrust_idx_3 = DynModel_B->RateTransition_i *
+      DynModel_B->RateTransition_i * rtb_Saturation;
 
     /*  rotor thrust */
     /* '<S51>:1:27' */
@@ -1574,15 +1512,17 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       0.2 * 1.4142135623730951 / 2.0) + -rtb_thrust_idx_3 * 0.2 *
       1.4142135623730951 / 2.0;
     DynModel_B->moments[2] = ((-3.564683251291932E-8 * rtb_Memory2 *
-      (rtb_DiscreteTransferFcn * rtb_DiscreteTransferFcn) + 3.564683251291932E-8
-      * rtb_Memory2 * (rtb_DiscreteTransferFcn_b * rtb_DiscreteTransferFcn_b)) +
-      -3.564683251291932E-8 * rtb_Memory2 * (rtb_DiscreteTransferFcn_j *
-      rtb_DiscreteTransferFcn_j)) + 3.564683251291932E-8 * rtb_Memory2 *
-      (rtb_DiscreteTransferFcn_i * rtb_DiscreteTransferFcn_i);
+      (rtb_ZeroOrderHold1 * rtb_ZeroOrderHold1) + 3.564683251291932E-8 *
+      rtb_Memory2 * (DynModel_B->RateTransition_o * DynModel_B->RateTransition_o))
+      + -3.564683251291932E-8 * rtb_Memory2 * (DynModel_B->RateTransition_f *
+      DynModel_B->RateTransition_f)) + 3.564683251291932E-8 * rtb_Memory2 *
+      (DynModel_B->RateTransition_i * DynModel_B->RateTransition_i);
 
     /*  - [momentum_x; momentum_y; momentum_z]; */
     /* ========================================================================== */
   }
+
+  /* End of RateTransition: '<S55>/Rate Transition' */
 
   /* Sum: '<S2>/Add7' incorporates:
    *  Abs: '<S48>/Abs'
@@ -1628,9 +1568,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   DynModel_B->Product[2] = rtb_Add7_idx_2 / 1.2;
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* ZeroOrderHold: '<S118>/Zero-Order Hold1' */
-    rtb_Sum_h_idx_0 = DynModel_B->Product[0];
-    rtb_Sum_h_idx_1 = DynModel_B->Product[1];
-    rtb_Sum_h_idx_2 = DynModel_B->Product[2];
+    rtb_Sum_hw_idx_0 = DynModel_B->Product[0];
+    rtb_Sum_hw_idx_1 = DynModel_B->Product[1];
+    rtb_Sum_hw_idx_2 = DynModel_B->Product[2];
   }
 
   /* Product: '<S3>/Matrix Multiply1' incorporates:
@@ -1870,11 +1810,11 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->Reshape);
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* Sum: '<S118>/Sum' */
-    rtb_Sum_h_idx_0 = (rtb_Sum_h_idx_0 - rtb_ZeroOrderHold2_idx_0) +
+    rtb_Sum_hw_idx_0 = (rtb_Sum_hw_idx_0 - rtb_ZeroOrderHold2_idx_0) +
       rtb_Saturation_d_idx_0;
-    rtb_Sum_h_idx_1 = (rtb_Sum_h_idx_1 - rtb_ZeroOrderHold2_idx_1) +
+    rtb_Sum_hw_idx_1 = (rtb_Sum_hw_idx_1 - rtb_ZeroOrderHold2_idx_1) +
       rtb_Saturation_d_idx_1;
-    rtb_DiscreteTransferFcn_n = (rtb_Sum_h_idx_2 - rtb_ZeroOrderHold2_idx_2) +
+    rtb_DiscreteTransferFcn_n = (rtb_Sum_hw_idx_2 - rtb_ZeroOrderHold2_idx_2) +
       rtb_Saturation_d_idx_2;
 
     /* Sum: '<S118>/Sum4' incorporates:
@@ -1883,8 +1823,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Product: '<S118>/Product'
      */
     for (i = 0; i < 3; i++) {
-      rtb_Add2[i] = ((DynModel_ConstP.pooled23[i + 3] * rtb_Sum_h_idx_1 +
-                      DynModel_ConstP.pooled23[i] * rtb_Sum_h_idx_0) +
+      rtb_Add2[i] = ((DynModel_ConstP.pooled23[i + 3] * rtb_Sum_hw_idx_1 +
+                      DynModel_ConstP.pooled23[i] * rtb_Sum_hw_idx_0) +
                      DynModel_ConstP.pooled23[i + 6] * rtb_DiscreteTransferFcn_n)
         + DynModel_ConstP.pooled11[i];
     }
@@ -1892,20 +1832,28 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* End of Sum: '<S118>/Sum4' */
 
     /* DiscreteTransferFcn: '<S126>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_k = ((rtb_Add2[0] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_h[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_h[1L]) / 1.0;
+    rtb_Saturation = rtb_Add2[0];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp = rtb_Saturation / 1.0;
 
     /* DiscreteTransferFcn: '<S127>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_o = ((rtb_Add2[1] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_b[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_b[1L]) / 1.0;
+    rtb_Saturation = rtb_Add2[1];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states_b[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states_b[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp_o = rtb_Saturation / 1.0;
 
     /* DiscreteTransferFcn: '<S128>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_j = ((rtb_Add2[2] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_cb[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_cb[1L]) /
-      1.0;
+    rtb_Saturation = rtb_Add2[2];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states_c[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states_c[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp_j = rtb_Saturation / 1.0;
 
     /* Switch: '<S120>/Switch' incorporates:
      *  Constant: '<S120>/Constant'
@@ -1913,9 +1861,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      */
     if (0.0 >= 0.5) {
       rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_k + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_h[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_h[1L];
+        DynModel_DW->DiscreteTransferFcn_tmp + 0.055335847205616372 *
+        DynModel_DW->DiscreteTransferFcn_states[0L]) + 0.027667923602808186 *
+        DynModel_DW->DiscreteTransferFcn_states[1L];
     } else {
       rtb_DiscreteTransferFcn_n = rtb_Add2[0];
     }
@@ -1976,8 +1924,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     if (0.0 >= 0.5) {
       rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
         DynModel_DW->DiscreteTransferFcn_tmp_j + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_cb[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_cb[1L];
+        DynModel_DW->DiscreteTransferFcn_states_c[0L]) + 0.027667923602808186 *
+        DynModel_DW->DiscreteTransferFcn_states_c[1L];
     } else {
       rtb_DiscreteTransferFcn_n = rtb_Add2[2];
     }
@@ -2037,21 +1985,28 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       0.0;
 
     /* DiscreteTransferFcn: '<S141>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_g = ((rtb_Add2[0] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_d[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_d[1L]) / 1.0;
+    rtb_Saturation = rtb_Add2[0];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states_d[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states_d[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp_g = rtb_Saturation / 1.0;
 
     /* DiscreteTransferFcn: '<S142>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_n = ((rtb_Add2[1] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_dr[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_dr[1L]) /
-      1.0;
+    rtb_Saturation = rtb_Add2[1];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states_dr[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states_dr[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp_n = rtb_Saturation / 1.0;
 
     /* DiscreteTransferFcn: '<S143>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_tmp_gx = ((rtb_Add2[2] -
-      (-1.4775131058585489) * DynModel_DW->DiscreteTransferFcn_states_as[0L]) -
-      0.58818480026978159 * DynModel_DW->DiscreteTransferFcn_states_as[1L]) /
-      1.0;
+    rtb_Saturation = rtb_Add2[2];
+    rtb_Saturation -= (-1.4775131058585489) *
+      DynModel_DW->DiscreteTransferFcn_states_a[0L];
+    rtb_Saturation -= 0.58818480026978159 *
+      DynModel_DW->DiscreteTransferFcn_states_a[1L];
+    DynModel_DW->DiscreteTransferFcn_tmp_gx = rtb_Saturation / 1.0;
 
     /* Switch: '<S137>/Switch' incorporates:
      *  Constant: '<S137>/Constant'
@@ -2122,8 +2077,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     if (0.0 >= 0.5) {
       rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
         DynModel_DW->DiscreteTransferFcn_tmp_gx + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_as[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_as[1L];
+        DynModel_DW->DiscreteTransferFcn_states_a[0L]) + 0.027667923602808186 *
+        DynModel_DW->DiscreteTransferFcn_states_a[1L];
     } else {
       rtb_DiscreteTransferFcn_n = rtb_Add2[2];
     }
@@ -2446,6 +2401,46 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   DynModel_B->Sum[2] = (rtb_ubvbwb_idx_0 * DynModel_B->pqr[1] - rtb_ubvbwb_idx_1
                         * DynModel_B->pqr[0]) + DynModel_B->Product[2];
   if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* Saturate: '<S2>/Saturation' incorporates:
+     *  Inport: '<Root>/PWM1'
+     *  Inport: '<Root>/PWM2'
+     *  Inport: '<Root>/PWM3'
+     *  Inport: '<Root>/PWM4'
+     */
+    if (DynModel_U->PWM1 > 1.0) {
+      rtb_RPM2RADS_idx_0 = 1.0;
+    } else if (DynModel_U->PWM1 < 0.0) {
+      rtb_RPM2RADS_idx_0 = 0.0;
+    } else {
+      rtb_RPM2RADS_idx_0 = DynModel_U->PWM1;
+    }
+
+    if (DynModel_U->PWM2 > 1.0) {
+      rtb_RPM2RADS_idx_1 = 1.0;
+    } else if (DynModel_U->PWM2 < 0.0) {
+      rtb_RPM2RADS_idx_1 = 0.0;
+    } else {
+      rtb_RPM2RADS_idx_1 = DynModel_U->PWM2;
+    }
+
+    if (DynModel_U->PWM3 > 1.0) {
+      rtb_RPM2RADS_idx_2 = 1.0;
+    } else if (DynModel_U->PWM3 < 0.0) {
+      rtb_RPM2RADS_idx_2 = 0.0;
+    } else {
+      rtb_RPM2RADS_idx_2 = DynModel_U->PWM3;
+    }
+
+    if (DynModel_U->PWM4 > 1.0) {
+      rtb_RPM2RADS_idx_3 = 1.0;
+    } else if (DynModel_U->PWM4 < 0.0) {
+      rtb_RPM2RADS_idx_3 = 0.0;
+    } else {
+      rtb_RPM2RADS_idx_3 = DynModel_U->PWM4;
+    }
+
+    /* End of Saturate: '<S2>/Saturation' */
+
     /* DataTypeConversion: '<S1>/Data Type Conversion14' */
     rtb_DataTypeConversion14_idx_0 = (real32_T)rtb_Saturation_d_idx_0;
     rtb_DataTypeConversion14_idx_1 = (real32_T)rtb_Saturation_d_idx_1;
@@ -2463,10 +2458,10 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     rtb_DataTypeConversion20_idx_3 = (real32_T)rtb_thrust_idx_3;
 
     /* DataTypeConversion: '<S1>/Data Type Conversion21' */
-    rtb_DataTypeConversion21_idx_0 = (real32_T)rtb_DiscreteTransferFcn;
-    rtb_DataTypeConversion21_idx_1 = (real32_T)rtb_DiscreteTransferFcn_b;
-    rtb_DataTypeConversion21_idx_2 = (real32_T)rtb_DiscreteTransferFcn_j;
-    rtb_DataTypeConversion21_idx_3 = (real32_T)rtb_DiscreteTransferFcn_i;
+    rtb_DataTypeConversion21_idx_0 = (real32_T)rtb_ZeroOrderHold1;
+    rtb_DataTypeConversion21_idx_1 = (real32_T)DynModel_B->RateTransition_o;
+    rtb_DataTypeConversion21_idx_2 = (real32_T)DynModel_B->RateTransition_f;
+    rtb_DataTypeConversion21_idx_3 = (real32_T)DynModel_B->RateTransition_i;
 
     /* DataTypeConversion: '<S1>/Data Type Conversion12' */
     rtb_DataTypeConversion12_idx_0 = (real32_T)rtb_Saturation_gt_idx_0;
@@ -2486,7 +2481,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* Outport: '<Root>/diff_Pres' incorporates:
      *  DataTypeConversion: '<S1>/Data Type Conversion3'
      */
-    DynModel_Y->diff_Pres = (real32_T)rtb_ZeroOrderHold1;
+    DynModel_Y->diff_Pres = (real32_T)rtb_ZeroOrderHold1_p;
 
     /* Outport: '<Root>/Baro_Alt' incorporates:
      *  DataTypeConversion: '<S1>/Data Type Conversion4'
@@ -2615,6 +2610,59 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   DynModel_Y->Freact[0] = (real32_T)rtb_Add3_j[0];
   DynModel_Y->Freact[1] = (real32_T)rtb_Add3_j[1];
   DynModel_Y->Freact[2] = (real32_T)rtb_Add3_j[2];
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* ZeroOrderHold: '<S52>/Zero-Order Hold' incorporates:
+     *  Gain: '<S8>/PWM2V'
+     *  Gain: '<S8>/RPM2RADS'
+     *  Gain: '<S8>/V2RPM'
+     */
+    DynModel_B->ZeroOrderHold = 12.0 * rtb_RPM2RADS_idx_0 * 950.0 *
+      0.10471975511965977;
+
+    /* Gain: '<S8>/RPM2RADS' incorporates:
+     *  Gain: '<S8>/PWM2V'
+     *  Gain: '<S8>/V2RPM'
+     */
+    rtb_RPM2RADS_idx_1 = 12.0 * rtb_RPM2RADS_idx_1 * 950.0 * 0.10471975511965977;
+    rtb_RPM2RADS_idx_2 = 12.0 * rtb_RPM2RADS_idx_2 * 950.0 * 0.10471975511965977;
+    rtb_RPM2RADS_idx_3 = 12.0 * rtb_RPM2RADS_idx_3 * 950.0 * 0.10471975511965977;
+  }
+
+  /* Gain: '<S52>/Gain2' incorporates:
+   *  Sum: '<S52>/Sum'
+   */
+  DynModel_B->Gain2 = (DynModel_B->ZeroOrderHold - DynModel_B->Integrator) *
+    motpole;
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* ZeroOrderHold: '<S53>/Zero-Order Hold' */
+    DynModel_B->ZeroOrderHold_l = rtb_RPM2RADS_idx_1;
+  }
+
+  /* Gain: '<S53>/Gain2' incorporates:
+   *  Sum: '<S53>/Sum'
+   */
+  DynModel_B->Gain2_m = (DynModel_B->ZeroOrderHold_l - DynModel_B->Integrator_m)
+    * motpole;
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* ZeroOrderHold: '<S54>/Zero-Order Hold' */
+    DynModel_B->ZeroOrderHold_p = rtb_RPM2RADS_idx_2;
+  }
+
+  /* Gain: '<S54>/Gain2' incorporates:
+   *  Sum: '<S54>/Sum'
+   */
+  DynModel_B->Gain2_c = (DynModel_B->ZeroOrderHold_p - DynModel_B->Integrator_e)
+    * motpole;
+  if (rtmIsMajorTimeStep(DynModel_M)) {
+    /* ZeroOrderHold: '<S55>/Zero-Order Hold' */
+    DynModel_B->ZeroOrderHold_b = rtb_RPM2RADS_idx_3;
+  }
+
+  /* Gain: '<S55>/Gain2' incorporates:
+   *  Sum: '<S55>/Sum'
+   */
+  DynModel_B->Gain2_j = (DynModel_B->ZeroOrderHold_b - DynModel_B->Integrator_i)
+    * motpole;
 
   /* Sqrt: '<S64>/a' incorporates:
    *  Gain: '<S64>/gamma*R'
@@ -2709,22 +2757,6 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       /* Update for Memory: '<S2>/Memory2' */
       DynModel_DW->Memory2_PreviousInput = DynModel_B->Product3;
 
-      /* Update for DiscreteTransferFcn: '<S52>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states =
-        DynModel_DW->DiscreteTransferFcn_tmp;
-
-      /* Update for DiscreteTransferFcn: '<S53>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_m =
-        DynModel_DW->DiscreteTransferFcn_tmp_i;
-
-      /* Update for DiscreteTransferFcn: '<S54>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_c =
-        DynModel_DW->DiscreteTransferFcn_tmp_b;
-
-      /* Update for DiscreteTransferFcn: '<S55>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_a =
-        DynModel_DW->DiscreteTransferFcn_tmp_e;
-
       /* Update for Memory: '<S2>/Memory5' */
       DynModel_DW->Memory5_PreviousInput[0] = DynModel_B->pqr[0];
       DynModel_DW->Memory5_PreviousInput[1] = DynModel_B->pqr[1];
@@ -2736,10 +2768,10 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       DynModel_DW->Memory3_PreviousInput[2] = DynModel_B->VectorConcatenate[0];
 
       /* Update for DiscreteTransferFcn: '<S126>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_h[1L] =
-        DynModel_DW->DiscreteTransferFcn_states_h[0L];
-      DynModel_DW->DiscreteTransferFcn_states_h[0L] =
-        DynModel_DW->DiscreteTransferFcn_tmp_k;
+      DynModel_DW->DiscreteTransferFcn_states[1L] =
+        DynModel_DW->DiscreteTransferFcn_states[0L];
+      DynModel_DW->DiscreteTransferFcn_states[0L] =
+        DynModel_DW->DiscreteTransferFcn_tmp;
 
       /* Update for DiscreteTransferFcn: '<S127>/Discrete Transfer Fcn' */
       DynModel_DW->DiscreteTransferFcn_states_b[1L] =
@@ -2748,9 +2780,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
         DynModel_DW->DiscreteTransferFcn_tmp_o;
 
       /* Update for DiscreteTransferFcn: '<S128>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_cb[1L] =
-        DynModel_DW->DiscreteTransferFcn_states_cb[0L];
-      DynModel_DW->DiscreteTransferFcn_states_cb[0L] =
+      DynModel_DW->DiscreteTransferFcn_states_c[1L] =
+        DynModel_DW->DiscreteTransferFcn_states_c[0L];
+      DynModel_DW->DiscreteTransferFcn_states_c[0L] =
         DynModel_DW->DiscreteTransferFcn_tmp_j;
 
       /* Update for RandomNumber: '<S121>/White Noise' */
@@ -2774,9 +2806,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
         DynModel_DW->DiscreteTransferFcn_tmp_n;
 
       /* Update for DiscreteTransferFcn: '<S143>/Discrete Transfer Fcn' */
-      DynModel_DW->DiscreteTransferFcn_states_as[1L] =
-        DynModel_DW->DiscreteTransferFcn_states_as[0L];
-      DynModel_DW->DiscreteTransferFcn_states_as[0L] =
+      DynModel_DW->DiscreteTransferFcn_states_a[1L] =
+        DynModel_DW->DiscreteTransferFcn_states_a[0L];
+      DynModel_DW->DiscreteTransferFcn_states_a[0L] =
         DynModel_DW->DiscreteTransferFcn_tmp_gx;
 
       /* Update for RandomNumber: '<S138>/White Noise' */
@@ -2853,6 +2885,18 @@ void DynModel_derivatives(RT_MODEL_DynModel_T *const DynModel_M)
     ((XDot_DynModel_T *) DynModel_M->ModelData.derivs)->q0q1q2q3_CSTATE[3] =
       DynModel_B->q3dot;
   }
+
+  /* Derivatives for Integrator: '<S52>/Integrator' */
+  _rtXdot->Integrator_CSTATE = DynModel_B->Gain2;
+
+  /* Derivatives for Integrator: '<S53>/Integrator' */
+  _rtXdot->Integrator_CSTATE_k = DynModel_B->Gain2_m;
+
+  /* Derivatives for Integrator: '<S54>/Integrator' */
+  _rtXdot->Integrator_CSTATE_m = DynModel_B->Gain2_c;
+
+  /* Derivatives for Integrator: '<S55>/Integrator' */
+  _rtXdot->Integrator_CSTATE_e = DynModel_B->Gain2_j;
 
   /* Derivatives for Integrator: '<S4>/p,q,r ' */
   _rtXdot->pqr_CSTATE[0] = DynModel_B->Reshape[0];
@@ -3174,17 +3218,17 @@ void DynModel_initialize(RT_MODEL_DynModel_T *const DynModel_M)
     /* InitializeConditions for Memory: '<S2>/Memory2' */
     DynModel_DW->Memory2_PreviousInput = 0.0;
 
-    /* InitializeConditions for DiscreteTransferFcn: '<S52>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states = 0.0;
+    /* InitializeConditions for Integrator: '<S52>/Integrator' */
+    DynModel_X->Integrator_CSTATE = 0.0;
 
-    /* InitializeConditions for DiscreteTransferFcn: '<S53>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_m = 0.0;
+    /* InitializeConditions for Integrator: '<S53>/Integrator' */
+    DynModel_X->Integrator_CSTATE_k = 0.0;
 
-    /* InitializeConditions for DiscreteTransferFcn: '<S54>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_c = 0.0;
+    /* InitializeConditions for Integrator: '<S54>/Integrator' */
+    DynModel_X->Integrator_CSTATE_m = 0.0;
 
-    /* InitializeConditions for DiscreteTransferFcn: '<S55>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_a = 0.0;
+    /* InitializeConditions for Integrator: '<S55>/Integrator' */
+    DynModel_X->Integrator_CSTATE_e = 0.0;
 
     /* InitializeConditions for Integrator: '<S4>/p,q,r ' */
     DynModel_X->pqr_CSTATE[0] = 0.0;
@@ -3202,16 +3246,16 @@ void DynModel_initialize(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_DW->Memory3_PreviousInput[2] = 0.0;
 
     /* InitializeConditions for DiscreteTransferFcn: '<S126>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_h[0] = 0.0;
-    DynModel_DW->DiscreteTransferFcn_states_h[1] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states[0] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states[1] = 0.0;
 
     /* InitializeConditions for DiscreteTransferFcn: '<S127>/Discrete Transfer Fcn' */
     DynModel_DW->DiscreteTransferFcn_states_b[0] = 0.0;
     DynModel_DW->DiscreteTransferFcn_states_b[1] = 0.0;
 
     /* InitializeConditions for DiscreteTransferFcn: '<S128>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_cb[0] = 0.0;
-    DynModel_DW->DiscreteTransferFcn_states_cb[1] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states_c[0] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states_c[1] = 0.0;
 
     /* InitializeConditions for RandomNumber: '<S121>/White Noise' */
     y1 = fmod(floor(348631.0), 4.294967296E+9);
@@ -3274,8 +3318,8 @@ void DynModel_initialize(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_DW->DiscreteTransferFcn_states_dr[1] = 0.0;
 
     /* InitializeConditions for DiscreteTransferFcn: '<S143>/Discrete Transfer Fcn' */
-    DynModel_DW->DiscreteTransferFcn_states_as[0] = 0.0;
-    DynModel_DW->DiscreteTransferFcn_states_as[1] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states_a[0] = 0.0;
+    DynModel_DW->DiscreteTransferFcn_states_a[1] = 0.0;
 
     /* InitializeConditions for RandomNumber: '<S138>/White Noise' */
     y1 = fmod(floor(189621.0), 4.294967296E+9);

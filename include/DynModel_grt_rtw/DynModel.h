@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.747
+ * Model version              : 1.756
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Wed Feb 22 09:26:06 2017
+ * C source code generated on : Wed Feb 22 10:10:11 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -222,6 +222,13 @@ typedef struct {
   real_T Saturation[3];                /* '<S5>/Saturation' */
   real_T Submatrix[3];                 /* '<S50>/Submatrix' */
   real_T Gain1[3];                     /* '<S48>/Gain1' */
+  real_T Integrator;                   /* '<S52>/Integrator' */
+  real_T Integrator_m;                 /* '<S53>/Integrator' */
+  real_T RateTransition_o;             /* '<S53>/Rate Transition' */
+  real_T Integrator_e;                 /* '<S54>/Integrator' */
+  real_T RateTransition_f;             /* '<S54>/Rate Transition' */
+  real_T Integrator_i;                 /* '<S55>/Integrator' */
+  real_T RateTransition_i;             /* '<S55>/Rate Transition' */
   real_T Product[3];                   /* '<S4>/Product' */
   real_T MatrixMultiply1[3];           /* '<S3>/Matrix Multiply1' */
   real_T pqr[3];                       /* '<S4>/p,q,r ' */
@@ -236,6 +243,14 @@ typedef struct {
   real_T q3dot;                        /* '<S20>/q3dot' */
   real_T Sum[3];                       /* '<S4>/Sum' */
   real_T Merge[4];                     /* '<S62>/Merge' */
+  real_T ZeroOrderHold;                /* '<S52>/Zero-Order Hold' */
+  real_T Gain2;                        /* '<S52>/Gain2' */
+  real_T ZeroOrderHold_l;              /* '<S53>/Zero-Order Hold' */
+  real_T Gain2_m;                      /* '<S53>/Gain2' */
+  real_T ZeroOrderHold_p;              /* '<S54>/Zero-Order Hold' */
+  real_T Gain2_c;                      /* '<S54>/Gain2' */
+  real_T ZeroOrderHold_b;              /* '<S55>/Zero-Order Hold' */
+  real_T Gain2_j;                      /* '<S55>/Gain2' */
   real_T force[3];                     /* '<S6>/multicopter' */
   real_T moments[3];                   /* '<S6>/multicopter' */
 } B_DynModel_T;
@@ -246,16 +261,12 @@ typedef struct {
   real_T UD_DSTATE_i;                  /* '<S44>/UD' */
   real_T DiscreteFilter_states;        /* '<S5>/Discrete Filter' */
   real_T DiscreteFIRFilter_states[6];  /* '<S5>/Discrete FIR Filter' */
-  real_T DiscreteTransferFcn_states;   /* '<S52>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_m; /* '<S53>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_c; /* '<S54>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_a; /* '<S55>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_h[2];/* '<S126>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states[2];/* '<S126>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_b[2];/* '<S127>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_cb[2];/* '<S128>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_c[2];/* '<S128>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_d[2];/* '<S141>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_dr[2];/* '<S142>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_states_as[2];/* '<S143>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_states_a[2];/* '<S143>/Discrete Transfer Fcn' */
   real_T NextOutput;                   /* '<S72>/Random Number' */
   real_T NextOutput_a;                 /* '<S69>/Random Number' */
   real_T NextOutput_l;                 /* '<S67>/Random Number' */
@@ -268,14 +279,10 @@ typedef struct {
   real_T Memory6_PreviousInput[3];     /* '<S2>/Memory6' */
   real_T DiscreteFilter_tmp;           /* '<S5>/Discrete Filter' */
   real_T Memory2_PreviousInput;        /* '<S2>/Memory2' */
-  real_T DiscreteTransferFcn_tmp;      /* '<S52>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_tmp_i;    /* '<S53>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_tmp_b;    /* '<S54>/Discrete Transfer Fcn' */
-  real_T DiscreteTransferFcn_tmp_e;    /* '<S55>/Discrete Transfer Fcn' */
   real_T Memory5_PreviousInput[3];     /* '<S2>/Memory5' */
   real_T Memory3_PreviousInput[3];     /* '<S2>/Memory3' */
   real_T Product2_DWORK4[9];           /* '<S11>/Product2' */
-  real_T DiscreteTransferFcn_tmp_k;    /* '<S126>/Discrete Transfer Fcn' */
+  real_T DiscreteTransferFcn_tmp;      /* '<S126>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_tmp_o;    /* '<S127>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_tmp_j;    /* '<S128>/Discrete Transfer Fcn' */
   real_T NextOutput_k[3];              /* '<S121>/White Noise' */
@@ -307,6 +314,10 @@ typedef struct {
   real_T xeyeze_CSTATE[3];             /* '<S4>/xe,ye,ze' */
   real_T ubvbwb_CSTATE[3];             /* '<S4>/ub,vb,wb' */
   real_T q0q1q2q3_CSTATE[4];           /* '<S10>/q0 q1 q2 q3' */
+  real_T Integrator_CSTATE;            /* '<S52>/Integrator' */
+  real_T Integrator_CSTATE_k;          /* '<S53>/Integrator' */
+  real_T Integrator_CSTATE_m;          /* '<S54>/Integrator' */
+  real_T Integrator_CSTATE_e;          /* '<S55>/Integrator' */
   real_T pqr_CSTATE[3];                /* '<S4>/p,q,r ' */
 } X_DynModel_T;
 
@@ -315,6 +326,10 @@ typedef struct {
   real_T xeyeze_CSTATE[3];             /* '<S4>/xe,ye,ze' */
   real_T ubvbwb_CSTATE[3];             /* '<S4>/ub,vb,wb' */
   real_T q0q1q2q3_CSTATE[4];           /* '<S10>/q0 q1 q2 q3' */
+  real_T Integrator_CSTATE;            /* '<S52>/Integrator' */
+  real_T Integrator_CSTATE_k;          /* '<S53>/Integrator' */
+  real_T Integrator_CSTATE_m;          /* '<S54>/Integrator' */
+  real_T Integrator_CSTATE_e;          /* '<S55>/Integrator' */
   real_T pqr_CSTATE[3];                /* '<S4>/p,q,r ' */
 } XDot_DynModel_T;
 
@@ -323,6 +338,10 @@ typedef struct {
   boolean_T xeyeze_CSTATE[3];          /* '<S4>/xe,ye,ze' */
   boolean_T ubvbwb_CSTATE[3];          /* '<S4>/ub,vb,wb' */
   boolean_T q0q1q2q3_CSTATE[4];        /* '<S10>/q0 q1 q2 q3' */
+  boolean_T Integrator_CSTATE;         /* '<S52>/Integrator' */
+  boolean_T Integrator_CSTATE_k;       /* '<S53>/Integrator' */
+  boolean_T Integrator_CSTATE_m;       /* '<S54>/Integrator' */
+  boolean_T Integrator_CSTATE_e;       /* '<S55>/Integrator' */
   boolean_T pqr_CSTATE[3];             /* '<S4>/p,q,r ' */
 } XDis_DynModel_T;
 
@@ -532,8 +551,8 @@ struct tag_RTM_DynModel_T {
     boolean_T zCCacheNeedsReset;
     boolean_T derivCacheNeedsReset;
     boolean_T blkStateChange;
-    real_T odeY[13];
-    real_T odeF[4][13];
+    real_T odeY[17];
+    real_T odeF[4][17];
     ODE4_IntgData intgData;
     DW_DynModel_T *dwork;
   } ModelData;
@@ -588,13 +607,6 @@ extern real_T Crotdrag;                /* Variable: Crotdrag
 extern real_T Kattreact;               /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
-extern real_T Kdiscre;                 /* Variable: Kdiscre
-                                        * Referenced by:
-                                        *   '<S52>/Gain1'
-                                        *   '<S53>/Gain1'
-                                        *   '<S54>/Gain1'
-                                        *   '<S55>/Gain1'
-                                        */
 extern real_T Kdpenetration;           /* Variable: Kdpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain1'
@@ -616,6 +628,13 @@ extern real_T LCdrag;                  /* Variable: LCdrag
                                         */
 extern real_T QCdrag;                  /* Variable: QCdrag
                                         * Referenced by: '<S6>/h_ref3'
+                                        */
+extern real_T motpole;                 /* Variable: motpole
+                                        * Referenced by:
+                                        *   '<S52>/Gain2'
+                                        *   '<S53>/Gain2'
+                                        *   '<S54>/Gain2'
+                                        *   '<S55>/Gain2'
                                         */
 
 /* External data declarations for dependent source files */
@@ -696,10 +715,10 @@ extern void DynModel_terminate(RT_MODEL_DynModel_T * DynModel_M);
  * '<S49>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/Dynamics/Quadrotor System'
  * '<S50>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/Dynamics/Vehicle Weight'
  * '<S51>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/Dynamics/multicopter'
- * '<S52>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics'
- * '<S53>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics1'
- * '<S54>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics2'
- * '<S55>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics3'
+ * '<S52>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics1'
+ * '<S53>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics2'
+ * '<S54>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics3'
+ * '<S55>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/MotorDynamics/MotDynamics4'
  * '<S56>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/transfer_function/Linear Second-Order Actuator'
  * '<S57>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/transfer_function/Linear Second-Order Actuator1'
  * '<S58>'  : 'simulator_gen_monorate_feedback/DynModel/Dynamics/transfer_function/Linear Second-Order Actuator2'
