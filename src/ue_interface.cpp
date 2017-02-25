@@ -96,22 +96,22 @@ int UE_Interface::setBaseWritePort(unsigned int port)
 // sendData
 // Send Data to the UE through the UDP port 
 //
-int UE_Interface::sendData(int Id)
+int UE_Interface::sendData(int Id, struct UE_SendData data)
 {
     int bytes_sent = -1;
 
-    struct UE_SendData tempData;
+//     struct UE_SendData tempData;
     Udp_Port* port;
 
     // Comping the data in a temp structure
-    pthread_mutex_lock(&mut_sendData);
-    tempData = UEDataOut;
-    pthread_mutex_unlock(&mut_sendData);
+//     pthread_mutex_lock(&mut_sendData);
+//     tempData = UEDataOut;
+//     pthread_mutex_unlock(&mut_sendData);
     
     port = getPortInstance(Id);
     // Sending the data
     if (port != NULL)
-        bytes_sent = port->writeBytes((char* )&tempData, sizeof(struct UE_SendData));
+        bytes_sent = port->writeBytes((char* )&data, sizeof(struct UE_SendData));
 
     return bytes_sent;
 }
@@ -157,14 +157,14 @@ Udp_Port* UE_Interface::getPortInstance(int id)
 // setData
 // Set the data to send 
 //
-int UE_Interface::setData(struct UE_SendData Data)
-{
-    pthread_mutex_lock(&mut_sendData);
-    UEDataOut = Data;
-    pthread_mutex_unlock(&mut_sendData);
-
-    return 1;
-}
+// int UE_Interface::setData(struct UE_SendData Data)
+// {
+//     pthread_mutex_lock(&mut_sendData);
+//     UEDataOut = Data;
+//     pthread_mutex_unlock(&mut_sendData);
+// 
+//     return 1;
+// }
 
 
 //
@@ -194,7 +194,7 @@ int UE_Interface::receiveData(int SysId)
         return 1;
     }
     else
-        return -1;
+        return 0;
 }
 
 // 
@@ -209,7 +209,7 @@ int UE_Interface::getData(struct UE_RecData* data)
     return 1;
 }
 
-int UE_Interface::getCollision(float impV[3], float pen)
+int UE_Interface::getCollision(float impV[3], float* pen)
 {
     pthread_mutex_lock(&mut_recData);
     impV[0] = UEDataIn.Nx;

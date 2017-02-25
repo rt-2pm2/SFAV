@@ -977,9 +977,9 @@ void ue_thread()
             dataOut.p = A[1];
             dataOut.y = A[2];
             
-            p->ue->setData(dataOut);
+//             p->ue->setData(dataOut);
             // Send all the pending data to Unreal Engine
-            p->ue->sendData(SysId);
+            p->ue->sendData(SysId, dataOut);
 
             //printf("Z = %3.2f\n", dataOut.Z);
 
@@ -989,7 +989,8 @@ void ue_thread()
                 //p->ue->getData(&dataIn);
                 p->ue->getCollision(impnorm, pen);
 
-                printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f \n", impnorm[0], impnorm[1], impnorm[2]);
+                printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f || Pen = %1.3f\n", 
+                       impnorm[0], impnorm[1], impnorm[2], pen);
             }
             else
             {

@@ -73,12 +73,12 @@ public:
     int setBaseWritePort(unsigned int port);
 
     // Communication
-    int sendData(int Id);
-    int setData(struct UE_SendData);
+    int sendData(int Id, struct UE_SendData);
+//     int setData(struct UE_SendData);
 
     int receiveData(int SysId);
     int getData(struct UE_RecData* data);
-    int getCollision(float impV[3], float pen);
+    int getCollision(float impV[3], float* pen);
     
     Udp_Port* getPortInstance(int id);
 

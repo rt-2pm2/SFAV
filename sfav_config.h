@@ -58,7 +58,7 @@
 #define UETHR_PRIO (60)
 #endif
 #ifndef UETHR_T
-#define UETHR_T (20)
+#define UETHR_T (5)
 #endif
 
 
