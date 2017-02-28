@@ -57,7 +57,7 @@ Autopilot_Interface* MA_Manager::add_agent(char*& uart_name, int baudrate, bool 
 {
     // Create a new Autopilot Interface class and add it to the
     // vector of the connected agents
-    Autopilot_Interface* pAi;
+    Autopilot_Interface* pAi = NULL;
     pAi = new Autopilot_Interface(uart_name, baudrate, synch);
 
     pthread_mutex_lock(&ma_mutex);

@@ -8,9 +8,6 @@
 
 #include "ue_interface.h"
 
-struct UE_SendData UEDataOut;
-struct UE_RecData UEDataIn;
-
 
 // ------------------------------------------------------------------
 // Unreal Engine Interface
@@ -29,7 +26,7 @@ UE_Interface::UE_Interface()
     NVehicles = 0;
 
 	// Inizialize UDP
-	setReadPort(9000);
+	setBaseReadPort(9000);
 	setBaseWritePort(8000);
 
 	// Initialize Mutexes
@@ -39,6 +36,8 @@ UE_Interface::UE_Interface()
 
 	for (i = 0; i < 512; i++)
 		rbuff[i] = 0;
+    
+    ComPort = NULL;
 }
 
 UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
@@ -51,7 +50,7 @@ UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
     for (i = 0; i < strlen(ip); i++)
         net_ip[i] = ip[i];
     
-	setReadPort(r_port);
+	setBaseReadPort(r_port);
 	setBaseWritePort(w_port);
 
 	// Initilize Mutexes
@@ -61,6 +60,8 @@ UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
 
 	for (i = 0; i < 512; i++)
 		rbuff[i] = 0;
+    
+    ComPort = NULL;
 }
 
 UE_Interface::~UE_Interface()
@@ -73,9 +74,9 @@ UE_Interface::~UE_Interface()
 // ----------------------------------------------------------------
 
 //
-// setReadPort
+// setBaseReadPort
 //
-int UE_Interface::setReadPort(unsigned int port)
+int UE_Interface::setBaseReadPort(unsigned int port)
 {
     r_port = port;
     
@@ -96,22 +97,14 @@ int UE_Interface::setBaseWritePort(unsigned int port)
 // sendData
 // Send Data to the UE through the UDP port 
 //
-int UE_Interface::sendData(int Id, struct UE_SendData data)
+int UE_Interface::sendData(struct UE_SendData data)
 {
     int bytes_sent = -1;
 
-//     struct UE_SendData tempData;
-    Udp_Port* port;
 
-    // Comping the data in a temp structure
-//     pthread_mutex_lock(&mut_sendData);
-//     tempData = UEDataOut;
-//     pthread_mutex_unlock(&mut_sendData);
-    
-    port = getPortInstance(Id);
     // Sending the data
-    if (port != NULL)
-        bytes_sent = port->writeBytes((char* )&data, sizeof(struct UE_SendData));
+    if (ComPort != NULL)
+        bytes_sent = ComPort->writeBytes((char* )&data, sizeof(struct UE_SendData));
 
     return bytes_sent;
 }
@@ -125,65 +118,41 @@ int UE_Interface::add_port(int index)
 #ifdef DEBUG
     printf("UE_Interface::add_port | Creating Port for UAV %d\n", index);
 #endif
-    Udp_Port* pP;
-    pP = new Udp_Port(net_ip, r_port + index, w_port + index);
-    //pP->InitializeOutputPort(net_ip, w_port + index);
-    pPorts.push_back(pP);
-    NVehicles++;
-    return 1;
-}
 
+    ComPort = new Udp_Port(net_ip, r_port + index, w_port + index);
 
-//
-// getPortInstance
-//
-Udp_Port* UE_Interface::getPortInstance(int id)
-{
-    int i;
-    int port;
-    for (i = 0; i < NVehicles; i++)
+    if (ComPort != NULL)
     {
-        port = pPorts.at(i)->getWport();
-        if (port == (w_port + id))
-            return pPorts.at(i);
-    }   
-    printf("Port Instance not found! | Requiring Id = %d\n", id);
-    return NULL;
+        fdsR[0].fd = ComPort->sock;
+        fdsR[0].events = POLLIN;
+
+        fdsW[0].fd = ComPort->sock;
+        fdsW[0].fd = POLLOUT;
+        return 1;
+    }
+    else
+        return 0;
 }
-
-
-
-// 
-// setData
-// Set the data to send 
-//
-// int UE_Interface::setData(struct UE_SendData Data)
-// {
-//     pthread_mutex_lock(&mut_sendData);
-//     UEDataOut = Data;
-//     pthread_mutex_unlock(&mut_sendData);
-// 
-//     return 1;
-// }
-
 
 //
 // receiveData
 // Wait for data on the UDP and receive one message from the Unreal Engine 
 //
-int UE_Interface::receiveData(int SysId)
+int UE_Interface::receiveData()
 {
-    int i;
+    int ret;
     int8_t read_bytes = 0;
-    Udp_Port* port;
-    
-    port = getPortInstance(SysId);
-    
-    if (port != NULL)
+    int timeout = -1;
+ 
+    if (ComPort != NULL)
     {
-    // Receive data num bytes over UDP and put them at the sensors address
-    read_bytes = port->readBytes(rbuff, sizeof(struct UE_RecData));
-    //printf("Got Data, %d Bytes\n", read_bytes);
+        ret = poll(fdsR, 1, timeout);
+        if (ret > 0)
+        {
+        // Receive data num bytes over UDP and put them at the sensors address
+        read_bytes = ComPort->readBytes(rbuff, sizeof(struct UE_RecData));
+        //printf("Got Data, %d Bytes\n", read_bytes);
+        }
     }
     
     if (read_bytes == sizeof(UE_RecData))
@@ -214,9 +183,9 @@ int UE_Interface::getCollision(float impV[3], float* pen)
     pthread_mutex_lock(&mut_recData);
     impV[0] = UEDataIn.Nx;
     impV[1] = UEDataIn.Ny;
-    impV[2] = UEDataIn.Nz;
+    impV[2] = -UEDataIn.Nz;
     
-    pen = 1e-2 * UEDataIn.PenDepth;
+    *pen = 1e-2 * UEDataIn.PenDepth;
     pthread_mutex_unlock(&mut_recData);
     return 1;
 }

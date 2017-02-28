@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.756
+ * Model version              : 1.766
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Wed Feb 22 10:10:11 2017
+ * C source code generated on : Sat Feb 25 20:53:48 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -215,8 +215,9 @@ typedef struct {
   real_T RateTransition4_o;            /* '<S66>/Rate Transition4' */
   real_T Output;                       /* '<S61>/Output' */
   real_T Gain13[3];                    /* '<S5>/Gain13' */
-  real_T Gain11[3];                    /* '<S5>/Gain11' */
+  real_T Gain11;                       /* '<S5>/Gain11' */
   real_T Switch2[3];                   /* '<S5>/Switch2' */
+  real_T Memory4[3];                   /* '<S2>/Memory4' */
   real_T DiscreteFilter;               /* '<S5>/Discrete Filter' */
   real_T Product2_n[3];                /* '<S5>/Product2' */
   real_T Saturation[3];                /* '<S5>/Saturation' */
@@ -257,10 +258,10 @@ typedef struct {
 
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
-  real_T UD_DSTATE[3];                 /* '<S45>/UD' */
+  real_T UD_DSTATE;                    /* '<S45>/UD' */
   real_T UD_DSTATE_i;                  /* '<S44>/UD' */
   real_T DiscreteFilter_states;        /* '<S5>/Discrete Filter' */
-  real_T DiscreteFIRFilter_states[6];  /* '<S5>/Discrete FIR Filter' */
+  real_T DiscreteFIRFilter_states[12]; /* '<S5>/Discrete FIR Filter' */
   real_T DiscreteTransferFcn_states[2];/* '<S126>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_b[2];/* '<S127>/Discrete Transfer Fcn' */
   real_T DiscreteTransferFcn_states_c[2];/* '<S128>/Discrete Transfer Fcn' */
@@ -275,8 +276,9 @@ typedef struct {
   real_T NextOutput_h[3];              /* '<S63>/Random Number1' */
   real_T NextOutput_am;                /* '<S66>/Random Number' */
   real_T NextOutput_lh;                /* '<S61>/White Noise' */
-  real_T Memory1_PreviousInput[3];     /* '<S2>/Memory1' */
+  real_T Memory1_PreviousInput;        /* '<S2>/Memory1' */
   real_T Memory6_PreviousInput[3];     /* '<S2>/Memory6' */
+  real_T Memory4_PreviousInput[3];     /* '<S2>/Memory4' */
   real_T DiscreteFilter_tmp;           /* '<S5>/Discrete Filter' */
   real_T Memory2_PreviousInput;        /* '<S2>/Memory2' */
   real_T Memory5_PreviousInput[3];     /* '<S2>/Memory5' */
@@ -455,8 +457,8 @@ typedef struct {
 typedef struct {
   /* Pooled Parameter (Mixed Expressions)
    * Referenced by:
-   *   '<S2>/Memory1'
    *   '<S2>/Memory3'
+   *   '<S2>/Memory4'
    *   '<S2>/Memory5'
    *   '<S2>/Memory6'
    *   '<S3>/center of gravity'
@@ -483,10 +485,10 @@ typedef struct {
    */
   real_T pooled23[9];
 
-  /* Expression: [1 1 1]
+  /* Expression: [ones(1,5)]
    * Referenced by: '<S5>/Discrete FIR Filter'
    */
-  real_T DiscreteFIRFilter_Coefficients[3];
+  real_T DiscreteFIRFilter_Coefficients[5];
 } ConstP_DynModel_T;
 
 /* External inputs (root inport signals with auto storage) */

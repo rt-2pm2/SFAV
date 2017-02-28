@@ -63,6 +63,7 @@ int start_sim_thread(struct SimThreadArg* arg)
     { 
         printf("Error creating the simulator thread\n");
     }
+    arg->ThreadId = simT_id;
     
     return simT_id;
 }
@@ -87,37 +88,28 @@ int start_gs_thread(struct GsThreadArg* GSarg, class MA_Manager* ma_manager, cla
     
     printf("Creating the groundstation_thread....\n");
     gsT_id = ptask_create_param(gs_thread, &GSarg->params);
+    
     if(gsT_id == -1)
     {
         printf("Error creating the Ground Station thread\n");
     }
     
+    GSarg->ThreadId = gsT_id;
+    
     return gsT_id;
 }
 
-int start_ue_thread(struct UeThreadArg* UEarg, Sim_Manager* sm, UE_Interface* ue)
+int start_ue_thread(struct UeThreadArg* UEarg)
 {
     int ueT_id = 0;
-    // Change the priority of the task related to the Unreal Engine
-    UEarg->params = TASK_SPEC_DFL;
-    UEarg->params.period = ue_period;
-    UEarg->params.rdline = ue_period;
-    UEarg->params.priority = UnrealEngine_Thread_Priority;
-    UEarg->params.act_flag = NOW;
-    UEarg->params.measure_flag = 0;
-    UEarg->params.processor = 0;
     
-    // Prepare the arg structure
-    UEarg->sm = sm;
-    UEarg->ue = ue;
-    UEarg->params.arg = UEarg;
-    
-    ueT_id = ptask_create_param(ue_thread, &UEarg->params);
+    ueT_id = ptask_create_param(ue_thread, &(UEarg->params));
     
     if(ueT_id == -1)
     {
         printf("Error creating the Unreal Engine thread\n");
     }
+    UEarg->ThreadId = ueT_id;
     
     return ueT_id;
 }
@@ -126,14 +118,14 @@ int start_ue_thread(struct UeThreadArg* UEarg, Sim_Manager* sm, UE_Interface* ue
 // add_agent_to_system
 // Add agent to system : Instantiate a new Autopilot interface class and start the 
 // Inflow thread to receive data from the board.
-int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, 
-                        GS_Interface* gs, UE_Interface* ue, 
+int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
                         char* ip, uint32_t r_port, uint32_t w_port,
                         bool synch)
 {
     int Agent_Id = -1;    
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
+    UE_Interface*  pUe;
     
     struct InflowArg* IArg;
     
@@ -164,7 +156,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     // Start the InflowThread
     Agent_Id = start_inflow_thread(IArg);
     
-    // Put the Pointer to the Structure in the Vector and set the thread parameter to point to that
+    // Save the address of the allocated memory
     VectInflowArg.push_back(IArg);
 
     //
@@ -182,7 +174,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     SArg->params = TASK_SPEC_DFL;
     SArg->params.period = sim_period;
     SArg->params.rdline = sim_period;
-    SArg->params.priority = Simulation_Thread_Priority;// - (r_port - 4000);
+    SArg->params.priority = Simulation_Thread_Priority; // - (r_port - 4000);
     SArg->params.act_flag = NOW;
     SArg->params.measure_flag = 0;
     SArg->params.processor = 0;
@@ -192,14 +184,39 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     SArg->aut = pA;
     SArg->sim = pS;
     
-    // Save the pointer to memory
+    // Save the address of the allocated memory
     VectSimThreadArg.push_back(SArg);
 
     start_sim_thread(SArg);
     
     //
-    // 3) Add a communication port to the Synthetic Environment
-    ue->add_port(Agent_Id);
+    // 3a) Add a communication port to the Synthetic Environment
+    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port);
+    pUe->add_port(Agent_Id);
+    
+    //
+    // 3b) Set up the arguments to be passed to the UnrealThread
+    // Structure to pass arguments to the thread
+    struct UeThreadArg* UEArg;
+    UEArg = new struct UeThreadArg;
+    
+    // Defining the Structure containing the thread Properties 
+    UEArg->ThreadId = -1;
+    UEArg->params = TASK_SPEC_DFL;
+    UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
+    UEArg->params.act_flag = NOW;
+    UEArg->params.measure_flag = 0;
+    UEArg->params.processor = 0;
+    UEArg->params.arg = (void *) UEArg;
+    
+    // Load the pointers to the Interface Classes
+    UEArg->ue = pUe;
+    UEArg->sim = pS;
+    
+    // Save the address of the allocated memory
+    VectUEThreadArg.push_back(UEArg);
+    
+    start_ue_thread(UEArg);
     
     return Agent_Id;
 }
@@ -210,13 +227,13 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
 // add_agent_to_system
 // Add agent to system : Instantiate a new Autopilot interface class and start the 
 // Inflow thread to receive data from the board.
-int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, 
-                        GS_Interface* gs, UE_Interface* ue, 
+int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
                         char*& uart_name, int baudrate, bool synch)
 {
     int Agent_Id = -1;    
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
+    UE_Interface*  pUe;
     
     struct InflowArg* IArg;
     
@@ -252,7 +269,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456 + 0.001 * Agent_Id * (2-Agent_Id));
+    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456 + 0.001 * Agent_Id * (2 - Agent_Id));
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -281,8 +298,33 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm,
     start_sim_thread(SArg);
     
     //
-    // 3) Add a communication port to the Synthetic Environment
-    ue->add_port(Agent_Id);
+    // 3a) Add a communication port to the Synthetic Environment
+    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port);
+    pUe->add_port(Agent_Id);
+    
+    //
+    // 3b) Set up the arguments to be passed to the UnrealThread
+    // Structure to pass arguments to the thread
+    struct UeThreadArg* UEArg;
+    UEArg = new struct UeThreadArg;
+    
+    // Defining the Structure containing the thread Properties 
+    UEArg->ThreadId = -1;
+    UEArg->params = TASK_SPEC_DFL;
+    UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
+    UEArg->params.act_flag = NOW;
+    UEArg->params.measure_flag = 0;
+    UEArg->params.processor = 0;
+    UEArg->params.arg = (void *) UEArg;
+    
+    // Load the pointers to the Interface Classes
+    UEArg->ue = pUe;
+    UEArg->sim = pS;
+    
+    // Save the address of the allocated memory
+    VectUEThreadArg.push_back(UEArg);
+    
+    start_ue_thread(UEArg);
     
     return Agent_Id;
 }
@@ -510,8 +552,7 @@ int main(int argc, char *argv[])
     //    THREADS  
     //======================================================================
 
-    gsT_id = start_gs_thread(&GSarg, &ma_manager, &gs_interface);
-    ueT_id = start_ue_thread(&UEarg, &sim_manager, &ue_interface);
+    start_gs_thread(&GSarg, &ma_manager, &gs_interface);
     
     /*
     for(;;)
@@ -537,6 +578,13 @@ int main(int argc, char *argv[])
     {
         pthread_join(ptask_get_threadid(VectSimThreadArg.at(i)->ThreadId), 0);
     }
+    
+    // Wait for the Synthetic Environment threads to finish
+    N_size = VectSimThreadArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        pthread_join(ptask_get_threadid(VectUEThreadArg.at(i)->ThreadId), 0);
+    }
 
     N_size = VectInflowArg.size();
     for (i = 0; i < N_size; i++)
@@ -552,7 +600,13 @@ int main(int argc, char *argv[])
         delete VectSimThreadArg.at(i);
     }
     
-    
+    N_size = VectUEThreadArg.size();
+    for (i = 0; i < N_size; i++)
+    {
+        delete VectUEThreadArg.at(i)->ue;
+        delete VectUEThreadArg.at(i);
+    }
+
     fclose(outfile);
     return 0;
 }
@@ -578,10 +632,10 @@ void lauch_thread()
     switch (p->commType)
     {
         case UDP:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->ue, p->ip, p->r_port, p->w_port, p->synch);
+            add_agent_to_system(p->ma, p->sm, p->gs, p->ip, p->r_port, p->w_port, p->synch);
             break;
         case SERIAL:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->ue, p->uart_name, p->baudrate, p->synch);
+            add_agent_to_system(p->ma, p->sm, p->gs, p->uart_name, p->baudrate, p->synch);
             break;
             
         default:
@@ -920,27 +974,21 @@ void gs_thread()
  * This thread sends data to the Unreal Engine for visualization purposes 
  *
  *
- *    Drone (Pose) >----> UE 
- *    Collisions   >----> Drone                        
+ *    Simulator (Pose) >----> UE 
+ *    Collisions   >----> Simulator                        
  *
  */
 void ue_thread()
 {
-    int i, Ns;
+    int tid = ptask_get_index();
+    
     int SysId;
-    int port;
+    struct UE_SendData dataOut;
+    Simulator_Interface* SimInt = NULL;
+    struct UeThreadArg* p = (struct UeThreadArg*)ptask_get_argument();
+     
     printf("***  Starting UE Communicator Thread  ***\n");
 
-    struct UE_SendData dataOut;
-    struct UE_RecData dataIn;
-    
-    Simulator_Interface* SimInt = NULL;
-
-    int tid = ptask_get_index();
-    struct UeThreadArg* p = (struct UeThreadArg*)ptask_get_argument();
-
-    dataOut.Id = 1;
-    
     float X[3]; /// Position
     float A[3]; /// Attitude
     
@@ -959,51 +1007,46 @@ void ue_thread()
             first = false;
             printf("UE Thread STARTED! \n");
         }
-
-        Ns = p->sm->getNumberOfSimulator();
-
-        for (i = 0; i < Ns; i++)
-        {
-            SysId = p->sm->getSimulatorId(i);
-            SimInt = p->sm->getSimulatorInstance(SysId);
-
-            dataOut.Id = SysId;
-            SimInt->getSimPosAtt(X, A);
-            dataOut.X = X[0] + SysId * 2; // XXX Piggy trick to displace the objects
-            dataOut.Y = X[1] + SysId * 2;
-            dataOut.Z = X[2];
-
-            dataOut.r = A[0];
-            dataOut.p = A[1];
-            dataOut.y = A[2];
+        
+        SimInt = p->sim;
+        SysId = SimInt->getSystemId();
             
-//             p->ue->setData(dataOut);
-            // Send all the pending data to Unreal Engine
-            p->ue->sendData(SysId, dataOut);
 
-            //printf("Z = %3.2f\n", dataOut.Z);
+        dataOut.Id = SysId;
+        SimInt->getSimPosAtt(X, A);
+        dataOut.X = X[0] + SysId * 2; // XXX Piggy trick to displace the objects
+        dataOut.Y = X[1] + SysId * 2;
+        dataOut.Z = X[2];
 
-            if(p->ue->receiveData(SysId))
-            {
-                // Read data from the Synthetic Environment
-                //p->ue->getData(&dataIn);
-                p->ue->getCollision(impnorm, pen);
+        dataOut.r = A[0];
+        dataOut.p = A[1];
+        dataOut.y = A[2];
+            
+        // Send all the pending data to Unreal Engine
+        p->ue->sendData(dataOut);
 
-                printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f || Pen = %1.3f\n", 
-                       impnorm[0], impnorm[1], impnorm[2], pen);
-            }
-            else
-            {
-                impnorm[0] = 0.0;
-                impnorm[1] = 0.0;
-                impnorm[2] = 0.0;
-                pen = 0.0;
-            }
-            SimInt->updateCollision(impnorm, pen);
+        //printf("Z = %3.2f\n", dataOut.Z);
+
+        if(p->ue->receiveData())
+        {
+            // Read data from the Synthetic Environment
+            p->ue->getCollision(impnorm, &pen);
+
+            //printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f || Pen = %1.3f\n",
+            //       impnorm[0], impnorm[1], impnorm[2], pen);
         }
-        ptask_wait_for_period();
+        else
+        {
+            impnorm[0] = 0.0;
+            impnorm[1] = 0.0;
+            impnorm[2] = 0.0;
+            pen = 0.0;
+        }
+        SimInt->updateCollision(impnorm, pen);
+
+    //ptask_wait_for_period();
     }
-    //delete p;
+//delete p;
 }
 
 

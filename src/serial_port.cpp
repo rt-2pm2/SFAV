@@ -114,7 +114,8 @@ void Serial_Port::open_serial()
     if (fd == -1)
     {
         printf("failure, could not open port.\n");
-        throw EXIT_FAILURE;
+        return;
+        //throw EXIT_FAILURE;
     }
 
     // --------------------------------------------------------------------------
@@ -128,12 +129,12 @@ void Serial_Port::open_serial()
     if (!success)
     {
         printf("failure, could not configure port.\n");
-        throw EXIT_FAILURE;
+        //throw EXIT_FAILURE;
     }
     if (fd <= 0)
     {
         printf("Connection attempt to port %s with %d baud, 8N1 failed, exiting.\n", uart_name, baudrate);
-        throw EXIT_FAILURE;
+        //throw EXIT_FAILURE;
     }
 
     // --------------------------------------------------------------------------

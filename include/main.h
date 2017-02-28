@@ -154,6 +154,7 @@ vector<struct SimThreadArg* > VectSimThreadArg;
  */
 struct GsThreadArg
 {
+    int ThreadId; /// Thread id
     tpars params; /// Ptask Thread parameters
     MA_Manager* ma; /// Pointer to the MultiAgent Interface Class
     GS_Interface* gs; /// Pointer to the GroundStation Interface Class
@@ -164,10 +165,13 @@ struct GsThreadArg
  */
 struct UeThreadArg
 {
+    int ThreadId; /// Thread id
     tpars params; /// Ptask Thread parameters
     UE_Interface* ue; /// Pointer to the UnrealEngine Interface Class
-    Sim_Manager* sm; /// Pointer to the Simulators Manager Interface Class
+    Simulator_Interface* sim; /// Pointer to the Simulator Interface Class
 };
+/// Vector with the structure for the simualation threads
+vector<struct UeThreadArg* > VectUEThreadArg;
 
 /**
  * Flags

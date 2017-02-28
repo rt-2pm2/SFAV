@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.756
+ * Model version              : 1.766
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Wed Feb 22 10:10:11 2017
+ * C source code generated on : Sat Feb 25 20:53:48 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -26,12 +26,12 @@ real_T Crotdrag = 0.3;                 /* Variable: Crotdrag
 real_T Kattreact = 2.0;                /* Variable: Kattreact
                                         * Referenced by: '<S5>/Gain5'
                                         */
-real_T Kdpenetration = 50.0;           /* Variable: Kdpenetration
+real_T Kdpenetration = 20.0;           /* Variable: Kdpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain1'
                                         *   '<S5>/Gain7'
                                         */
-real_T Kpenetration = 2000.0;          /* Variable: Kpenetration
+real_T Kpenetration = 10.0;          /* Variable: Kpenetration
                                         * Referenced by:
                                         *   '<S5>/Gain12'
                                         *   '<S5>/Gain3'
@@ -277,9 +277,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   /* local block i/o variables */
   real_T rtb_a;
   real_T rtb_q0q1q2q3[4];
-  real_T rtb_TSamp[3];
-  real_T rtb_Uk1[3];
-  real_T rtb_Diff[3];
+  real_T rtb_TSamp;
+  real_T rtb_Uk1;
+  real_T rtb_Diff;
   real_T rtb_TSamp_l;
   real_T rtb_Uk1_g;
   real_T rtb_Diff_o;
@@ -294,7 +294,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real_T rtb_Add2[3];
   real_T rtb_Switch_d;
   real_T rtb_Sum_e;
-  real_T rtb_DiscreteTransferFcn_n;
+  real_T rtb_Add7[3];
   real_T rtb_Add3_j[3];
   int32_T loop;
   real_T rtb_Memory2;
@@ -304,6 +304,10 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real_T rtb_Add6_0[3];
   int16_T i;
   real_T tmp[3];
+  real_T rtb_Add3_m;
+  real_T rtb_Sum_hw_idx_0;
+  real_T rtb_Sum_hw_idx_1;
+  real_T rtb_Sum_hw_idx_2;
   real_T rtb_RPM2RADS_idx_0;
   real_T rtb_RPM2RADS_idx_1;
   real_T rtb_RPM2RADS_idx_2;
@@ -313,15 +317,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   real32_T rtb_DataTypeConversion21_idx_2;
   real32_T rtb_DataTypeConversion21_idx_3;
   real_T rtb_Sum_c_idx_0;
-  real_T rtb_Sum_hw_idx_0;
-  real_T rtb_Sum_hw_idx_1;
-  real_T rtb_Sum_hw_idx_2;
   real_T rtb_Add1_h_idx_0;
   real_T rtb_Add1_h_idx_1;
   real_T rtb_thrust_idx_0;
-  real_T rtb_Add7_idx_0;
-  real_T rtb_Add7_idx_1;
-  real_T rtb_Add7_idx_2;
   real_T rtb_Saturation_d_idx_0;
   real_T rtb_Saturation_l_idx_2;
   real_T rtb_Saturation_l_idx_1;
@@ -385,11 +383,11 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
 
   /* Saturate: '<S64>/Limit  altitude  to troposhere' */
   if (DynModel_B->Sum1 > 11000.0) {
-    rtb_DiscreteTransferFcn_n = 11000.0;
+    rtb_Saturation = 11000.0;
   } else if (DynModel_B->Sum1 < 0.0) {
-    rtb_DiscreteTransferFcn_n = 0.0;
+    rtb_Saturation = 0.0;
   } else {
-    rtb_DiscreteTransferFcn_n = DynModel_B->Sum1;
+    rtb_Saturation = DynModel_B->Sum1;
   }
 
   /* Sum: '<S64>/Sum1' incorporates:
@@ -397,7 +395,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    *  Gain: '<S64>/Lapse Rate'
    *  Saturate: '<S64>/Limit  altitude  to troposhere'
    */
-  DynModel_B->Sum1_e = 288.15 - 0.0065 * rtb_DiscreteTransferFcn_n;
+  DynModel_B->Sum1_e = 288.15 - 0.0065 * rtb_Saturation;
 
   /* RateTransition: '<S72>/Rate Transition' */
   if (rtmIsMajorTimeStep(DynModel_M)) {
@@ -451,14 +449,14 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   /* Sum: '<S64>/Sum' incorporates:
    *  Constant: '<S64>/Altitude of Troposphere'
    */
-  rtb_DiscreteTransferFcn_n = 11000.0 - DynModel_B->Sum1;
+  rtb_Saturation = 11000.0 - DynModel_B->Sum1;
 
   /* Saturate: '<S64>/Limit  altitude  to Stratosphere' */
-  if (rtb_DiscreteTransferFcn_n > 0.0) {
-    rtb_DiscreteTransferFcn_n = 0.0;
+  if (rtb_Saturation > 0.0) {
+    rtb_Saturation = 0.0;
   } else {
-    if (rtb_DiscreteTransferFcn_n < (-9000.0)) {
-      rtb_DiscreteTransferFcn_n = (-9000.0);
+    if (rtb_Saturation < (-9000.0)) {
+      rtb_Saturation = (-9000.0);
     }
   }
 
@@ -471,7 +469,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    *  Operator: exp
    */
   rtb_Sum_e = exp(1.0 / DynModel_B->Sum1_e * (0.034163191409533639 *
-    rtb_DiscreteTransferFcn_n));
+    rtb_Saturation));
 
   /* Product: '<S64>/Product2' incorporates:
    *  Gain: '<S64>/P0'
@@ -665,9 +663,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       }
 
       rtb_Sum_c_idx_0 *= (rtb_Saturation + (-90.0)) * (-1.0) + 90.0;
-      rtb_DiscreteTransferFcn_n = 180.0;
+      rtb_jxi = 180.0;
     } else {
-      rtb_DiscreteTransferFcn_n = 0.0;
+      rtb_jxi = 0.0;
     }
 
     /* End of Switch: '<S103>/Switch' */
@@ -683,7 +681,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     rtb_Sum_j = ((rtb_Sum_hw_idx_0 * DynModel_ConstB.SinCos_o1 +
                   rtb_Sum_hw_idx_1 * DynModel_ConstB.SinCos_o2) *
                  DynModel_ConstB.TrigonometricFunction2 * 57.295779513082323 +
-                 DynModel_ConstB.Switch_d) + rtb_DiscreteTransferFcn_n;
+                 DynModel_ConstB.Switch_d) + rtb_jxi;
 
     /* Switch: '<S104>/Switch' incorporates:
      *  Abs: '<S104>/Abs'
@@ -962,9 +960,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     }
 
     rtb_Switch_d *= (rtb_Saturation + (-90.0)) * (-1.0) + 90.0;
-    rtb_DiscreteTransferFcn_n = 180.0;
+    rtb_jxi = 180.0;
   } else {
-    rtb_DiscreteTransferFcn_n = 0.0;
+    rtb_jxi = 0.0;
   }
 
   /* End of Switch: '<S151>/Switch' */
@@ -980,7 +978,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   rtb_Sum_e = ((DynModel_B->xeyeze[0] * DynModel_ConstB.SinCos_o1_f +
                 DynModel_B->xeyeze[1] * DynModel_ConstB.SinCos_o2_i) *
                DynModel_ConstB.TrigonometricFunction2_i * 57.295779513082323 +
-               DynModel_ConstB.Switch_b) + rtb_DiscreteTransferFcn_n;
+               DynModel_ConstB.Switch_b) + rtb_jxi;
 
   /* Switch: '<S152>/Switch' incorporates:
    *  Abs: '<S152>/Abs'
@@ -1036,7 +1034,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* Product: '<S66>/Product' incorporates:
      *  Trigonometry: '<S66>/Cos2'
      */
-    rtb_DiscreteTransferFcn_n = rtb_Sum_j * cos(rtb_Saturation);
+    rtb_jxi = rtb_Sum_j * cos(rtb_Saturation);
 
     /* Product: '<S66>/Product1' incorporates:
      *  Trigonometry: '<S66>/Sin2'
@@ -1056,9 +1054,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     /* End of RateTransition: '<S66>/Rate Transition4' */
 
     /* Product: '<S66>/Product2' */
-    rtb_ixk = rtb_DiscreteTransferFcn_n * DynModel_B->RateTransition4_o;
-    rtb_jxi = rtb_Sum_j * DynModel_B->RateTransition4_o;
-    rtb_DiscreteTransferFcn_n = rtb_Sum_c_idx_0 * DynModel_B->RateTransition4_o;
+    rtb_Sum_hw_idx_0 = rtb_jxi * DynModel_B->RateTransition4_o;
+    rtb_Sum_hw_idx_1 = rtb_Sum_j * DynModel_B->RateTransition4_o;
+    rtb_Sum_hw_idx_2 = rtb_Sum_c_idx_0 * DynModel_B->RateTransition4_o;
 
     /* Sum: '<S66>/Sum2' incorporates:
      *  Constant: '<S66>/Measurement bias1'
@@ -1068,11 +1066,10 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Sum: '<S66>/Sum3'
      */
     for (i = 0; i < 3; i++) {
-      tmp[i] = (((DynModel_B->RateTransition1_o[i + 3] * rtb_jxi +
-                  DynModel_B->RateTransition1_o[i] * rtb_ixk) +
-                 DynModel_B->RateTransition1_o[i + 6] *
-                 rtb_DiscreteTransferFcn_n) + DynModel_ConstP.pooled11[i]) +
-        DynModel_DW->NextOutput_am;
+      tmp[i] = (((DynModel_B->RateTransition1_o[i + 3] * rtb_Sum_hw_idx_1 +
+                  DynModel_B->RateTransition1_o[i] * rtb_Sum_hw_idx_0) +
+                 DynModel_B->RateTransition1_o[i + 6] * rtb_Sum_hw_idx_2) +
+                DynModel_ConstP.pooled11[i]) + DynModel_DW->NextOutput_am;
     }
 
     /* End of Sum: '<S66>/Sum2' */
@@ -1110,80 +1107,102 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->Output = 0.00027386127875258305 * DynModel_DW->NextOutput_lh;
 
     /* Memory: '<S2>/Memory1' */
-    rtb_Sum_hw_idx_0 = DynModel_DW->Memory1_PreviousInput[0];
-    rtb_Sum_hw_idx_1 = DynModel_DW->Memory1_PreviousInput[1];
-    rtb_Sum_hw_idx_2 = DynModel_DW->Memory1_PreviousInput[2];
+    rtb_jxi = DynModel_DW->Memory1_PreviousInput;
 
     /* SampleTimeMath: '<S45>/TSamp'
      *
      * About '<S45>/TSamp':
      *  y = u * K where K = 1 / ( w * Ts )
      */
-    rtb_TSamp[0] = rtb_Sum_hw_idx_0 * 500.0;
-    rtb_TSamp[1] = rtb_Sum_hw_idx_1 * 500.0;
-    rtb_TSamp[2] = rtb_Sum_hw_idx_2 * 500.0;
+    rtb_TSamp = rtb_jxi * 500.0;
 
     /* UnitDelay: '<S45>/UD' */
-    rtb_Uk1[0] = DynModel_DW->UD_DSTATE[0];
-    rtb_Uk1[1] = DynModel_DW->UD_DSTATE[1];
-    rtb_Uk1[2] = DynModel_DW->UD_DSTATE[2];
+    rtb_Uk1 = DynModel_DW->UD_DSTATE;
 
     /* Sum: '<S45>/Diff' */
-    rtb_Diff[0] = rtb_TSamp[0] - rtb_Uk1[0];
-    rtb_Diff[1] = rtb_TSamp[1] - rtb_Uk1[1];
-    rtb_Diff[2] = rtb_TSamp[2] - rtb_Uk1[2];
+    rtb_Diff = rtb_TSamp - rtb_Uk1;
 
-    /* Gain: '<S5>/Gain13' incorporates:
+    /* Sum: '<S5>/Add8' incorporates:
      *  Constant: '<S5>/Constant2'
      *  Gain: '<S5>/Gain12'
      *  Gain: '<S5>/Gain7'
-     *  Sum: '<S5>/Add8'
      */
-    DynModel_B->Gain13[0] = ((Kpenetration * rtb_Sum_hw_idx_0 + (-11.772)) +
-      Kdpenetration * rtb_Diff[0]) * 0.0;
-    DynModel_B->Gain13[1] = ((Kpenetration * rtb_Sum_hw_idx_1 + (-11.772)) +
-      Kdpenetration * rtb_Diff[1]) * 0.0;
-    DynModel_B->Gain13[2] = ((Kpenetration * rtb_Sum_hw_idx_2 + (-11.772)) +
-      Kdpenetration * rtb_Diff[2]) * 1.0;
+    rtb_Saturation = (Kpenetration * rtb_jxi + (-11.772)) + Kdpenetration *
+      rtb_Diff;
+
+    /* Gain: '<S5>/Gain13' */
+    DynModel_B->Gain13[0] = 0.0 * rtb_Saturation;
+    DynModel_B->Gain13[1] = 0.0 * rtb_Saturation;
+    DynModel_B->Gain13[2] = 1.0 * rtb_Saturation;
 
     /* Gain: '<S5>/Gain11' */
-    DynModel_B->Gain11[0] = (-1.0) * rtb_Sum_hw_idx_0;
-    DynModel_B->Gain11[1] = (-1.0) * rtb_Sum_hw_idx_1;
-    DynModel_B->Gain11[2] = (-1.0) * rtb_Sum_hw_idx_2;
+    DynModel_B->Gain11 = (-1.0) * rtb_jxi;
   }
 
   /* End of RateTransition: '<S66>/Rate Transition1' */
-  if (rtmIsMajorTimeStep(DynModel_M)) {
-    /* Memory: '<S2>/Memory6' */
-    rtb_Sum_hw_idx_0 = DynModel_DW->Memory6_PreviousInput[0];
-    rtb_Sum_hw_idx_1 = DynModel_DW->Memory6_PreviousInput[1];
-    rtb_Sum_hw_idx_2 = DynModel_DW->Memory6_PreviousInput[2];
 
+  /* Switch: '<S5>/Switch3' incorporates:
+   *  Constant: '<S5>/Constant4'
+   *  Product: '<S5>/Matrix Multiply'
+   */
+  if (DynModel_B->Gain11 >= 0.0) {
+    for (i = 0; i < 3; i++) {
+      rtb_Add3_j[i] = DynModel_B->Reshape9to3x3columnmajor[i + 6] *
+        DynModel_B->Gain13[2] + (DynModel_B->Reshape9to3x3columnmajor[i + 3] *
+        DynModel_B->Gain13[1] + DynModel_B->Reshape9to3x3columnmajor[i] *
+        DynModel_B->Gain13[0]);
+    }
+  } else {
+    rtb_Add3_j[0] = 0.0;
+    rtb_Add3_j[1] = 0.0;
+    rtb_Add3_j[2] = 0.0;
+  }
+
+  /* End of Switch: '<S5>/Switch3' */
+  if (rtmIsMajorTimeStep(DynModel_M)) {
     /* Switch: '<S5>/Switch2' incorporates:
      *  Constant: '<S5>/Constant3'
      *  Gain: '<S5>/Gain8'
      *  Gain: '<S5>/Gain9'
+     *  Memory: '<S2>/Memory6'
      */
-    if (DynModel_B->Gain11[0] >= 0.0) {
-      DynModel_B->Switch2[0] = (-1.0) * rtb_Sum_hw_idx_0 * Kvreact;
+    if (DynModel_B->Gain11 >= 0.0) {
+      DynModel_B->Switch2[0] = (-1.0) * DynModel_DW->Memory6_PreviousInput[0] *
+        Kvreact;
+      DynModel_B->Switch2[1] = (-1.0) * DynModel_DW->Memory6_PreviousInput[1] *
+        Kvreact;
+      DynModel_B->Switch2[2] = (-1.0) * DynModel_DW->Memory6_PreviousInput[2] *
+        Kvreact;
     } else {
       DynModel_B->Switch2[0] = 0.0;
-    }
-
-    if (DynModel_B->Gain11[1] >= 0.0) {
-      DynModel_B->Switch2[1] = (-1.0) * rtb_Sum_hw_idx_1 * Kvreact;
-    } else {
       DynModel_B->Switch2[1] = 0.0;
-    }
-
-    if (DynModel_B->Gain11[2] >= 0.0) {
-      DynModel_B->Switch2[2] = (-1.0) * rtb_Sum_hw_idx_2 * Kvreact;
-    } else {
       DynModel_B->Switch2[2] = 0.0;
     }
 
     /* End of Switch: '<S5>/Switch2' */
 
+    /* Memory: '<S2>/Memory4' */
+    DynModel_B->Memory4[0] = DynModel_DW->Memory4_PreviousInput[0];
+    DynModel_B->Memory4[1] = DynModel_DW->Memory4_PreviousInput[1];
+    DynModel_B->Memory4[2] = DynModel_DW->Memory4_PreviousInput[2];
+  }
+
+  /* Product: '<S5>/Nav2Body' incorporates:
+   *  Inport: '<Root>/n_collision'
+   */
+  for (i = 0; i < 3; i++) {
+    rtb_Add7[i] = DynModel_B->Reshape9to3x3columnmajor[i + 6] *
+      DynModel_U->n_collision[2] + (DynModel_B->Reshape9to3x3columnmajor[i + 3] *
+      DynModel_U->n_collision[1] + DynModel_B->Reshape9to3x3columnmajor[i] *
+      DynModel_U->n_collision[0]);
+  }
+
+  /* End of Product: '<S5>/Nav2Body' */
+
+  /* DotProduct: '<S5>/Dot Product' */
+  rtb_Switch_d = (DynModel_B->Memory4[0] * rtb_Add7[0] + DynModel_B->Memory4[1] *
+                  rtb_Add7[1]) + DynModel_B->Memory4[2] * rtb_Add7[2];
+  if (rtmIsMajorTimeStep(DynModel_M)) {
     /* SampleTimeMath: '<S44>/TSamp' incorporates:
      *  Inport: '<Root>/pen_collision'
      *
@@ -1212,28 +1231,15 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     DynModel_B->DiscreteFilter = rtb_Saturation;
   }
 
-  /* Product: '<S5>/Nav2Body' incorporates:
-   *  Inport: '<Root>/n_collision'
-   *  Product: '<S5>/Product2'
-   */
-  for (i = 0; i < 3; i++) {
-    tmp[i] = DynModel_B->Reshape9to3x3columnmajor[i + 6] *
-      DynModel_U->n_collision[2] + (DynModel_B->Reshape9to3x3columnmajor[i + 3] *
-      DynModel_U->n_collision[1] + DynModel_B->Reshape9to3x3columnmajor[i] *
-      DynModel_U->n_collision[0]);
-  }
-
-  /* End of Product: '<S5>/Nav2Body' */
-
   /* Product: '<S5>/Product2' */
-  DynModel_B->Product2_n[0] = tmp[0] * DynModel_B->DiscreteFilter;
-  DynModel_B->Product2_n[1] = tmp[1] * DynModel_B->DiscreteFilter;
-  DynModel_B->Product2_n[2] = tmp[2] * DynModel_B->DiscreteFilter;
+  DynModel_B->Product2_n[0] = rtb_Add7[0] * DynModel_B->DiscreteFilter;
+  DynModel_B->Product2_n[1] = rtb_Add7[1] * DynModel_B->DiscreteFilter;
+  DynModel_B->Product2_n[2] = rtb_Add7[2] * DynModel_B->DiscreteFilter;
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* DiscreteFir: '<S5>/Discrete FIR Filter' */
     rtb_Saturation = DynModel_B->Product2_n[0L] * 1.0;
     loop = 1L;
-    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 2L; j++) {
+    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 4L; j++) {
       rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[j] *
         DynModel_ConstP.DiscreteFIRFilter_Coefficients[loop];
       loop++;
@@ -1248,14 +1254,14 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     rtb_Sum_hw_idx_0 = rtb_Saturation;
     rtb_Saturation = DynModel_B->Product2_n[1L] * 1.0;
     loop = 1L;
-    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 2L; j++) {
-      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[2L + j] *
+    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 4L; j++) {
+      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[4L + j] *
         DynModel_ConstP.DiscreteFIRFilter_Coefficients[loop];
       loop++;
     }
 
     for (j = 0L; j < DynModel_DW->DiscreteFIRFilter_circBuf; j++) {
-      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[2L + j] *
+      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[4L + j] *
         DynModel_ConstP.DiscreteFIRFilter_Coefficients[loop];
       loop++;
     }
@@ -1263,14 +1269,14 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     rtb_Sum_hw_idx_1 = rtb_Saturation;
     rtb_Saturation = DynModel_B->Product2_n[2L] * 1.0;
     loop = 1L;
-    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 2L; j++) {
-      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[4L + j] *
+    for (j = DynModel_DW->DiscreteFIRFilter_circBuf; j < 4L; j++) {
+      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[8L + j] *
         DynModel_ConstP.DiscreteFIRFilter_Coefficients[loop];
       loop++;
     }
 
     for (j = 0L; j < DynModel_DW->DiscreteFIRFilter_circBuf; j++) {
-      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[4L + j] *
+      rtb_Saturation += DynModel_DW->DiscreteFIRFilter_states[8L + j] *
         DynModel_ConstP.DiscreteFIRFilter_Coefficients[loop];
       loop++;
     }
@@ -1284,37 +1290,37 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      */
     /* MATLAB Function 'DynModel/Dynamics/Constraint_Interaction/MATLAB Function': '<S46>:1' */
     /* '<S46>:1:2' */
-    rtb_jxi = 2.2250738585072014E-308;
-    rtb_ixk = fabs(DynModel_U->n_collision[0]);
-    if (rtb_ixk > 2.2250738585072014E-308) {
+    rtb_ixk = 2.2250738585072014E-308;
+    rtb_jxi = fabs(DynModel_U->n_collision[0]);
+    if (rtb_jxi > 2.2250738585072014E-308) {
       rtb_Saturation = 1.0;
-      rtb_jxi = rtb_ixk;
+      rtb_ixk = rtb_jxi;
     } else {
-      rtb_Sum_e = rtb_ixk / 2.2250738585072014E-308;
+      rtb_Sum_e = rtb_jxi / 2.2250738585072014E-308;
       rtb_Saturation = rtb_Sum_e * rtb_Sum_e;
     }
 
-    rtb_ixk = fabs(DynModel_U->n_collision[1]);
-    if (rtb_ixk > rtb_jxi) {
-      rtb_Sum_e = rtb_jxi / rtb_ixk;
-      rtb_Saturation = rtb_Saturation * rtb_Sum_e * rtb_Sum_e + 1.0;
-      rtb_jxi = rtb_ixk;
-    } else {
+    rtb_jxi = fabs(DynModel_U->n_collision[1]);
+    if (rtb_jxi > rtb_ixk) {
       rtb_Sum_e = rtb_ixk / rtb_jxi;
+      rtb_Saturation = rtb_Saturation * rtb_Sum_e * rtb_Sum_e + 1.0;
+      rtb_ixk = rtb_jxi;
+    } else {
+      rtb_Sum_e = rtb_jxi / rtb_ixk;
       rtb_Saturation += rtb_Sum_e * rtb_Sum_e;
     }
 
-    rtb_ixk = fabs(DynModel_U->n_collision[2]);
-    if (rtb_ixk > rtb_jxi) {
-      rtb_Sum_e = rtb_jxi / rtb_ixk;
-      rtb_Saturation = rtb_Saturation * rtb_Sum_e * rtb_Sum_e + 1.0;
-      rtb_jxi = rtb_ixk;
-    } else {
+    rtb_jxi = fabs(DynModel_U->n_collision[2]);
+    if (rtb_jxi > rtb_ixk) {
       rtb_Sum_e = rtb_ixk / rtb_jxi;
+      rtb_Saturation = rtb_Saturation * rtb_Sum_e * rtb_Sum_e + 1.0;
+      rtb_ixk = rtb_jxi;
+    } else {
+      rtb_Sum_e = rtb_jxi / rtb_ixk;
       rtb_Saturation += rtb_Sum_e * rtb_Sum_e;
     }
 
-    rtb_Saturation = rtb_jxi * sqrt(rtb_Saturation);
+    rtb_Saturation = rtb_ixk * sqrt(rtb_Saturation);
     if (rtb_Saturation > 2.2204460492503131E-16) {
       /* '<S46>:1:3' */
       /* '<S46>:1:4' */
@@ -1331,9 +1337,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Gain: '<S5>/Gain10'
      */
     if (rtb_Saturation >= 0.0) {
-      rtb_Sum_hw_idx_0 *= 0.33333333333333331;
-      rtb_Sum_hw_idx_1 *= 0.33333333333333331;
-      rtb_Sum_hw_idx_2 *= 0.33333333333333331;
+      rtb_Sum_hw_idx_0 *= 0.2;
+      rtb_Sum_hw_idx_1 *= 0.2;
+      rtb_Sum_hw_idx_2 *= 0.2;
     } else {
       rtb_Sum_hw_idx_0 = 0.0;
       rtb_Sum_hw_idx_1 = 0.0;
@@ -1371,28 +1377,15 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   }
 
   /* Sum: '<S5>/Add3' incorporates:
-   *  Product: '<S5>/Matrix Multiply'
+   *  DotProduct: '<S5>/Dot Product'
+   *  Product: '<S5>/Product1'
    */
-  for (i = 0; i < 3; i++) {
-    /* Switch: '<S5>/Switch3' incorporates:
-     *  Constant: '<S5>/Constant4'
-     *  Product: '<S5>/Matrix Multiply'
-     */
-    if (DynModel_B->Gain11[i] >= 0.0) {
-      rtb_DiscreteTransferFcn_n = (DynModel_B->Reshape9to3x3columnmajor[i + 3] *
-        DynModel_B->Gain13[1] + DynModel_B->Reshape9to3x3columnmajor[i] *
-        DynModel_B->Gain13[0]) + DynModel_B->Reshape9to3x3columnmajor[i + 6] *
-        DynModel_B->Gain13[2];
-    } else {
-      rtb_DiscreteTransferFcn_n = DynModel_ConstP.pooled11[i];
-    }
-
-    /* End of Switch: '<S5>/Switch3' */
-    rtb_Add3_j[i] = (rtb_DiscreteTransferFcn_n + DynModel_B->Switch2[i]) +
-      DynModel_B->Saturation[i];
-  }
-
-  /* End of Sum: '<S5>/Add3' */
+  rtb_Add3_j[0] = ((rtb_Add3_j[0] + DynModel_B->Switch2[0]) + rtb_Switch_d *
+                   rtb_Add7[0]) + DynModel_B->Saturation[0];
+  rtb_Add3_j[1] = ((rtb_Add3_j[1] + DynModel_B->Switch2[1]) + rtb_Switch_d *
+                   rtb_Add7[1]) + DynModel_B->Saturation[1];
+  rtb_Add3_m = ((rtb_Add3_j[2] + DynModel_B->Switch2[2]) + rtb_Switch_d *
+                rtb_Add7[2]) + DynModel_B->Saturation[2];
 
   /* S-Function (sdspsubmtrx): '<S50>/Submatrix' */
   DynModel_B->Submatrix[0L] = DynModel_B->Reshape9to3x3columnmajor[6L];
@@ -1543,29 +1536,29 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    *  Sum: '<S48>/Add'
    *  Sum: '<S6>/Add'
    */
-  rtb_Add7_idx_0 = (((DynModel_B->UnitConversion[0] * fabs
-                      (DynModel_B->UnitConversion[0]) * (-1.0) * QCdrag + (-1.0)
-                      * DynModel_B->UnitConversion[0] * LCdrag) *
-                     DynModel_B->Gain1[0] + 11.772 * DynModel_B->Submatrix[0]) +
-                    DynModel_B->force[0]) + (DynModel_U->Fext[0] + rtb_Add3_j[0]);
-  rtb_Add7_idx_1 = (((DynModel_B->UnitConversion[1] * fabs
-                      (DynModel_B->UnitConversion[1]) * (-1.0) * QCdrag + (-1.0)
-                      * DynModel_B->UnitConversion[1] * LCdrag) *
-                     DynModel_B->Gain1[1] + 11.772 * DynModel_B->Submatrix[1]) +
-                    DynModel_B->force[1]) + (DynModel_U->Fext[1] + rtb_Add3_j[1]);
-  rtb_Add7_idx_2 = (((DynModel_B->UnitConversion[2] * fabs
-                      (DynModel_B->UnitConversion[2]) * (-1.0) * QCdrag + (-1.0)
-                      * DynModel_B->UnitConversion[2] * LCdrag) *
-                     DynModel_B->Gain1[2] + 11.772 * DynModel_B->Submatrix[2]) +
-                    DynModel_B->force[2]) + (DynModel_U->Fext[2] + rtb_Add3_j[2]);
+  rtb_Add7[0] = (((DynModel_B->UnitConversion[0] * fabs
+                   (DynModel_B->UnitConversion[0]) * (-1.0) * QCdrag + (-1.0) *
+                   DynModel_B->UnitConversion[0] * LCdrag) * DynModel_B->Gain1[0]
+                  + 11.772 * DynModel_B->Submatrix[0]) + DynModel_B->force[0]) +
+    (DynModel_U->Fext[0] + rtb_Add3_j[0]);
+  rtb_Add7[1] = (((DynModel_B->UnitConversion[1] * fabs
+                   (DynModel_B->UnitConversion[1]) * (-1.0) * QCdrag + (-1.0) *
+                   DynModel_B->UnitConversion[1] * LCdrag) * DynModel_B->Gain1[1]
+                  + 11.772 * DynModel_B->Submatrix[1]) + DynModel_B->force[1]) +
+    (DynModel_U->Fext[1] + rtb_Add3_j[1]);
+  rtb_Add7[2] = (((DynModel_B->UnitConversion[2] * fabs
+                   (DynModel_B->UnitConversion[2]) * (-1.0) * QCdrag + (-1.0) *
+                   DynModel_B->UnitConversion[2] * LCdrag) * DynModel_B->Gain1[2]
+                  + 11.772 * DynModel_B->Submatrix[2]) + DynModel_B->force[2]) +
+    (DynModel_U->Fext[2] + rtb_Add3_m);
 
   /* Product: '<S4>/Product' incorporates:
    *  Constant: '<S12>/Constant'
    *  Reshape: '<S2>/Reshape'
    */
-  DynModel_B->Product[0] = rtb_Add7_idx_0 / 1.2;
-  DynModel_B->Product[1] = rtb_Add7_idx_1 / 1.2;
-  DynModel_B->Product[2] = rtb_Add7_idx_2 / 1.2;
+  DynModel_B->Product[0] = rtb_Add7[0] / 1.2;
+  DynModel_B->Product[1] = rtb_Add7[1] / 1.2;
+  DynModel_B->Product[2] = rtb_Add7[2] / 1.2;
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* ZeroOrderHold: '<S118>/Zero-Order Hold1' */
     rtb_Sum_hw_idx_0 = DynModel_B->Product[0];
@@ -1637,19 +1630,18 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     rtb_jxi) - rtb_Switch_d * rtb_Switch_d);
 
   /* Fcn: '<S18>/fcn3' */
-  rtb_DiscreteTransferFcn_n = (rtb_ixk * rtb_Switch_d - rtb_Sum_e * rtb_jxi) *
-    -2.0;
+  rtb_Saturation = (rtb_ixk * rtb_Switch_d - rtb_Sum_e * rtb_jxi) * -2.0;
 
   /* Trigonometry: '<S18>/trigFcn' */
-  if (rtb_DiscreteTransferFcn_n > 1.0) {
-    rtb_DiscreteTransferFcn_n = 1.0;
+  if (rtb_Saturation > 1.0) {
+    rtb_Saturation = 1.0;
   } else {
-    if (rtb_DiscreteTransferFcn_n < -1.0) {
-      rtb_DiscreteTransferFcn_n = -1.0;
+    if (rtb_Saturation < -1.0) {
+      rtb_Saturation = -1.0;
     }
   }
 
-  DynModel_B->VectorConcatenate[1] = asin(rtb_DiscreteTransferFcn_n);
+  DynModel_B->VectorConcatenate[1] = asin(rtb_Saturation);
 
   /* End of Trigonometry: '<S18>/trigFcn' */
 
@@ -1695,24 +1687,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Memory: '<S2>/Memory5'
      *  Sum: '<S5>/Add1'
      */
-    if (DynModel_B->Gain11[0] >= 0.0) {
+    if (DynModel_B->Gain11 >= 0.0) {
       rtb_WhiteNoise[0] = (-1.0) * DynModel_DW->Memory5_PreviousInput[0] * 0.08
         + (-1.0) * DynModel_DW->Memory3_PreviousInput[0] * Kattreact;
-    } else {
-      rtb_WhiteNoise[0] = 0.0;
-    }
-
-    if (DynModel_B->Gain11[1] >= 0.0) {
       rtb_WhiteNoise[1] = (-1.0) * DynModel_DW->Memory5_PreviousInput[1] * 0.08
         + (-1.0) * DynModel_DW->Memory3_PreviousInput[1] * Kattreact;
-    } else {
-      rtb_WhiteNoise[1] = 0.0;
-    }
-
-    if (DynModel_B->Gain11[2] >= 0.0) {
       rtb_WhiteNoise[2] = (-1.0) * DynModel_DW->Memory5_PreviousInput[2] * 0.08
         + 0.0 * DynModel_DW->Memory3_PreviousInput[2] * Kattreact;
     } else {
+      rtb_WhiteNoise[0] = 0.0;
+      rtb_WhiteNoise[1] = 0.0;
       rtb_WhiteNoise[2] = 0.0;
     }
 
@@ -1814,7 +1798,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       rtb_Saturation_d_idx_0;
     rtb_Sum_hw_idx_1 = (rtb_Sum_hw_idx_1 - rtb_ZeroOrderHold2_idx_1) +
       rtb_Saturation_d_idx_1;
-    rtb_DiscreteTransferFcn_n = (rtb_Sum_hw_idx_2 - rtb_ZeroOrderHold2_idx_2) +
+    rtb_jxi = (rtb_Sum_hw_idx_2 - rtb_ZeroOrderHold2_idx_2) +
       rtb_Saturation_d_idx_2;
 
     /* Sum: '<S118>/Sum4' incorporates:
@@ -1825,8 +1809,8 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
     for (i = 0; i < 3; i++) {
       rtb_Add2[i] = ((DynModel_ConstP.pooled23[i + 3] * rtb_Sum_hw_idx_1 +
                       DynModel_ConstP.pooled23[i] * rtb_Sum_hw_idx_0) +
-                     DynModel_ConstP.pooled23[i + 6] * rtb_DiscreteTransferFcn_n)
-        + DynModel_ConstP.pooled11[i];
+                     DynModel_ConstP.pooled23[i + 6] * rtb_jxi) +
+        DynModel_ConstP.pooled11[i];
     }
 
     /* End of Sum: '<S118>/Sum4' */
@@ -1860,12 +1844,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S126>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[0];
+      rtb_Saturation = rtb_Add2[0];
     }
 
     /* Sum: '<S118>/Sum1' incorporates:
@@ -1873,16 +1858,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S121>/White Noise'
      */
     rtb_Saturation_d_idx_0 = 0.015811388300841896 * DynModel_DW->NextOutput_k[0]
-      + rtb_DiscreteTransferFcn_n;
+      + rtb_Saturation;
 
     /* Saturate: '<S118>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-19.62);
-    rtb_jxi = 19.62;
-    if (rtb_Saturation_d_idx_0 > rtb_jxi) {
-      rtb_Saturation_d_idx_0 = rtb_jxi;
+    rtb_jxi = (-19.62);
+    rtb_Saturation = 19.62;
+    if (rtb_Saturation_d_idx_0 > rtb_Saturation) {
+      rtb_Saturation_d_idx_0 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_d_idx_0 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_d_idx_0 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_d_idx_0 < rtb_jxi) {
+        rtb_Saturation_d_idx_0 = rtb_jxi;
       }
     }
 
@@ -1891,12 +1876,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S127>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_o + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_b[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_b[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp_o +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states_b[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states_b[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[1];
+      rtb_Saturation = rtb_Add2[1];
     }
 
     /* Sum: '<S118>/Sum1' incorporates:
@@ -1904,16 +1890,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S121>/White Noise'
      */
     rtb_Saturation_d_idx_1 = 0.015811388300841896 * DynModel_DW->NextOutput_k[1]
-      + rtb_DiscreteTransferFcn_n;
+      + rtb_Saturation;
 
     /* Saturate: '<S118>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-19.62);
-    rtb_jxi = 19.62;
-    if (rtb_Saturation_d_idx_1 > rtb_jxi) {
-      rtb_Saturation_d_idx_1 = rtb_jxi;
+    rtb_jxi = (-19.62);
+    rtb_Saturation = 19.62;
+    if (rtb_Saturation_d_idx_1 > rtb_Saturation) {
+      rtb_Saturation_d_idx_1 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_d_idx_1 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_d_idx_1 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_d_idx_1 < rtb_jxi) {
+        rtb_Saturation_d_idx_1 = rtb_jxi;
       }
     }
 
@@ -1922,12 +1908,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S128>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_j + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_c[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_c[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp_j +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states_c[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states_c[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[2];
+      rtb_Saturation = rtb_Add2[2];
     }
 
     /* Sum: '<S118>/Sum1' incorporates:
@@ -1935,16 +1922,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S121>/White Noise'
      */
     rtb_Saturation_d_idx_2 = 0.015811388300841896 * DynModel_DW->NextOutput_k[2]
-      + rtb_DiscreteTransferFcn_n;
+      + rtb_Saturation;
 
     /* Saturate: '<S118>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-19.62);
-    rtb_jxi = 19.62;
-    if (rtb_Saturation_d_idx_2 > rtb_jxi) {
-      rtb_Saturation_d_idx_2 = rtb_jxi;
+    rtb_jxi = (-19.62);
+    rtb_Saturation = 19.62;
+    if (rtb_Saturation_d_idx_2 > rtb_Saturation) {
+      rtb_Saturation_d_idx_2 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_d_idx_2 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_d_idx_2 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_d_idx_2 < rtb_jxi) {
+        rtb_Saturation_d_idx_2 = rtb_jxi;
       }
     }
 
@@ -2013,12 +2000,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S141>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_g + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_d[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_d[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp_g +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states_d[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states_d[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[0];
+      rtb_Saturation = rtb_Add2[0];
     }
 
     /* Sum: '<S119>/Sum1' incorporates:
@@ -2026,16 +2014,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S138>/White Noise'
      */
     rtb_Saturation_l_idx_0 = 0.001 * DynModel_DW->NextOutput_p[0] +
-      rtb_DiscreteTransferFcn_n;
+      rtb_Saturation;
 
     /* Saturate: '<S119>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-4.36);
-    rtb_jxi = 4.36;
-    if (rtb_Saturation_l_idx_0 > rtb_jxi) {
-      rtb_Saturation_l_idx_0 = rtb_jxi;
+    rtb_jxi = (-4.36);
+    rtb_Saturation = 4.36;
+    if (rtb_Saturation_l_idx_0 > rtb_Saturation) {
+      rtb_Saturation_l_idx_0 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_l_idx_0 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_l_idx_0 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_l_idx_0 < rtb_jxi) {
+        rtb_Saturation_l_idx_0 = rtb_jxi;
       }
     }
 
@@ -2044,12 +2032,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S142>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_n + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_dr[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_dr[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp_n +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states_dr[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states_dr[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[1];
+      rtb_Saturation = rtb_Add2[1];
     }
 
     /* Sum: '<S119>/Sum1' incorporates:
@@ -2057,16 +2046,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S138>/White Noise'
      */
     rtb_Saturation_l_idx_1 = 0.001 * DynModel_DW->NextOutput_p[1] +
-      rtb_DiscreteTransferFcn_n;
+      rtb_Saturation;
 
     /* Saturate: '<S119>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-4.36);
-    rtb_jxi = 4.36;
-    if (rtb_Saturation_l_idx_1 > rtb_jxi) {
-      rtb_Saturation_l_idx_1 = rtb_jxi;
+    rtb_jxi = (-4.36);
+    rtb_Saturation = 4.36;
+    if (rtb_Saturation_l_idx_1 > rtb_Saturation) {
+      rtb_Saturation_l_idx_1 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_l_idx_1 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_l_idx_1 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_l_idx_1 < rtb_jxi) {
+        rtb_Saturation_l_idx_1 = rtb_jxi;
       }
     }
 
@@ -2075,12 +2064,13 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  DiscreteTransferFcn: '<S143>/Discrete Transfer Fcn'
      */
     if (0.0 >= 0.5) {
-      rtb_DiscreteTransferFcn_n = (0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_tmp_gx + 0.055335847205616372 *
-        DynModel_DW->DiscreteTransferFcn_states_a[0L]) + 0.027667923602808186 *
-        DynModel_DW->DiscreteTransferFcn_states_a[1L];
+      rtb_Saturation = (0.027667923602808186 *
+                        DynModel_DW->DiscreteTransferFcn_tmp_gx +
+                        0.055335847205616372 *
+                        DynModel_DW->DiscreteTransferFcn_states_a[0L]) +
+        0.027667923602808186 * DynModel_DW->DiscreteTransferFcn_states_a[1L];
     } else {
-      rtb_DiscreteTransferFcn_n = rtb_Add2[2];
+      rtb_Saturation = rtb_Add2[2];
     }
 
     /* Sum: '<S119>/Sum1' incorporates:
@@ -2088,16 +2078,16 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  RandomNumber: '<S138>/White Noise'
      */
     rtb_Saturation_l_idx_2 = 0.001 * DynModel_DW->NextOutput_p[2] +
-      rtb_DiscreteTransferFcn_n;
+      rtb_Saturation;
 
     /* Saturate: '<S119>/Saturation' */
-    rtb_DiscreteTransferFcn_n = (-4.36);
-    rtb_jxi = 4.36;
-    if (rtb_Saturation_l_idx_2 > rtb_jxi) {
-      rtb_Saturation_l_idx_2 = rtb_jxi;
+    rtb_jxi = (-4.36);
+    rtb_Saturation = 4.36;
+    if (rtb_Saturation_l_idx_2 > rtb_Saturation) {
+      rtb_Saturation_l_idx_2 = rtb_Saturation;
     } else {
-      if (rtb_Saturation_l_idx_2 < rtb_DiscreteTransferFcn_n) {
-        rtb_Saturation_l_idx_2 = rtb_DiscreteTransferFcn_n;
+      if (rtb_Saturation_l_idx_2 < rtb_jxi) {
+        rtb_Saturation_l_idx_2 = rtb_jxi;
       }
     }
   }
@@ -2108,11 +2098,11 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   rtb_Add2[0] = DynModel_B->Reshape9to3x3columnmajor[0];
   rtb_Add2[1] = DynModel_B->Reshape9to3x3columnmajor[4];
   rtb_Add2[2] = DynModel_B->Reshape9to3x3columnmajor[8];
-  rtb_DiscreteTransferFcn_n = (rtb_Add2[0L] + rtb_Add2[1L]) + rtb_Add2[2L];
+  rtb_jxi = (rtb_Add2[0L] + rtb_Add2[1L]) + rtb_Add2[2L];
 
   /* If: '<S62>/If' */
   if (rtmIsMajorTimeStep(DynModel_M)) {
-    rtAction = (int8_T)!(rtb_DiscreteTransferFcn_n > 0.0);
+    rtAction = (int8_T)!(rtb_jxi > 0.0);
     DynModel_DW->If_ActiveSubsystem = rtAction;
   } else {
     rtAction = DynModel_DW->If_ActiveSubsystem;
@@ -2127,7 +2117,7 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
      *  Constant: '<S74>/Constant'
      *  Sum: '<S74>/Sum'
      */
-    rtb_Saturation = sqrt(rtb_DiscreteTransferFcn_n + 1.0);
+    rtb_Saturation = sqrt(rtb_jxi + 1.0);
 
     /* Gain: '<S74>/Gain' */
     DynModel_B->Merge[0] = 0.5 * rtb_Saturation;
@@ -2573,9 +2563,9 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
   /* Outport: '<Root>/Forces' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion2'
    */
-  DynModel_Y->Forces[0] = (real32_T)rtb_Add7_idx_0;
-  DynModel_Y->Forces[1] = (real32_T)rtb_Add7_idx_1;
-  DynModel_Y->Forces[2] = (real32_T)rtb_Add7_idx_2;
+  DynModel_Y->Forces[0] = (real32_T)rtb_Add7[0];
+  DynModel_Y->Forces[1] = (real32_T)rtb_Add7[1];
+  DynModel_Y->Forces[2] = (real32_T)rtb_Add7[2];
 
   /* Outport: '<Root>/Torques' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion19'
@@ -2609,23 +2599,23 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
    */
   DynModel_Y->Freact[0] = (real32_T)rtb_Add3_j[0];
   DynModel_Y->Freact[1] = (real32_T)rtb_Add3_j[1];
-  DynModel_Y->Freact[2] = (real32_T)rtb_Add3_j[2];
+  DynModel_Y->Freact[2] = (real32_T)rtb_Add3_m;
   if (rtmIsMajorTimeStep(DynModel_M)) {
     /* ZeroOrderHold: '<S52>/Zero-Order Hold' incorporates:
      *  Gain: '<S8>/PWM2V'
      *  Gain: '<S8>/RPM2RADS'
      *  Gain: '<S8>/V2RPM'
      */
-    DynModel_B->ZeroOrderHold = 12.0 * rtb_RPM2RADS_idx_0 * 950.0 *
+    DynModel_B->ZeroOrderHold = 12.0 * rtb_RPM2RADS_idx_0 * 850.0 *
       0.10471975511965977;
 
     /* Gain: '<S8>/RPM2RADS' incorporates:
      *  Gain: '<S8>/PWM2V'
      *  Gain: '<S8>/V2RPM'
      */
-    rtb_RPM2RADS_idx_1 = 12.0 * rtb_RPM2RADS_idx_1 * 950.0 * 0.10471975511965977;
-    rtb_RPM2RADS_idx_2 = 12.0 * rtb_RPM2RADS_idx_2 * 950.0 * 0.10471975511965977;
-    rtb_RPM2RADS_idx_3 = 12.0 * rtb_RPM2RADS_idx_3 * 950.0 * 0.10471975511965977;
+    rtb_RPM2RADS_idx_1 = 12.0 * rtb_RPM2RADS_idx_1 * 850.0 * 0.10471975511965977;
+    rtb_RPM2RADS_idx_2 = 12.0 * rtb_RPM2RADS_idx_2 * 850.0 * 0.10471975511965977;
+    rtb_RPM2RADS_idx_3 = 12.0 * rtb_RPM2RADS_idx_3 * 850.0 * 0.10471975511965977;
   }
 
   /* Gain: '<S52>/Gain2' incorporates:
@@ -2715,19 +2705,20 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
         (&DynModel_DW->RandSeed_l) * 1.0 + 0.0;
 
       /* Update for Memory: '<S2>/Memory1' */
-      DynModel_DW->Memory1_PreviousInput[0] = DynModel_B->Sum1;
-      DynModel_DW->Memory1_PreviousInput[1] = DynModel_B->Sum1;
-      DynModel_DW->Memory1_PreviousInput[2] = DynModel_B->Sum1;
+      DynModel_DW->Memory1_PreviousInput = DynModel_B->Sum1;
 
       /* Update for UnitDelay: '<S45>/UD' */
-      DynModel_DW->UD_DSTATE[0] = rtb_TSamp[0];
-      DynModel_DW->UD_DSTATE[1] = rtb_TSamp[1];
-      DynModel_DW->UD_DSTATE[2] = rtb_TSamp[2];
+      DynModel_DW->UD_DSTATE = rtb_TSamp;
 
       /* Update for Memory: '<S2>/Memory6' */
       DynModel_DW->Memory6_PreviousInput[0] = DynModel_B->UnitConversion[0];
       DynModel_DW->Memory6_PreviousInput[1] = DynModel_B->UnitConversion[1];
       DynModel_DW->Memory6_PreviousInput[2] = DynModel_B->UnitConversion[2];
+
+      /* Update for Memory: '<S2>/Memory4' */
+      DynModel_DW->Memory4_PreviousInput[0] = DynModel_B->Product[0];
+      DynModel_DW->Memory4_PreviousInput[1] = DynModel_B->Product[1];
+      DynModel_DW->Memory4_PreviousInput[2] = DynModel_B->Product[2];
 
       /* Update for UnitDelay: '<S44>/UD' */
       DynModel_DW->UD_DSTATE_i = rtb_TSamp_l;
@@ -2739,17 +2730,17 @@ void DynModel_step(RT_MODEL_DynModel_T *const DynModel_M)
       /* Update circular buffer index */
       DynModel_DW->DiscreteFIRFilter_circBuf--;
       if (DynModel_DW->DiscreteFIRFilter_circBuf < 0L) {
-        DynModel_DW->DiscreteFIRFilter_circBuf = 1L;
+        DynModel_DW->DiscreteFIRFilter_circBuf = 3L;
       }
 
       /* Update circular buffer */
       DynModel_DW->DiscreteFIRFilter_states
         [DynModel_DW->DiscreteFIRFilter_circBuf] = DynModel_B->Product2_n[0L];
       DynModel_DW->DiscreteFIRFilter_states
-        [DynModel_DW->DiscreteFIRFilter_circBuf + 2L] = DynModel_B->Product2_n
+        [DynModel_DW->DiscreteFIRFilter_circBuf + 4L] = DynModel_B->Product2_n
         [1L];
       DynModel_DW->DiscreteFIRFilter_states
-        [DynModel_DW->DiscreteFIRFilter_circBuf + 4L] = DynModel_B->Product2_n
+        [DynModel_DW->DiscreteFIRFilter_circBuf + 8L] = DynModel_B->Product2_n
         [2L];
 
       /* End of Update for DiscreteFir: '<S5>/Discrete FIR Filter' */
@@ -3187,19 +3178,20 @@ void DynModel_initialize(RT_MODEL_DynModel_T *const DynModel_M)
     /* End of InitializeConditions for RandomNumber: '<S61>/White Noise' */
 
     /* InitializeConditions for Memory: '<S2>/Memory1' */
-    DynModel_DW->Memory1_PreviousInput[0] = 0.0;
-    DynModel_DW->Memory1_PreviousInput[1] = 0.0;
-    DynModel_DW->Memory1_PreviousInput[2] = 0.0;
+    DynModel_DW->Memory1_PreviousInput = 0.0;
 
     /* InitializeConditions for UnitDelay: '<S45>/UD' */
-    DynModel_DW->UD_DSTATE[0] = 0.0;
-    DynModel_DW->UD_DSTATE[1] = 0.0;
-    DynModel_DW->UD_DSTATE[2] = 0.0;
+    DynModel_DW->UD_DSTATE = 0.0;
 
     /* InitializeConditions for Memory: '<S2>/Memory6' */
     DynModel_DW->Memory6_PreviousInput[0] = 0.0;
     DynModel_DW->Memory6_PreviousInput[1] = 0.0;
     DynModel_DW->Memory6_PreviousInput[2] = 0.0;
+
+    /* InitializeConditions for Memory: '<S2>/Memory4' */
+    DynModel_DW->Memory4_PreviousInput[0] = 0.0;
+    DynModel_DW->Memory4_PreviousInput[1] = 0.0;
+    DynModel_DW->Memory4_PreviousInput[2] = 0.0;
 
     /* InitializeConditions for UnitDelay: '<S44>/UD' */
     DynModel_DW->UD_DSTATE_i = 0.0;
@@ -3209,7 +3201,7 @@ void DynModel_initialize(RT_MODEL_DynModel_T *const DynModel_M)
 
     /* InitializeConditions for DiscreteFir: '<S5>/Discrete FIR Filter' */
     DynModel_DW->DiscreteFIRFilter_circBuf = 0L;
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 12; i++) {
       DynModel_DW->DiscreteFIRFilter_states[i] = 0.0;
     }
 

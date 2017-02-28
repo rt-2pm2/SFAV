@@ -69,18 +69,15 @@ public:
     ~UE_Interface();
 
     // Settings
-    int setReadPort(unsigned int port);
+    int setBaseReadPort(unsigned int port);
     int setBaseWritePort(unsigned int port);
 
     // Communication
-    int sendData(int Id, struct UE_SendData);
-//     int setData(struct UE_SendData);
+    int sendData(struct UE_SendData);
 
-    int receiveData(int SysId);
+    int receiveData();
     int getData(struct UE_RecData* data);
     int getCollision(float impV[3], float* pen);
-    
-    Udp_Port* getPortInstance(int id);
 
     int started;
 
@@ -95,12 +92,16 @@ private:
     pthread_mutex_t mut_sendData;
     pthread_mutex_t mut_recData;
 
-    struct pollfd fdsR[256];
-    struct pollfd fdsW[256];
+    struct pollfd fdsR[1];
+    struct pollfd fdsW[1];
 
-    std::vector<Udp_Port*> pPorts; /*!< Pointer to the dynamically allocated communication ports */
+    Udp_Port* ComPort; /*!< Communication port */
 
     char rbuff[512];
+    
+    struct UE_SendData UEDataOut;
+    
+    struct UE_RecData UEDataIn;
 };
 
 #endif // UE_INTERFACE_H_

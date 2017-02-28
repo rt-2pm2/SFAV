@@ -3,9 +3,9 @@
  *
  * Code generation for model "DynModel".
  *
- * Model version              : 1.756
+ * Model version              : 1.766
  * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
- * C source code generated on : Wed Feb 22 10:10:11 2017
+ * C source code generated on : Sat Feb 25 20:53:48 2017
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -215,8 +215,8 @@ const ConstB_DynModel_T DynModel_ConstB = {
 const ConstP_DynModel_T DynModel_ConstP = {
   /* Pooled Parameter (Mixed Expressions)
    * Referenced by:
-   *   '<S2>/Memory1'
    *   '<S2>/Memory3'
+   *   '<S2>/Memory4'
    *   '<S2>/Memory5'
    *   '<S2>/Memory6'
    *   '<S3>/center of gravity'
@@ -243,8 +243,8 @@ const ConstP_DynModel_T DynModel_ConstP = {
    */
   { 0.98, 0.0, 0.0, 0.0, 0.98, 0.0, 0.0, 0.0, 0.98 },
 
-  /* Expression: [1 1 1]
+  /* Expression: [ones(1,5)]
    * Referenced by: '<S5>/Discrete FIR Filter'
    */
-  { 1.0, 1.0, 1.0 }
+  { 1.0, 1.0, 1.0, 1.0, 1.0 }
 };
