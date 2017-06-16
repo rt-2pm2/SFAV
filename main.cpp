@@ -203,6 +203,8 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     // Defining the Structure containing the thread Properties 
     UEArg->ThreadId = -1;
     UEArg->params = TASK_SPEC_DFL;
+    UEArg->params.period = ue_period;
+    UEArg->params.rdline = ue_period;
     UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
@@ -311,6 +313,8 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     // Defining the Structure containing the thread Properties 
     UEArg->ThreadId = -1;
     UEArg->params = TASK_SPEC_DFL;
+    UEArg->params.period = sim_period;
+    UEArg->params.rdline = sim_period;
     UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
@@ -375,6 +379,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
 {
     int i;
     int N_UDP_vehicles = NCONNECTED_VEHICLES;
+    int N_SERIAL_vehicles = NSERIAL_VEHICLES;
     
     // Load the IPs and other data...
     ip_addr_uav[0] = (char *)V1_IP;
@@ -463,9 +468,11 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
         fill_launcher_udp(ma, sm, gs, ue, uav_port[i], synch[i], ip_addr_uav[i]);
     }
     
+    for (i = 0; i < N_SERIAL_vehicles; i++)
+    {
+        fill_launcher_serial(ma, sm, gs, ue, baudrate, false, uart_name);
+    }
     
-    fill_launcher_serial(ma, sm, gs, ue, baudrate, false, uart_name);
-
     return 0;
 }
     
@@ -569,7 +576,6 @@ int main(int argc, char *argv[])
     for (i = 0; i < N_size; i++)
     {
         pthread_join(ptask_get_threadid(VectInflowArg.at(i)->ThreadId), 0);
-        
     }
     
     // Wait for the simulation threads to finish

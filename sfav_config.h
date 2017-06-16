@@ -58,13 +58,17 @@
 #define UETHR_PRIO (60)
 #endif
 #ifndef UETHR_T
-#define UETHR_T (5)
+#define UETHR_T (20)
 #endif
 
 
 // Vehicles Connections
 #ifndef NCONNECTED_VEHICLES
 #define NCONNECTED_VEHICLES (19)
+#endif
+
+#ifndef NSERIAL_VEHICLES
+#define NSERIAL_VEHICLES (1)
 #endif
 
 #ifndef V1_IP
@@ -78,5 +82,6 @@
 #endif
 
 #ifndef EXTPC_IP
-#define EXTPC_IP ("10.30.3.24")
+//#define EXTPC_IP ("10.30.3.24")
+#define EXTPC_IP ("127.0.0.1")
 #endif
