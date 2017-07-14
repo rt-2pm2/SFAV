@@ -58,6 +58,7 @@ bool synch[256];            /// Vector containing the synchronization type flag
 char* ip_addr_uav[256];     /// Vector containing the pointer to IP strings
 unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
 
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Threads Time properties
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,6 +74,12 @@ int GroundStation_Thread_Priority = GSTHR_PRIO; /// Priority of the Groundstatio
 tspec UnrealEngine_Thread_Period = tspec_from(UETHR_T, MILLI); /// Period of the UnrealEngine Thread
 int UnrealEngine_Thread_Priority = UETHR_PRIO; /// Priority of the UnrealEngine Thread
 
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Ports for the communication with Debug Application
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+char* dbg_ip = (char *)DBG_IP; /// IP of the Debug Application
+unsigned int dbg_port = DBG_PORT; /// Starting Write Port of the Debug Application
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Ports for the communication with GS

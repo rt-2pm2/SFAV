@@ -209,7 +209,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     UEArg->params = TASK_SPEC_DFL;
     UEArg->params.period = ue_period;
     UEArg->params.rdline = ue_period;
-    UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
+    UEArg->params.priority = UnrealEngine_Thread_Priority;
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
     UEArg->params.processor = 0;
@@ -473,6 +473,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     ip_addr_uav[19] = (char *)EXTPC_IP;
     uav_port[19] = 4038;
     synch[19] = false;
+    
     
     // Allocating and setting up the structures
     for (i = 0; i < N_UDP_vehicles; i++)
@@ -820,6 +821,9 @@ void simulator_thread()
     ptime old_send_time = 0;
     ptime diff = 0;
 
+    Udp_Port* ComPort = new Udp_Port();
+    ComPort->InitializeOutputPort(dbg_ip, dbg_port + system_id);
+    
     // Check the initialization of the necessary classes
     while (!time_to_exit)
     {
@@ -844,6 +848,8 @@ void simulator_thread()
         // Get the Simulation Output
         p->sim->getSimOutput(&simout);
 
+        ComPort->writeBytes((char* )&simout.Xe, 3 * sizeof(float));
+        
         // Extract the Sensors and Gps Data
         extractSensors(simout, &sensors);
         extractGpsData(simout, &gps);
@@ -918,7 +924,7 @@ void simulator_thread()
             }
         }
     }
-    //delete p;
+    delete ComPort;
 
 }
 

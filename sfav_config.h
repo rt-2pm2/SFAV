@@ -25,6 +25,14 @@
 #define UE_WPORT (8000)
 #endif
 
+// Debug Interface
+#ifndef DBG_IP
+#define DBG_IP ("10.30.3.136")
+#endif
+#ifndef DBG_PORT
+#define DBG_PORT (10000)
+#endif
+
 // Serial Connection
 #ifndef UART_NAME
 #define UART_NAME ("/dev/ttyUSB0")
