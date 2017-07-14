@@ -34,7 +34,7 @@ Sim_Manager::~Sim_Manager()
 }
 
 
-int Sim_Manager::add_simulator(int Sys_Id)
+int Sim_Manager::add_simulator(int Sys_Id, char* ip, uint32_t port)
 {
     if (getNumberOfSimulator() + 1 > MAXAGENTS)
     {
@@ -45,14 +45,14 @@ int Sim_Manager::add_simulator(int Sys_Id)
     {
         // Create a new Autopilot Interface class and add it to the list
         Simulator_Interface* pSi;
-        pSi = new Simulator_Interface(Sys_Id);
+        pSi = new Simulator_Interface(Sys_Id, ip, port);
         pSI.push_back(pSi);
         ConnectedSimulators++;
         return 1;
     }
 }
 
-Simulator_Interface* Sim_Manager::add_simulator(int Sys_Id, float Lat, float Lon)
+Simulator_Interface* Sim_Manager::add_simulator(int Sys_Id, float Lat, float Lon, char* ip, uint32_t port)
 {
     if (getNumberOfSimulator() + 1 > MAXAGENTS)
     {
@@ -63,7 +63,7 @@ Simulator_Interface* Sim_Manager::add_simulator(int Sys_Id, float Lat, float Lon
     {
         // Create a new Autopilot Interface class and add it to the list
         Simulator_Interface* pSi;
-        pSi = new Simulator_Interface(Sys_Id);
+        pSi = new Simulator_Interface(Sys_Id, ip, port);
         pSi->setInitialCoordinates(Lat, Lon);
         pSI.push_back(pSi);
         ConnectedSimulators++;

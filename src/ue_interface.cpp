@@ -14,7 +14,7 @@
 // ------------------------------------------------------------------
 /*
  *                    +----------------+
- *  UDP (9000)  <-----|                |
+ *  UDP (8001)  <-----|                |
  *                    |  UE (x.x.x.x)  |
  *  UDP (8000)  ----->|                |
  *                    +----------------+
@@ -26,7 +26,7 @@ UE_Interface::UE_Interface()
     NVehicles = 0;
 
 	// Inizialize UDP
-	setBaseReadPort(9000);
+	setBaseReadPort(8001);
 	setBaseWritePort(8000);
 
 	// Initialize Mutexes

@@ -19,7 +19,7 @@
 #define UE_IP ("10.30.3.136")
 #endif
 #ifndef UE_RPORT
-#define UE_RPORT (9000)
+#define UE_RPORT (8001)
 #endif
 #ifndef UE_WPORT
 #define UE_WPORT (8000)

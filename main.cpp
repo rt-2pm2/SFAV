@@ -165,7 +165,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, 43.8148386 + 0.0001 * Agent_Id, 10.3192456 + 0.0001 * Agent_Id);
+    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456, dbg_ip, dbg_port);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -275,7 +275,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456 + 0.001 * Agent_Id * (2 - Agent_Id));
+    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456, dbg_ip, dbg_port);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -847,8 +847,9 @@ void simulator_thread()
 
         // Get the Simulation Output
         p->sim->getSimOutput(&simout);
-
-        ComPort->writeBytes((char* )&simout.Xe, 3 * sizeof(float));
+        
+        // Send the state to the debug machine
+        p->sim->sendSimPosAtt();
         
         // Extract the Sensors and Gps Data
         extractSensors(simout, &sensors);
