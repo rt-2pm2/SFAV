@@ -34,7 +34,8 @@ class MA_Manager {
          * Add agent to the list of connected Agents
          * \param ip Target Ip String
          * \param r_port Local Port for receiving
-         * \param w_port Remote Port for Sending 
+         * \param w_port Remote Port for Sending
+         * \param synch Synchronization Mode (Synch/Asynch)
          */
         Autopilot_Interface* add_agent(char* ip, uint32_t r_port, 
                       uint32_t w_port, bool synch);

@@ -10,18 +10,18 @@ int time_to_exit = 0;
 const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
 
 
-
+/* Start to retrieve data from the Autopilot Interface
+ * Lock the resource autopilot_connected, then wait for the first heartbeat
+ * before going on. It is necessary to wait because the heartbeat message
+ * contains information about the current state of the vehicle, which is 
+ * necessary when calling the "start_hil()" method.
+*/
 int start_inflow_thread(struct InflowArg* arg)
 {
     int inflowT_id = 0;
 
     int id = 0;
-    // Start to retrieve data from the Autopilot Interface
-    //
-    // Lock the resource autopilot_connected, then wait for the first heartbeat
-    // before going on. It is necessary to wait because the heartbeat message
-    // contains information about the current state of the vehicle, which is 
-    // necessary when calling the "start_hil()" method.
+    
     //printf("Creating the inflow_thread...\n");
     inflowT_id = ptask_create_param(inflow_thread, &arg->params);
 
@@ -116,16 +116,20 @@ int start_ue_thread(struct UeThreadArg* UEarg)
 
 
 // add_agent_to_system
-// Add agent to system : Instantiate a new Autopilot interface class and start the 
-// Inflow thread to receive data from the board.
+/* Add agent to system : 
+ * 1) Instantiate: Autopilot interface class, Simulation interface class, UnrealEngine interface class 
+ * 2) Start the Inflow thread to receive data from the board.
+ * 3) Start the Simulation thread
+ * 3) Start the VirtualEnvironment thread
+ */
 int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
                         char* ip, uint32_t r_port, uint32_t w_port,
                         bool synch)
 {
-    int Agent_Id = -1;    
+    int Agent_Id = -1; 
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
-    UE_Interface*  pUe;
+    UE_Interface* pUe;
     
     struct InflowArg* IArg;
     
@@ -143,7 +147,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     IArg->params = TASK_SPEC_DFL;
     IArg->params.period = aut_period;
     IArg->params.rdline = aut_period;
-    IArg->params.priority = Inflow_Thread_Priority;// - (r_port - 4000);
+    IArg->params.priority = Inflow_Thread_Priority;
     IArg->params.act_flag = NOW;
     IArg->params.measure_flag = 0;
     IArg->params.processor = 0;
@@ -174,7 +178,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     SArg->params = TASK_SPEC_DFL;
     SArg->params.period = sim_period;
     SArg->params.rdline = sim_period;
-    SArg->params.priority = Simulation_Thread_Priority; // - (r_port - 4000);
+    SArg->params.priority = Simulation_Thread_Priority;
     SArg->params.act_flag = NOW;
     SArg->params.measure_flag = 0;
     SArg->params.processor = 0;
@@ -190,7 +194,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     start_sim_thread(SArg);
     
     //
-    // 3a) Add a communication port to the Synthetic Environment
+    // 3a) Add a UnrealEngine interface class and set up the communication port
     pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port);
     pUe->add_port(Agent_Id);
     
@@ -333,6 +337,10 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     return Agent_Id;
 }
 
+/* 
+ * This function launch the "launch thread", which will start the remaining threads 
+ * involved in the data exchange with the single vehicle.
+ */
 void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
                    UE_Interface* ue, unsigned int port, bool sync, char* ip_addr)
 {
@@ -375,6 +383,10 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     ptask_create_param(lauch_thread, &larg->params);
 }   
 
+/*
+ * This function defines the variables for communicating with the agents and sets up the 
+ * connection with each of them.
+ */
 int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
     int i;
@@ -501,13 +513,11 @@ int main(int argc, char *argv[])
 {
     int N_size, i;
     
+    // File to save data to
     outfile = fopen("outfile.txt", "w");
     
     // Structure for the Ground Station Thread
     GsThreadArg GSarg;
-    
-    // Structure for the UE Thread
-    UeThreadArg UEarg;
     
     // Parse the Command Line to set information about communication
     // with external application
@@ -519,7 +529,7 @@ int main(int argc, char *argv[])
     // -----------------------------
 
     /*
-     * Instantiate an ground station interface object
+     * Instantiate a ground station interface object
      * This object handles the communication with the ground station.
      * The communication is accomplished over the UDP. 
      */
@@ -838,19 +848,6 @@ void simulator_thread()
         extractSensors(simout, &sensors);
         extractGpsData(simout, &gps);
         
-        // Composition of the mavlink messages  
-        //  Sensors Message
-        mavlink_msg_hil_sensor_pack(system_id, component_id, &sensor_msg, time_usec, 
-                sensors.xacc, sensors.yacc, sensors.zacc,
-                sensors.xgyro, sensors.ygyro, sensors.zgyro,
-                sensors.xmag, sensors.ymag, sensors.zmag,
-                sensors.abs_pressure, sensors.diff_pressure,
-                sensors.pressure_alt, sensors.temperature,
-                sensors.fields_updated);
-        //  GPS Message
-        mavlink_msg_hil_gps_pack(system_id, component_id, &gps_msg,
-                time_usec, gps.fix_type, gps.lat, gps.lon, gps.alt, gps.eph, gps.epv,
-                gps.vel, gps.vn, gps.ve, gps.vd, gps.cog, gps.satellites_visible);
 
         // SEND
         if (p->aut->is_hil())
@@ -860,13 +857,25 @@ void simulator_thread()
                 send_time = ptask_gettime(MICRO);
                 diff = send_time - p->aut->t_ctr;
                 //printf("%ld \n", diff);
-                fprintf(outfile, "%ld \n", diff);
+                //fprintf(outfile, "%ld \n", diff);
                 
                 // Sensors
+                // Composition of the mavlink messages
+                //  Sensors Message
+                mavlink_msg_hil_sensor_pack(system_id, component_id, &sensor_msg, time_usec,
+                                            sensors.xacc, sensors.yacc, sensors.zacc,
+                                            sensors.xgyro, sensors.ygyro, sensors.zgyro,
+                                            sensors.xmag, sensors.ymag, sensors.zmag,
+                                            sensors.abs_pressure, sensors.diff_pressure,
+                                            sensors.pressure_alt, sensors.temperature,
+                                            sensors.fields_updated);
                 ret_sens = p->aut->send_message(&sensor_msg);
-                
-                if ((send_time - old_send_time) > 10000)
+
+                if ((send_time - old_send_time) > 100000)
                 {
+                    //  GPS Message
+                    mavlink_msg_hil_gps_pack(system_id, component_id, &gps_msg,
+                                             time_usec, gps.fix_type, gps.lat, gps.lon, gps.alt, gps.eph, gps.epv, gps.vel, gps.vn, gps.ve, gps.vd, gps.cog, gps.satellites_visible);
                     ret_gps = p->aut->send_message(&gps_msg);
                     old_send_time = send_time;
                 }
@@ -876,11 +885,21 @@ void simulator_thread()
                 if ((scaler % 2) == 0)
                 {
                     // Sensors
+                    mavlink_msg_hil_sensor_pack(system_id, component_id, &sensor_msg, time_usec,
+                                            sensors.xacc, sensors.yacc, sensors.zacc,
+                                            sensors.xgyro, sensors.ygyro, sensors.zgyro,
+                                            sensors.xmag, sensors.ymag, sensors.zmag,
+                                            sensors.abs_pressure, sensors.diff_pressure,
+                                            sensors.pressure_alt, sensors.temperature,
+                                            sensors.fields_updated);
                     ret_sens = p->aut->send_message(&sensor_msg);
 
                     // GPS
-                    if ((scaler % 32) == 0)
+                    if ((scaler % 50) == 0)
                     {
+                        //  GPS Message
+                        mavlink_msg_hil_gps_pack(system_id, component_id, &gps_msg,
+                                                 time_usec, gps.fix_type, gps.lat, gps.lon, gps.alt, gps.eph, gps.epv, gps.vel, gps.vn, gps.ve, gps.vd, gps.cog, gps.satellites_visible);
                         //printf("Sending GPS message to %d\n", system_id);
                         ret_gps = p->aut->send_message(&gps_msg);
                     }
@@ -1020,8 +1039,8 @@ void ue_thread()
 
         dataOut.Id = SysId;
         SimInt->getSimPosAtt(X, A);
-        dataOut.X = X[0] + SysId * 2; // XXX Piggy trick to displace the objects
-        dataOut.Y = X[1] + SysId * 2;
+        dataOut.X = X[0];
+        dataOut.Y = X[1];
         dataOut.Z = X[2];
 
         dataOut.r = A[0];
@@ -1037,9 +1056,6 @@ void ue_thread()
         {
             // Read data from the Synthetic Environment
             p->ue->getCollision(impnorm, &pen);
-
-            //printf("Nx = %1.2f | Ny = %1.2f | Nz = %1.2f || Pen = %1.3f\n",
-            //       impnorm[0], impnorm[1], impnorm[2], pen);
         }
         else
         {
@@ -1065,7 +1081,7 @@ void parse_commandline(int argc, char **argv, char*& gs_ip, unsigned int& gs_r_p
                                             char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port)
 {
 	// string for command line usage
-	const char *commandline_usage = "usage: routing -gs_ip <GSip> -gs_rd <GSreadPort> -gs_wr <GSwritePort> \
+	const char *commandline_usage = "usage: SFAV -gs_ip <GSip> -gs_rd <GSreadPort> -gs_wr <GSwritePort> \
                                                     -ue_ip <UEip> -ue_rd <UEreadPort> -ue_wr <UEwritePort> ";
 
 	// Read input arguments
@@ -1126,7 +1142,7 @@ void parse_commandline(int argc, char **argv, char*& gs_ip, unsigned int& gs_r_p
 				throw EXIT_FAILURE;
 			}
 		}
-        // From Unreal Engine Visualizator Read Port
+        // From Unreal Engine Visualizator Start Read Port
 		if (strcmp(argv[i], "-ue_rp") == 0) {
 			if (argc > i + 1) {
 				ue_r_port = (unsigned int) atoi(argv[i + 1]);
@@ -1136,7 +1152,7 @@ void parse_commandline(int argc, char **argv, char*& gs_ip, unsigned int& gs_r_p
 				throw EXIT_FAILURE;
 			}
 		}
-		// To Unreal Engine Visualizator Write Port
+		// To Unreal Engine Visualizator Start Write Port
 		if (strcmp(argv[i], "-ue_wp") == 0) {
 			if (argc > i + 1) {
 				ue_w_port = (unsigned int) atoi(argv[i + 1]);

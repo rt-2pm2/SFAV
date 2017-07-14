@@ -142,7 +142,7 @@ int UE_Interface::receiveData()
 {
     int ret;
     int8_t read_bytes = 0;
-    int timeout = -1;
+    int timeout = 500;
  
     if (ComPort != NULL)
     {
@@ -153,6 +153,8 @@ int UE_Interface::receiveData()
         read_bytes = ComPort->readBytes(rbuff, sizeof(struct UE_RecData));
         //printf("Got Data, %d Bytes\n", read_bytes);
         }
+        if (ret == 0)
+            printf("UE_Interface::receiveData | Waiting for data TIMEOUT!\n");
     }
     
     if (read_bytes == sizeof(UE_RecData))

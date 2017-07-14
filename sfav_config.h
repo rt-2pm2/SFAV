@@ -4,7 +4,8 @@
 
 // Ground Station
 #ifndef GS_IP
-#define GS_IP ("10.30.3.136")
+//#define GS_IP ("10.30.3.136")
+#define GS_IP ("127.0.0.1")
 #endif
 #ifndef GS_RPORT
 #define GS_RPORT (14551)
@@ -68,7 +69,7 @@
 #endif
 
 #ifndef NSERIAL_VEHICLES
-#define NSERIAL_VEHICLES (1)
+#define NSERIAL_VEHICLES (0)
 #endif
 
 #ifndef V1_IP
