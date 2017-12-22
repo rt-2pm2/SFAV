@@ -319,7 +319,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     UEArg->params = TASK_SPEC_DFL;
     UEArg->params.period = sim_period;
     UEArg->params.rdline = sim_period;
-    UEArg->params.priority = UnrealEngine_Thread_Priority; // - (r_port - 4000);
+    UEArg->params.priority = UnrealEngine_Thread_Priority;
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
     UEArg->params.processor = 0;
@@ -849,7 +849,7 @@ void simulator_thread()
         p->sim->getSimOutput(&simout);
         
         // Send the state to the debug machine
-        p->sim->sendSimPosAtt();
+        p->sim->DBGsendSimPosAtt();
         
         // Extract the Sensors and Gps Data
         extractSensors(simout, &sensors);
@@ -1088,8 +1088,8 @@ void parse_commandline(int argc, char **argv, char*& gs_ip, unsigned int& gs_r_p
                                             char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port)
 {
 	// string for command line usage
-	const char *commandline_usage = "usage: SFAV -gs_ip <GSip> -gs_rd <GSreadPort> -gs_wr <GSwritePort> \
-                                                    -ue_ip <UEip> -ue_rd <UEreadPort> -ue_wr <UEwritePort> ";
+	const char *commandline_usage = "usage: SFAV -gs_ip <GSip> -gs_rp <GSreadPort> -gs_wp <GSwritePort> \
+                                                    -ue_ip <UEip> -ue_rp <UEreadPort> -ue_wp <UEwritePort> ";
 
 	// Read input arguments
 	for (int i = 1; i < argc; i++) { // argv[0] is the name of the executable

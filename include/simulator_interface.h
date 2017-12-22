@@ -91,7 +91,7 @@ class Simulator_Interface {
          * Send the Position and Attitude of the simulated vehicle
          * to the debug machine
          */
-        void sendSimPosAtt();
+        void DBGsendSimPosAtt();
         
         /**
          * Simulation Step

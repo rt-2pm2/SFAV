@@ -147,7 +147,7 @@ void Simulator_Interface::getSimPosAtt(float Xe[3], float Att[3])
 }
 
 // Send debug information
-void Simulator_Interface::sendSimPosAtt()
+void Simulator_Interface::DBGsendSimPosAtt()
 {
     float outvect[6];
     
