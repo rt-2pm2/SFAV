@@ -3,8 +3,17 @@
  */
 
 // Ground Station
+/*
+* GS_IP: IP address of the machine hosting the Ground Station
+* default: ("127.0.0.1")
+* 
+* GS_RPORT: Port for the incoming data from the GS
+* default: 14551
+* 
+* GS_WPORT: Port for the outcoming data from the GS
+* default: 14550 
+*/
 #ifndef GS_IP
-//#define GS_IP ("10.30.3.136")
 #define GS_IP ("127.0.0.1")
 #endif
 #ifndef GS_RPORT
@@ -15,6 +24,16 @@
 #endif
 
 // Unreal Engine
+/*
+* UE_IP: IP address of the machine hosting the Unreal Engine
+* default: ("127.0.0.1")
+* 
+* UE_RPORT: Port for the incoming data from the UE
+* default: 9000
+* 
+* UE_WPORT: Port for the outcoming data from the UE
+* default: 8000 
+*/
 #ifndef UE_IP
 #define UE_IP ("10.30.3.136")
 #endif
@@ -34,6 +53,13 @@
 #endif
 
 // Serial Connection
+/*
+* UART_NAME: Name of the Serial Interface used for connecting autopilot board
+* default: ("/dev/ttyUSB0")
+* 
+* BAUDRATE: Connection baud rate
+* default: 921600
+*/
 #ifndef UART_NAME
 #define UART_NAME ("/dev/ttyUSB0")
 #endif
@@ -42,6 +68,13 @@
 #endif
 
 // Threads
+/*
+* INFLOWTHR_PRIO: Priority of the Inflow Thread
+* default: 90
+* 
+* INFLOWTHR_T: Period of the Inflow Thread (In ms)
+* default: 0 (It has been implemented as aperiodic thread)
+*/
 #ifndef INFLOWTHR_PRIO
 #define INFLOWTHR_PRIO (90)
 #endif
@@ -49,6 +82,13 @@
 #define INFLOWTHR_T (0)
 #endif
 
+/*
+* SIMTHR_PRIO: Priority of the Simulation Thread
+* default: 90
+* 
+* SIMTHR_T: Period of the Simulation Thread (In ms)
+* default: 2 
+*/
 #ifndef SIMTHR_PRIO
 #define SIMTHR_PRIO (93)
 #endif
@@ -56,6 +96,13 @@
 #define SIMTHR_T (2)
 #endif
 
+/*
+* GSTHR_PRIO: Priority of the Ground Station Thread
+* default: 70
+* 
+* GSTHR_T: Period of the Ground Station Thread (In ms)
+* default: 4 
+*/
 #ifndef GSTHR_PRIO
 #define GSTHR_PRIO (70)
 #endif
@@ -63,33 +110,67 @@
 #define GSTHR_T (4)
 #endif
 
+/*
+* UETHR_PRIO: Priority of the Unreal Engine Thread
+* default: 60
+* 
+* UETHR_T: Period of the Ground Station Thread (In ms)
+* default: 0 (It has been implemented as aperiodic)
+*/
 #ifndef UETHR_PRIO
 #define UETHR_PRIO (60)
 #endif
 #ifndef UETHR_T
-#define UETHR_T (20)
+#define UETHR_T (0)
 #endif
 
 
 // Vehicles Connections
+/*
+ * NCONNECTED_VEHICLES: Number of vehicle connected via UDP
+ * default: 1
+ */
 #ifndef NCONNECTED_VEHICLES
 #define NCONNECTED_VEHICLES (19)
 #endif
 
+/*
+ * NSERIAL_VEHICLES: Number of vehicle connected via Serial Interface
+ * default: 0
+ */
 #ifndef NSERIAL_VEHICLES
 #define NSERIAL_VEHICLES (0)
 #endif
 
+/*
+ * V1_IP: IP address of the first autopilot board
+ * default: "192.168.1.2"
+ * 
+ * V1_PORT: Port for communication with the autopilot board
+ * default: 4000
+ */
 #ifndef V1_IP
 #define V1_IP ("192.168.1.2")
 #define V1_PORT (4000)
 #endif
 
+/*
+ * V1_IP: IP address of the second autopilot board
+ * default: "192.168.1.3"
+ * 
+ * V1_PORT: Port for communication with the autopilot board
+ * default: 4002
+ */
 #ifndef V2_IP
 #define V2_IP ("10.30.3.49")
 #define V2_PORT (4002)
 #endif
 
+/*
+ * EXTPC_IP: IP address of the PC running autopilot software
+ * default: "127.0.0.1"
+ * 
+ */
 #ifndef EXTPC_IP
 //#define EXTPC_IP ("10.30.3.24")
 #define EXTPC_IP ("127.0.0.1")
