@@ -55,7 +55,7 @@ extern "C" {
  * Vector with the synchronization information
  */
 bool synch[256];            /// Vector containing the synchronization type flag
-char* ip_addr_uav[256];     /// Vector containing the pointer to IP strings
+char ip_addr_uav[256][16];     /// Vector containing the IP strings
 unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
 
 

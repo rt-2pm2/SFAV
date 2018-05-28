@@ -4,6 +4,13 @@
  * \author: Luigi Pannocchi <l.pannocchi@sssup.it>
  */
 
+#include <fstream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <iostream>
+#include <string>
+
 #include "main.h"
 
 int time_to_exit = 0;
@@ -275,7 +282,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456, dbg_ip, dbg_port);
+    pS = sm->add_simulator(Agent_Id, INITIAL_COORDINATE_LAT, INITIAL_COORDINATE_LON, dbg_ip, dbg_port);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -381,7 +388,7 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->uart_name = uart_name;
     larg->synch = sync;
     ptask_create_param(lauch_thread, &larg->params);
-}   
+}
 
 /*
  * This function defines the variables for communicating with the agents and sets up the 
@@ -389,91 +396,80 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  */
 int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
-    int i;
+    int i, res, a;
+    int addr_cntr;
+    
     int N_UDP_vehicles = NCONNECTED_VEHICLES;
     int N_SERIAL_vehicles = NSERIAL_VEHICLES;
     
-    // Load the IPs and other data...
-    ip_addr_uav[0] = (char *)V1_IP;
-    uav_port[0] = V1_PORT;
-    synch[0] = false;
-
-    ip_addr_uav[1]= (char *)V2_IP;
-    uav_port[1] = V2_PORT;
-    synch[1] = false;
-
-    ip_addr_uav[2] = (char *)EXTPC_IP;
-    uav_port[2] = 4004;
-    synch[2] = false;
-
-    ip_addr_uav[3] = (char *)EXTPC_IP;
-    uav_port[3] = 4006;
-    synch[3] = false;
-
-    ip_addr_uav[4] = (char *)EXTPC_IP;
-    uav_port[4] = 4008;
-    synch[4] = false;
-
-    ip_addr_uav[5] = (char *)EXTPC_IP;
-    uav_port[5] = 4010;
-    synch[5] = false;
-
-    ip_addr_uav[6] = (char *)EXTPC_IP;
-    uav_port[6] = 4012;
-    synch[6] = false;
-
-    ip_addr_uav[7] = (char *)EXTPC_IP;
-    uav_port[7] = 4014;
-    synch[7] = false;
-
-    ip_addr_uav[8] = (char *)EXTPC_IP;
-    uav_port[8] = 4016;
-    synch[8] = false;
-
-    ip_addr_uav[9] = (char *)EXTPC_IP;
-    uav_port[9] = 4018;
-    synch[9] = false;
-
-    ip_addr_uav[10] = (char *)EXTPC_IP;
-    uav_port[10] = 4020;
-    synch[10] = false;
-
-    ip_addr_uav[11] = (char *)EXTPC_IP;
-    uav_port[11] = 4022;
-    synch[11] = false;
-
-    ip_addr_uav[12] = (char *)EXTPC_IP;
-    uav_port[12] = 4024;
-    synch[12] = false;
-
-    ip_addr_uav[13] = (char *)EXTPC_IP;
-    uav_port[13] = 4026;
-    synch[13] = false;
+    int Nchars;
+    int Nread;
     
-    ip_addr_uav[14] = (char *)EXTPC_IP;
-    uav_port[14] = 4028;
-    synch[14] = false;
+    struct in_addr* inp = nullptr; // Structure used for the check of the address format
     
-    ip_addr_uav[15] = (char *)EXTPC_IP;
-    uav_port[15] = 4030;
-    synch[15] = false;
+    int PortVal;
     
-    ip_addr_uav[16] = (char *)EXTPC_IP;
-    uav_port[16] = 4032;
-    synch[16] = false;
+    Nchars = 30;
+    char buffer[Nchars]; // Temp buffer
     
-    ip_addr_uav[17] = (char *)EXTPC_IP;
-    uav_port[17] = 4034;
-    synch[17] = false;
     
-    ip_addr_uav[18] = (char *)EXTPC_IP;
-    uav_port[18] = 4036;
-    synch[18] = false;
+     // Create a input stream file object
+    ifstream ifs("AutopilotAddressFile.txt", ifstream::in);
     
-    ip_addr_uav[19] = (char *)EXTPC_IP;
-    uav_port[19] = 4038;
-    synch[19] = false;
     
+    // Read information
+    addr_cntr = 0;
+    while(ifs.good() && addr_cntr < 256)
+    {
+        // Reset the buffer
+        for (i = 0; i < Nchars; i++)
+            buffer[i] = 0;
+        
+        ifs.getline(buffer, Nchars);
+        Nread = ifs.gcount();
+
+        if (Nread > 0)
+        {
+            //Parsing the address
+            res = sscanf(buffer, "Addr: %s", ip_addr_uav[addr_cntr]);
+            if (res > 0) // The parsing was ok
+            {
+                if(inet_aton(ip_addr_uav[addr_cntr], inp)) // The ip is valid 
+                    printf("Looking for an autopilot @ %s\n", ip_addr_uav[addr_cntr]);
+                else
+                    printf("Init_Managers: Error parsing the IP address!\n");
+            }
+            
+            // Parsing the Port
+            res =  sscanf(buffer, "Port: %d", &uav_port[addr_cntr]);
+            if (res > 0)
+                printf("At Port  %d\n", uav_port[addr_cntr]);
+             
+            // Parsing the Synchronization method
+            res =  sscanf(buffer, "Synch: %d", &a);
+            if (res > 0)
+            {
+                if (a > 0)
+                {
+                    synch[addr_cntr] = true;
+                    printf("Synchronization ON\n");
+                }
+                else
+                {
+                    synch[addr_cntr] = false;
+                    printf("Synchronization OFF\n");
+                }
+                    
+                addr_cntr++; // All the parameters are read and we can add another vehicle
+            }
+        }
+    
+    }
+	
+	if (addr_cntr == 0)
+        printf("Init_Managers: No vehicle were added!\n");
+	
+    ifs.close();
     
     // Allocating and setting up the structures
     for (i = 0; i < N_UDP_vehicles; i++)
@@ -491,9 +487,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     
 void Init_ThreadsEnvironment()
 {
-    //ptask_init(SCHED_OTHER, GLOBAL, NO_PROTOCOL);
     ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
-    //ptask_init(SCHED_FIFO, PARTITIONED, NO_PROTOCOL);
     
     // Setting periods
     aut_period = Inflow_Thread_Period;
@@ -572,12 +566,6 @@ int main(int argc, char *argv[])
 
     start_gs_thread(&GSarg, &ma_manager, &gs_interface);
     
-    /*
-    for(;;)
-    {
-        usleep(500000);
-    }
-    */
     
     // Wait for the GS thread to finish
     pthread_join(ptask_get_threadid(gsT_id), 0);
