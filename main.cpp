@@ -472,7 +472,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     ifs.close();
     
     // Allocating and setting up the structures
-    for (i = 0; i < N_UDP_vehicles; i++)
+    for (i = 0; i < addr_cntr; i++)
     {
         fill_launcher_udp(ma, sm, gs, ue, uav_port[i], synch[i], ip_addr_uav[i]);
     }
