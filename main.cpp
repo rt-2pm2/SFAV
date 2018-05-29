@@ -396,11 +396,17 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  */
 int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
-    int i, res, a;
-    int addr_cntr;
+    int i, synch;
     
-    int N_UDP_vehicles = NCONNECTED_VEHICLES;
-    int N_SERIAL_vehicles = NSERIAL_VEHICLES;
+    bool isUDP, isSerial;
+    
+    int isConn;
+    int isAddr, isPort;
+    int isDev, isBaud;
+    int isSynch;
+    
+    int N_UDP_vehicles;
+    int N_SERIAL_vehicles;
     
     int Nchars;
     int Nread;
@@ -411,6 +417,7 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     
     Nchars = 30;
     char buffer[Nchars]; // Temp buffer
+    char buffer2[Nchars]; // Temp buffer used for parsing 
     
     
      // Create a input stream file object
@@ -418,68 +425,217 @@ int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interfac
     
     
     // Read information
-    addr_cntr = 0;
-    while(ifs.good() && addr_cntr < 256)
+    N_UDP_vehicles = 0;
+    N_SERIAL_vehicles = 0;
+    
+    // Until the end of the file
+    while(ifs.good() && N_UDP_vehicles < 256)
     {
-        // Reset the buffer
-        for (i = 0; i < Nchars; i++)
-            buffer[i] = 0;
         
-        ifs.getline(buffer, Nchars);
-        Nread = ifs.gcount();
-
-        if (Nread > 0)
+        isConn = 0;
+        isUDP = false;
+        isSerial = false;
+        
+        while (isConn <= 0)
         {
-            //Parsing the address
-            res = sscanf(buffer, "Addr: %s", ip_addr_uav[addr_cntr]);
-            if (res > 0) // The parsing was ok
+            // Reset the buffer
+            for (i = 0; i < Nchars; i++)
+                buffer[i] = 0;
+        
+            // Read one line
+            ifs.getline(buffer, Nchars);
+            Nread = ifs.gcount();
+
+
+            // Starting the parsing...
+            if ( Nread > 0 ) 
             {
-                if(inet_aton(ip_addr_uav[addr_cntr], inp)) // The ip is valid 
-                    printf("Looking for an autopilot @ %s\n", ip_addr_uav[addr_cntr]);
-                else
-                    printf("Init_Managers: Error parsing the IP address!\n");
-            }
-            
-            // Parsing the Port
-            res =  sscanf(buffer, "Port: %d", &uav_port[addr_cntr]);
-            if (res > 0)
-                printf("At Port  %d\n", uav_port[addr_cntr]);
-             
-            // Parsing the Synchronization method
-            res =  sscanf(buffer, "Synch: %d", &a);
-            if (res > 0)
-            {
-                if (a > 0)
+                // Parsing the type of connection
+                isConn = sscanf ( buffer, "Conn: %s", buffer2 );
+
+                if ( isConn > 0 ) 
                 {
-                    synch[addr_cntr] = true;
-                    printf("Synchronization ON\n");
+                    if ( strncmp ( buffer2, "UDP", 6 ) == 0 )
+                    {
+                        printf ( "Looking for a UDP connection\n" );
+                        isUDP = true;
+                    }
+                    else
+                    {
+                        if ( strncmp ( buffer2, "SERIAL", 6 ) == 0 )
+                        {
+                            printf ( "Looking for a SERIAL connection\n" );
+                            isSerial = true;
+                        }
+                        else
+                            printf("Init_Managers: Something went wrong in parsing...\n");
+                    }
+                        
                 }
-                else
-                {
-                    synch[addr_cntr] = false;
-                    printf("Synchronization OFF\n");
-                }
-                    
-                addr_cntr++; // All the parameters are read and we can add another vehicle
+                
             }
         }
+
+            if (isUDP)
+            {
+                // ===============
+                // IP
+                isAddr = 0;
+                while (isAddr <= 0)
+                {
+                    // Reset the buffer
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    //Parsing whether we got the address
+                    isAddr = sscanf(buffer, "Addr: %s", ip_addr_uav[N_UDP_vehicles]);
+                    if (isAddr > 0) // The parsing was ok
+                    {
+                        if(inet_aton(ip_addr_uav[N_UDP_vehicles], inp)) // The ip is valid 
+                            printf("Looking for an autopilot @ %s\n", ip_addr_uav[N_UDP_vehicles]);
+                        else
+                            printf("Init_Managers: Error parsing the IP address!\n");
+                    }
+                }
+                
+                // ===============
+                // PORT
+                isPort = 0;
+                while (isPort <= 0)
+                {
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    // Parsing the Port
+                    isPort =  sscanf(buffer, "Port: %d", &uav_port[N_UDP_vehicles]);
+                    if (isPort > 0)
+                        printf("Port  %d\n", uav_port[N_UDP_vehicles]);
+                }
+                
+                // ===============
+                // SYNCH
+                isSynch = 0;
+                while (isSynch <= 0)
+                {
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    // Parsing the Synchronization method
+                    isSynch =  sscanf(buffer, "Synch: %d", &synch);
+                    if (isSynch > 0)
+                    {
+                        if (synch > 0)
+                        {
+                            synch_udp[N_UDP_vehicles] = true;
+                            printf("Synchronization ON\n");
+                        }
+                        else
+                        {
+                            synch_udp[N_UDP_vehicles] = false;
+                            printf("Synchronization OFF\n");
+                        }
+                    
+                        N_UDP_vehicles++; // All the parameters are read and we can add another vehicle
+                        printf("\n");
+                    }
+                }
     
+            }
+            
+            if (isSerial)
+            {
+                // ===============
+                // DEVICE
+                isDev = 0;
+                while (isDev <= 0)
+                {
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    isDev = sscanf(buffer, "Dev: %s", serial_dev_uav[N_SERIAL_vehicles]);
+                    if (isDev > 0)
+                        printf("Looking for an autopilot @ %s\n", serial_dev_uav[N_SERIAL_vehicles]);
+                }
+                
+                // ===============
+                // BAUDRATE
+                isBaud = 0;
+                while (isBaud <= 0)
+                {
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    isBaud = sscanf(buffer, "Baud: %d", &uav_baud[N_SERIAL_vehicles]);
+                    
+                    if (isBaud > 0)
+                    {
+                        printf("Baudrate  %d\n", uav_baud[N_SERIAL_vehicles]);
+                    }
+                }
+                
+                // ===============
+                // SYNCH
+                isSynch = 0;
+                while (isSynch <= 0)
+                {
+                    for (i = 0; i < Nchars; i++)
+                        buffer[i] = 0;
+                    
+                    ifs.getline(buffer, Nchars);
+                    
+                    // Parsing the Synchronization method
+                    isSynch =  sscanf(buffer, "Synch: %d", &synch);
+                    if (isSynch > 0)
+                    {
+                        if (synch > 0)
+                        {
+                            synch_serial[N_SERIAL_vehicles] = true;
+                            printf("Synchronization ON\n");
+                        }
+                        else
+                        {
+                            synch_serial[N_SERIAL_vehicles] = false;
+                            printf("Synchronization OFF\n");
+                        }
+                    
+                        N_SERIAL_vehicles++; // All the parameters are read and we can add another vehicle
+                        printf("\n");
+                    }
+                }
+    
+            }
     }
 	
-	if (addr_cntr == 0)
+	if (N_UDP_vehicles > 0)
+        printf("%dVehicles are going to be connected over UDP.\n", N_UDP_vehicles);
+    
+    if (N_SERIAL_vehicles > 0)
+        printf("%dVehicles are going to be connected over Serial.\n", N_SERIAL_vehicles);
+    
+    if ((N_SERIAL_vehicles == 0) && (N_UDP_vehicles == 0))
         printf("Init_Managers: No vehicle were added!\n");
 	
     ifs.close();
     
     // Allocating and setting up the structures
-    for (i = 0; i < addr_cntr; i++)
+    for (i = 0; i < N_UDP_vehicles; i++)
     {
-        fill_launcher_udp(ma, sm, gs, ue, uav_port[i], synch[i], ip_addr_uav[i]);
+        fill_launcher_udp(ma, sm, gs, ue, uav_port[i], synch_udp[i], ip_addr_uav[i]);
     }
     
     for (i = 0; i < N_SERIAL_vehicles; i++)
     {
-        fill_launcher_serial(ma, sm, gs, ue, baudrate, false, uart_name);
+        fill_launcher_serial(ma, sm, gs, ue, uav_baud[i], synch_serial[i], serial_dev_uav[i]);
     }
     
     return 0;

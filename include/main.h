@@ -54,9 +54,14 @@ extern "C" {
 /*
  * Vector with the synchronization information
  */
-bool synch[256];            /// Vector containing the synchronization type flag
+bool synch_udp[256];            /// Vector containing the synchronization type flag
 char ip_addr_uav[256][16];     /// Vector containing the IP strings
 unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
+
+char serial_dev_uav[15][20]; /// Vector containing the Serial Devices strings
+int uav_baud[15];   /// Vector containing the baud rates of the serial interfaces
+bool synch_serial[15];            /// Vector containing the synchronization type flag
+
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,8 +103,8 @@ unsigned int ue_r_port = UE_RPORT; /// Write Port of the Unreal Engine
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Port for the communication with the Boards
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-char* uart_name = (char *)UART_NAME; /// Name of the uart for serial communication
-int baudrate = BAUDRATE; /// Serial connection baudrate
+//char* uart_name = (char *)UART_NAME; /// Name of the uart for serial communication
+//int baudrate = BAUDRATE; /// Serial connection baudrate
 
 // Threads Indexes
 int gsT_id; // Ground station thread index

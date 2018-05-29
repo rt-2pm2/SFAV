@@ -66,13 +66,14 @@
 * BAUDRATE: Connection baud rate
 * default: 921600
 */
+/*
 #ifndef UART_NAME
 #define UART_NAME ("/dev/ttyUSB0")
 #endif
 #ifndef BAUDRATE
 #define BAUDRATE (921600)
 #endif
-
+*/
 
 
 
