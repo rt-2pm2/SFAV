@@ -1,0 +1,32 @@
+type: GS
+Conn: UDP
+Addr: 127.0.0.1
+wPort: 14550
+rPort: 145551
+
+type: UE
+Conn: UDP
+Addr: 127.0.0.1
+cPort:7999
+rPortbase: 8000
+wPortbase: 9000
+vPortBase: 10000
+
+type: vehicle
+type_id: 2
+id: 2
+Conn: UDP
+Addr: 192.168.1.2
+wPort: 4003
+rPort: 4004
+Synch: 0
+AddrCamera: 127.0.0.1
+
+type: vehicle
+type_id: 2
+id: 3
+Conn: SERIAL
+Dev: /dev/ttyUSB0
+Baud: 921600
+Synch: 0
+AddrCamera: 127.0.0.1
