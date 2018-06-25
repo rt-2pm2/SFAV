@@ -7,6 +7,10 @@ set (LSim_VERSION_MINOR 0)
 
 find_package (Threads)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+include_directories("${JSONCPP_INCLUDE_DIRS}")
 
 # =================================================
 # Add the directories containing the Header files
@@ -67,6 +71,8 @@ target_link_libraries(SFAV PtaskLib)
 target_link_libraries(SFAV MatlabLib)
 # Link Pthread Libraries
 target_link_libraries (SFAV ${CMAKE_THREAD_LIBS_INIT})
+# Link the JsonCpp Library
+target_link_libraries(SFAV ${JSONCPP_LIBRARIES})
 
 #target_link_libraries(SFAV ExternLib)
 

@@ -7,6 +7,7 @@
 #define DEBUG
 
 #include "ue_interface.h"
+#include "string.h"
 
 
 // ------------------------------------------------------------------
@@ -26,8 +27,10 @@ UE_Interface::UE_Interface()
     NVehicles = 0;
 
 	// Inizialize UDP
-	setBaseReadPort(8001);
-	setBaseWritePort(8000);
+    strcpy(net_ip, "127.0.0.1");
+	setBaseReadPort(8000);
+	setBaseWritePort(9000);
+	setBaseVideoPort(10000);
 
 	// Initialize Mutexes
 	pthread_mutex_init(&mut_sendData, 0);
@@ -40,18 +43,18 @@ UE_Interface::UE_Interface()
     ComPort = NULL;
 }
 
-UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port)
+UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port, uint32_t v_port)
 {
 	int i;
     
     NVehicles = 0;
     
 	// Initialize UDP
-    for (i = 0; i < strlen(ip); i++)
-        net_ip[i] = ip[i];
+    strcpy(net_ip, ip);
     
 	setBaseReadPort(r_port);
 	setBaseWritePort(w_port);
+	setBaseVideoPort(v_port);
 
 	// Initilize Mutexes
 	pthread_mutex_init(&mut_sendData, 0);
@@ -74,6 +77,19 @@ UE_Interface::~UE_Interface()
 // ----------------------------------------------------------------
 
 //
+// setIP
+//
+int UE_Interface::setIP(char* ip)
+{
+	// Initialize UDP
+    //for (i = 0; i < strlen(ip); i++)
+    //    net_ip[i] = ip[i];
+    strcpy(net_ip, ip);
+    
+    return 0;
+}
+
+//
 // setBaseReadPort
 //
 int UE_Interface::setBaseReadPort(unsigned int port)
@@ -94,13 +110,22 @@ int UE_Interface::setBaseWritePort(unsigned int port)
 }
 
 //
+// setVideoPort
+//
+int UE_Interface::setBaseVideoPort(unsigned int port)
+{
+    v_port = port;
+    
+    return v_port;
+}
+
+//
 // sendData
 // Send Data to the UE through the UDP port 
 //
 int UE_Interface::sendData(struct UE_SendData data)
 {
     int bytes_sent = -1;
-
 
     // Sending the data
     if (ComPort != NULL)
@@ -172,7 +197,7 @@ int UE_Interface::receiveData()
 // getData
 //
 int UE_Interface::getData(struct UE_RecData* data)
-{
+{ToDo: 
     pthread_mutex_lock(&mut_recData);
     memcpy((void*) data, (void*) &UEDataIn, sizeof(UE_RecData));
     pthread_mutex_unlock(&mut_recData);

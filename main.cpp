@@ -5,11 +5,13 @@
  */
 
 #include <fstream>
+#include <iostream>
+#include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <iostream>
-#include <string>
+
+#include "json/json.h"
 
 #include "main.h"
 
@@ -202,7 +204,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 3a) Add a UnrealEngine interface class and set up the communication port
-    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port);
+    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port, ue_v_port);
     pUe->add_port(Agent_Id);
     
     //
@@ -312,7 +314,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 3a) Add a communication port to the Synthetic Environment
-    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port);
+    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port, ue_v_port);
     pUe->add_port(Agent_Id);
     
     //
@@ -349,7 +351,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  * involved in the data exchange with the single vehicle.
  */
 void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                   UE_Interface* ue, unsigned int port, bool sync, char* ip_addr)
+                   UE_Interface* ue, unsigned int portr, unsigned int portw, bool sync, char* ip_addr)
 {
     struct LaunchArg* larg = new (struct LaunchArg);
     
@@ -361,8 +363,8 @@ void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->params.act_flag = NOW;
     larg->params.arg = (void *) larg;
     larg->ip = ip_addr;
-    larg->r_port = port;
-    larg->w_port = port + 1;
+    larg->r_port = portr;
+    larg->w_port = portw;
     larg->commType = UDP;
     larg->synch = sync;
     ptask_create_param(lauch_thread, &larg->params);
@@ -394,253 +396,206 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  * This function defines the variables for communicating with the agents and sets up the 
  * connection with each of them.
  */
-int Init_Managers(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
+
+int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
 {
-    int i, synch;
-    
-    bool isUDP, isSerial;
-    
-    int isConn;
-    int isAddr, isPort;
-    int isDev, isBaud;
-    int isSynch;
-    
-    int N_UDP_vehicles;
-    int N_SERIAL_vehicles;
-    
-    int Nchars;
-    int Nread;
-    
-    struct in_addr* inp = nullptr; // Structure used for the check of the address format
-    
-    int PortVal;
-    
-    Nchars = 30;
-    char buffer[Nchars]; // Temp buffer
-    char buffer2[Nchars]; // Temp buffer used for parsing 
-    
-    
-     // Create a input stream file object
-    ifstream ifs("AutopilotAddressFile.txt", ifstream::in);
-    
-    
-    // Read information
-    N_UDP_vehicles = 0;
-    N_SERIAL_vehicles = 0;
-    
-    // Until the end of the file
-    while(ifs.good() && N_UDP_vehicles < 256)
-    {
+    Json::Value root;
+    Json::CharReaderBuilder builder;
+    JSONCPP_STRING parse_errs;
         
-        isConn = 0;
-        isUDP = false;
-        isSerial = false;
-        
-        while (isConn <= 0)
-        {
-            // Reset the buffer
-            for (i = 0; i < Nchars; i++)
-                buffer[i] = 0;
-        
-            // Read one line
-            ifs.getline(buffer, Nchars);
-            Nread = ifs.gcount();
-
-
-            // Starting the parsing...
-            if ( Nread > 0 ) 
-            {
-                // Parsing the type of connection
-                isConn = sscanf ( buffer, "Conn: %s", buffer2 );
-
-                if ( isConn > 0 ) 
-                {
-                    if ( strncmp ( buffer2, "UDP", 6 ) == 0 )
-                    {
-                        printf ( "Looking for a UDP connection\n" );
-                        isUDP = true;
-                    }
-                    else
-                    {
-                        if ( strncmp ( buffer2, "SERIAL", 6 ) == 0 )
-                        {
-                            printf ( "Looking for a SERIAL connection\n" );
-                            isSerial = true;
-                        }
-                        else
-                            printf("Init_Managers: Something went wrong in parsing...\n");
-                    }
-                        
-                }
-                
-            }
-        }
-
-            if (isUDP)
-            {
-                // ===============
-                // IP
-                isAddr = 0;
-                while (isAddr <= 0)
-                {
-                    // Reset the buffer
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    //Parsing whether we got the address
-                    isAddr = sscanf(buffer, "Addr: %s", ip_addr_uav[N_UDP_vehicles]);
-                    if (isAddr > 0) // The parsing was ok
-                    {
-                        if(inet_aton(ip_addr_uav[N_UDP_vehicles], inp)) // The ip is valid 
-                            printf("Looking for an autopilot @ %s\n", ip_addr_uav[N_UDP_vehicles]);
-                        else
-                            printf("Init_Managers: Error parsing the IP address!\n");
-                    }
-                }
-                
-                // ===============
-                // PORT
-                isPort = 0;
-                while (isPort <= 0)
-                {
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    // Parsing the Port
-                    isPort =  sscanf(buffer, "Port: %d", &uav_port[N_UDP_vehicles]);
-                    if (isPort > 0)
-                        printf("Port  %d\n", uav_port[N_UDP_vehicles]);
-                }
-                
-                // ===============
-                // SYNCH
-                isSynch = 0;
-                while (isSynch <= 0)
-                {
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    // Parsing the Synchronization method
-                    isSynch =  sscanf(buffer, "Synch: %d", &synch);
-                    if (isSynch > 0)
-                    {
-                        if (synch > 0)
-                        {
-                            synch_udp[N_UDP_vehicles] = true;
-                            printf("Synchronization ON\n");
-                        }
-                        else
-                        {
-                            synch_udp[N_UDP_vehicles] = false;
-                            printf("Synchronization OFF\n");
-                        }
-                    
-                        N_UDP_vehicles++; // All the parameters are read and we can add another vehicle
-                        printf("\n");
-                    }
-                }
+    std::string tmp_str;
+    int tmp_int;
+    struct in_addr* tmp_ip = nullptr; // Structure used for the check of the address format
     
-            }
+    int N_UDP_vehicles = 0;
+    int N_SERIAL_vehicles = 0;
+
+
+    builder["rejectDupKeys"] = true;
+
+    bool parsingSuccessful =  parseFromStream(builder, *cfg, &root, &parse_errs);
+    if ( !parsingSuccessful ) {
+        // report to the user the failure and their locations in the document.
+        printf("Failed to parse configuration.\n");
+        return 1;
+    }
+
+    // Ground Station
+    Json::Value js_gs = root["GS"];
+    if (!js_gs.empty()) {
+        printf("The configuration file includes a ground station.\n");
+
+        // Dump GS object    
+        //std::cout << "[INFO] " << gs << std::endl;
+
+        std::string tmp_str;
+        int tmp_pw, tmp_pr;
+        
+        // ToDo: Get without default
+        tmp_str = js_gs.get("ConnectionType", "None").asString();
+        printf("Groud Station - ConnectionType: %s \n", tmp_str.c_str());
+        
+        if (tmp_str == "UDP") {
             
-            if (isSerial)
-            {
-                // ===============
-                // DEVICE
-                isDev = 0;
-                while (isDev <= 0)
-                {
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    isDev = sscanf(buffer, "Dev: %s", serial_dev_uav[N_SERIAL_vehicles]);
-                    if (isDev > 0)
-                        printf("Looking for an autopilot @ %s\n", serial_dev_uav[N_SERIAL_vehicles]);
-                }
-                
-                // ===============
-                // BAUDRATE
-                isBaud = 0;
-                while (isBaud <= 0)
-                {
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    isBaud = sscanf(buffer, "Baud: %d", &uav_baud[N_SERIAL_vehicles]);
-                    
-                    if (isBaud > 0)
-                    {
-                        printf("Baudrate  %d\n", uav_baud[N_SERIAL_vehicles]);
-                    }
-                }
-                
-                // ===============
-                // SYNCH
-                isSynch = 0;
-                while (isSynch <= 0)
-                {
-                    for (i = 0; i < Nchars; i++)
-                        buffer[i] = 0;
-                    
-                    ifs.getline(buffer, Nchars);
-                    
-                    // Parsing the Synchronization method
-                    isSynch =  sscanf(buffer, "Synch: %d", &synch);
-                    if (isSynch > 0)
-                    {
-                        if (synch > 0)
-                        {
-                            synch_serial[N_SERIAL_vehicles] = true;
-                            printf("Synchronization ON\n");
-                        }
-                        else
-                        {
-                            synch_serial[N_SERIAL_vehicles] = false;
-                            printf("Synchronization OFF\n");
-                        }
-                    
-                        N_SERIAL_vehicles++; // All the parameters are read and we can add another vehicle
-                        printf("\n");
-                    }
-                }
-    
+            tmp_pw = js_gs.get("PortWrite", GS_WPORT).asInt();
+            printf("Groud Station - PortWrite: ", tmp_pw);
+            gs->setWritePort(tmp_pw);
+
+            tmp_pr = js_gs.get("PortRead", GS_RPORT).asInt();
+            printf("Groud Station - PortRead: ", tmp_pr);
+            gs->setReadPort(tmp_pr);        
+
+            tmp_str = js_gs.get("IPAddress", GS_IP).asString();
+            if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
+                gs->setUDP((char *)tmp_str.c_str(), tmp_pr, tmp_pw);
+                printf("Groud Station - IPAddress: %s \n", tmp_str.c_str());
+            } else {
+                printf("Failed to parse Ground Station IP address!\n");
+                return 1;
             }
-    }
-	
-	if (N_UDP_vehicles > 0)
-        printf("%dVehicles are going to be connected over UDP.\n", N_UDP_vehicles);
-    
-    if (N_SERIAL_vehicles > 0)
-        printf("%dVehicles are going to be connected over Serial.\n", N_SERIAL_vehicles);
-    
-    if ((N_SERIAL_vehicles == 0) && (N_UDP_vehicles == 0))
-        printf("Init_Managers: No vehicle were added!\n");
-	
-    ifs.close();
-    
-    // Allocating and setting up the structures
-    for (i = 0; i < N_UDP_vehicles; i++)
-    {
-        fill_launcher_udp(ma, sm, gs, ue, uav_port[i], synch_udp[i], ip_addr_uav[i]);
+ 
+        } else {
+            printf("Only UDP connection with Ground Station supported.");
+            return 1;
+        }
     }
     
-    for (i = 0; i < N_SERIAL_vehicles; i++)
-    {
-        fill_launcher_serial(ma, sm, gs, ue, uav_baud[i], synch_serial[i], serial_dev_uav[i]);
+    // Unreal Engine
+    Json::Value js_ue = root["UE"];
+    if (!js_ue.empty()) {
+        printf("The configuration file includes an unreal engine.\n");
+
+        // Dump UE object    
+        //std::cout << "[INFO] " << ue << std::endl;
+
+        std::string tmp_str;
+        int tmp_int;
+            
+        // ToDo: Get without default!
+        tmp_str = js_ue.get("ConnectionType", "UDP").asString();
+        printf("Unreal Engine - ConnectionType: %s \n", tmp_str.c_str());
+        
+        if (tmp_str == "UDP") {
+            
+            tmp_str = js_ue.get("IPAddress", UE_IP).asString();
+            if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
+                ue->setIP((char *)tmp_str.c_str());
+                printf("Unreal Engine - IPAddress: %s \n", tmp_str.c_str());
+            } else {
+                printf("Failed to parse Ground Station IP address!\n");
+                return 1;
+            }
+
+            tmp_int = js_ue.get("PortWriteBase", UE_WPORT).asInt();
+            printf("Unreal Engine - PortWriteBase:  %d \n", tmp_int);
+            ue->setBaseWritePort(tmp_int);
+
+            tmp_int = js_ue.get("PortReadBase", UE_RPORT).asInt();
+            printf("Unreal Engine - PortReadBase:  %d \n", tmp_int);
+            ue->setBaseReadPort(tmp_int);        
+
+            tmp_int = js_ue.get("PortVideoRead", UE_RPORT).asInt();
+            printf("Unreal Engine - PortVideoBase:  %d \n", tmp_int);
+            ue->setBaseVideoPort(tmp_int);        
+ 
+        } else {
+            printf("Only UDP connection with Ground Station supported.\n");
+            return 1;
+        }
     }
     
-    return 0;
+    // Vehicles
+    Json::Value ve = root["Vehicle"];
+    int nv = ve.size();
+    //std::cout << "Number of Vehicles - " << nv << std::endl;    
+    
+    if (nv <= 0) {
+        printf("The configuration file defines %d% vehicles, which is an invalid number.\n", nv);
+        return 1;
+    }
+ 
+    int tmp_id;
+    for ( int index = 0; index < nv; ++index ) {
+        // Dump Vehicle
+        //std::cout << "Vehicle[" << index << "]: " << ve[index] << std::endl;
+
+        if(!ve[index].isMember("ID")) {
+            printf("The configuration file includes a vehicle without ID.\n");
+            return 1;
+        } else if (!ve[index]["ID"].isNumeric()) {
+            printf("The configuration file includes a vehicle with wrong ID.\n");
+            return 1;
+        } else {
+            tmp_id = ve[index]["ID"].asInt();
+            printf("Vehicle[%d] - ID: %d\n", index, tmp_id);
+        }
+        
+        // ToDo: Not currently used!
+        tmp_int = ve[index].get("TypeID", VH_TYPEID).asInt();
+        printf("Vehicle[%d] - TypeID: %d\n", index, tmp_int);
+
+        // ToDo: Not currently used!
+        tmp_str = ve[index].get("IPAddressCamera", VH_IPCAM).asString();
+        printf("Vehicle[%d] - IPAddressCamera: %s\n", index, tmp_str.c_str());
+        
+        if(ve[index].isMember("ConnectionType")) {
+            std::string tmp_ct;
+            tmp_ct = ve[index]["ConnectionType"].asString();
+            //std::cout << "Vehicle[" << index << "] - ConnectionType: " << tmp_ct << std::endl;
+                    
+            if(tmp_ct == "UDP") {
+            
+                printf("Vehicle[%d] - ConnectionType: UDP\n", index);
+                            
+                tmp_str = ve[index].get("IPAddress", VH_IPADDR).asString();
+                if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
+                    strcpy(ip_addr_uav[N_UDP_vehicles], (char *)tmp_str.c_str());
+                    printf("Vehicle[%d] - IPAddress: %s\n", index, tmp_str.c_str());
+                } else {
+                    printf("Failed to parse Ground Station IP address!\n");
+                    return 1;
+                }
+
+                uav_port_w[N_UDP_vehicles] = ve[index].get("PortWrite", VH_PORTBASE_WRITE + ve[index]["ID"].asInt()*2).asInt();
+                printf("Vehicle[%d] - PortWrite: %d\n", index, uav_port_w[N_UDP_vehicles]);
+
+                uav_port_r[N_UDP_vehicles] = ve[index].get("PortRead", VH_PORTBASE_READ + ve[index]["ID"].asInt()*2).asInt();
+                printf("Vehicle[%d] - PortRead: %d\n", index, uav_port_r[N_UDP_vehicles]);
+
+                synch_udp[N_UDP_vehicles] = ve[index].get("Synch", VH_SYNCH).asInt();
+                printf("Vehicle[%d] - Synch: %d\n", index, synch_udp[N_UDP_vehicles]);
+
+                fill_launcher_udp(ma, sm, gs, ue, uav_port_r[N_UDP_vehicles], uav_port_w[N_UDP_vehicles], synch_udp[N_UDP_vehicles], ip_addr_uav[N_UDP_vehicles]);   // All the parameters are read and we can add the vehicle
+                N_UDP_vehicles++; 
+                
+            } else if(tmp_ct == "Serial") {
+            
+                printf("Vehicle[%d] - ConnectionType: Serial\n", index);
+
+                tmp_str = ve[index].get("Device", VH_DEVICE).asString();
+                strcpy(serial_dev_uav[N_SERIAL_vehicles], (char *)tmp_str.c_str());
+                printf("Vehicle[%d] - Device: %s\n", index, tmp_str.c_str());
+
+                uav_baud[N_SERIAL_vehicles] = ve[index].get("Baudrate", VH_DEVICE_BAUDRATE).asInt();
+                printf("Vehicle[%d] - Baudrate: %d\n", index, uav_baud[N_SERIAL_vehicles]);
+                
+                synch_serial[N_UDP_vehicles] = ve[index].get("Synch", VH_SYNCH).asInt();
+                printf("Vehicle[%d] - Synch: %d\n", index, synch_serial[N_SERIAL_vehicles]);
+                
+                fill_launcher_serial(ma, sm, gs, ue, uav_baud[N_SERIAL_vehicles], synch_serial[N_SERIAL_vehicles], serial_dev_uav[N_SERIAL_vehicles]);
+                N_SERIAL_vehicles++;
+                
+            } else {
+                printf("The configuration file includes a vehicle with unknown ConnectionType.\n");
+                return 1;
+            }
+        } else {
+            printf("The configuration file includes a vehicle without ConnectionType.\n");
+            return 1;
+        }
+    }
 }
-    
+  
 void Init_ThreadsEnvironment()
 {
     ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
@@ -664,16 +619,23 @@ int main(int argc, char *argv[])
 {
     int N_size, i;
     
+    // Check the number of parameters
+    if (argc < 2) {
+        printf("Usage: %s <config_file>.json \n", argv[0]);
+        return 1;
+    }
+
+    std::string configfilename = argv[1];
+    std::ifstream configfile;
+    configfile.open(configfilename);
+    if (!configfile.is_open()) {
+        printf("Error while parsing configuration file %s \n", configfilename); 
+        return 1;
+    }
+
     // File to save data to
-    outfile = fopen("outfile.txt", "w");
-    
-    // Structure for the Ground Station Thread
-    GsThreadArg GSarg;
-    
-    // Parse the Command Line to set information about communication
-    // with external application
-    parse_commandline(argc, argv, gs_ip, gs_r_port, gs_w_port, 
-                                    ue_ip, ue_r_port, ue_w_port);
+    //outfile = fopen("outfile.txt", "w");
+       
 
     // -----------------------------
     //    INSTANTIATE CLASSES
@@ -684,13 +646,13 @@ int main(int argc, char *argv[])
      * This object handles the communication with the ground station.
      * The communication is accomplished over the UDP. 
      */
-    GS_Interface gs_interface(gs_ip, gs_r_port, gs_w_port);
+    GS_Interface gs_interface;
 
     /*
      * Instatiate the interface for the management of the 
      * Unreal Engine. The communication is accomplished over the UDP.
      */ 
-    UE_Interface ue_interface(ue_ip, ue_r_port, ue_w_port);
+    UE_Interface ue_interface;
 
     /*
      * Instatiate the interfaces for the management of the 
@@ -699,12 +661,16 @@ int main(int argc, char *argv[])
     MA_Manager ma_manager;   // Autopilot Interfaces
     Sim_Manager sim_manager; // Simulation Interfaces
 
-    // ======================================================================
-    // Initialization
-    // ======================================================================
+    /*
+     * Initialize the threads
+     */
     Init_ThreadsEnvironment();
-    Init_Managers(&ma_manager, &sim_manager, &gs_interface, &ue_interface);
 
+    /*
+     * Parse the configuration file to get the information to initialize the managers
+     */
+    //parse_commandline(argc, argv, gs_ip, gs_r_port, gs_w_port, ue_ip, ue_r_port, ue_w_port);
+    Init_Managers(&configfile, &ma_manager, &sim_manager, &gs_interface, &ue_interface);
 
     /*
      * Setup interrupt signal handler
@@ -720,6 +686,8 @@ int main(int argc, char *argv[])
     //    THREADS  
     //======================================================================
 
+    // Instantiate and start the Ground Station Thread
+    GsThreadArg GSarg; 
     start_gs_thread(&GSarg, &ma_manager, &gs_interface);
     
     
@@ -768,7 +736,7 @@ int main(int argc, char *argv[])
         delete VectUEThreadArg.at(i);
     }
 
-    fclose(outfile);
+    //fclose(outfile);
     return 0;
 }
 
@@ -1220,103 +1188,6 @@ void ue_thread()
     //ptask_wait_for_period();
     }
 //delete p;
-}
-
-
-
-
-// ----------------------------------------------------------------------
-//   Parse Command Line
-// ----------------------------------------------------------------------
-void parse_commandline(int argc, char **argv, char*& gs_ip, unsigned int& gs_r_port, unsigned int& gs_w_port,
-                                            char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port)
-{
-	// string for command line usage
-	const char *commandline_usage = "usage: SFAV -gs_ip <GSip> -gs_rp <GSreadPort> -gs_wp <GSwritePort> \
-                                                    -ue_ip <UEip> -ue_rp <UEreadPort> -ue_wp <UEwritePort> ";
-
-	// Read input arguments
-	for (int i = 1; i < argc; i++) { // argv[0] is the name of the executable
-
-		// -----------------------------------
-        // HELP
-        // -----------------------------------
-		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			printf("%s\n",commandline_usage);
-			throw EXIT_FAILURE;
-		}
-
-		// -----------------------------------
-		// GROUND STATION SETTINGS
-		// -----------------------------------
-		// Ground Station Instance IP
-		if (strcmp(argv[i], "-gs_ip") == 0) {
-			if (argc > i + 1) {
-				gs_ip = argv[i + 1];
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-		// From Ground Station Read Port
-		if (strcmp(argv[i], "-gs_rp") == 0) {
-			if (argc > i + 1) {
-				gs_r_port = (unsigned int) atoi(argv[i + 1]);
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-		// To Ground Station Write Port
-		if (strcmp(argv[i], "-gs_wp") == 0) {
-			if (argc > i + 1) {
-				gs_w_port = (unsigned int) atoi(argv[i + 1]);
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-        
-        // -----------------------------------
-		// UNREAL ENGINE VISUALIZATOR SETTINGS
-		// -----------------------------------
-		// Unreal Engine Visualizator Instance IP
-		if (strcmp(argv[i], "-ue_ip") == 0) {
-			if (argc > i + 1) {
-				ue_ip = argv[i + 1];
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-        // From Unreal Engine Visualizator Start Read Port
-		if (strcmp(argv[i], "-ue_rp") == 0) {
-			if (argc > i + 1) {
-				ue_r_port = (unsigned int) atoi(argv[i + 1]);
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-		// To Unreal Engine Visualizator Start Write Port
-		if (strcmp(argv[i], "-ue_wp") == 0) {
-			if (argc > i + 1) {
-				ue_w_port = (unsigned int) atoi(argv[i + 1]);
-			}
-			else {
-				printf("%s\n",commandline_usage);
-				throw EXIT_FAILURE;
-			}
-		}
-	}
-	// end: for each input argument
-	// Done!
-	return;
 }
 
 

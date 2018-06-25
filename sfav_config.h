@@ -43,11 +43,17 @@
 #ifndef UE_IP
 #define UE_IP ("10.30.3.136")
 #endif
+#ifndef UE_CRT_PORT
+#define UE_CRT_PORT (7900)
+#endif
 #ifndef UE_RPORT
-#define UE_RPORT (9000)
+#define UE_RPORT (8000)
 #endif
 #ifndef UE_WPORT
-#define UE_WPORT (8000)
+#define UE_WPORT (9000)
+#endif
+#ifndef UE_VPORT
+#define UE_VPORT (10000)
 #endif
 
 // Debug Interface
@@ -58,7 +64,27 @@
 #define DBG_PORT (10000)
 #endif
 
-// Serial Connection
+// Vehicle
+#ifndef VH_TYPEID
+#define VH_TYPEID (2)
+#endif
+#ifndef VH_SYNCH
+#define VH_SYNCH (0)
+#endif
+#ifndef VH_IPCAM
+#define VH_IPCAM ("10.30.3.36")
+#endif
+// Vehicle - UDP Connection
+#ifndef VH_IPADDR
+#define VH_IPADDR ("10.30.3.36")
+#endif
+#ifndef VH_PORTBASE_READ
+#define VH_PORTBASE_READ (4000)
+#endif
+#ifndef VH_PORTBASE_WRITE
+#define VH_PORTBASE_WRITE (4001)
+#endif
+// Vehicle - Serial Connection
 /*
 * UART_NAME: Name of the Serial Interface used for connecting autopilot board
 * default: ("/dev/ttyUSB0")
@@ -66,14 +92,13 @@
 * BAUDRATE: Connection baud rate
 * default: 921600
 */
-/*
-#ifndef UART_NAME
-#define UART_NAME ("/dev/ttyUSB0")
+#ifndef VH_DEVICE
+#define VH_DEVICE ("/dev/ttyUSB0")
 #endif
-#ifndef BAUDRATE
-#define BAUDRATE (921600)
+#ifndef VH_DEVICE_BAUDRATE
+#define VH_DEVICE_BAUDRATE (921600)
 #endif
-*/
+
 
 
 
@@ -151,17 +176,17 @@
  * NCONNECTED_VEHICLES: Number of vehicle connected via UDP
  * default: 1
  */
-#ifndef NCONNECTED_VEHICLES
-#define NCONNECTED_VEHICLES (1)
-#endif
+//#ifndef NCONNECTED_VEHICLES
+//#define NCONNECTED_VEHICLES (1)
+//#endif
 
 /*
  * NSERIAL_VEHICLES: Number of vehicle connected via Serial Interface
  * default: 0
  */
-#ifndef NSERIAL_VEHICLES
-#define NSERIAL_VEHICLES (0)
-#endif
+//#ifndef NSERIAL_VEHICLES
+//#define NSERIAL_VEHICLES (0)
+//#endif
 
 /*
  * V1_IP: IP address of the first autopilot board
@@ -170,10 +195,10 @@
  * V1_PORT: Port for communication with the autopilot board
  * default: 4000
  */
-#ifndef V1_IP
-#define V1_IP ("192.168.1.2")
-#define V1_PORT (4000)
-#endif
+//#ifndef V1_IP
+//#define V1_IP ("192.168.1.2")
+//#define V1_PORT (4000)
+//#endif
 
 /*
  * V1_IP: IP address of the second autopilot board
@@ -182,20 +207,20 @@
  * V1_PORT: Port for communication with the autopilot board
  * default: 4002
  */
-#ifndef V2_IP
-#define V2_IP ("10.30.3.49")
-#define V2_PORT (4002)
-#endif
+//#ifndef V2_IP
+//#define V2_IP ("10.30.3.49")
+//#define V2_PORT (4002)
+//#endif
 
 /*
  * EXTPC_IP: IP address of the PC running autopilot software
  * default: "127.0.0.1"
  * 
  */
-#ifndef EXTPC_IP
+//#ifndef EXTPC_IP
 //#define EXTPC_IP ("10.30.3.24")
-#define EXTPC_IP ("127.0.0.1")
-#endif
+//#define EXTPC_IP ("127.0.0.1")
+//#endif
 
 
 // ==============================================================================

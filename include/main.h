@@ -54,9 +54,11 @@ extern "C" {
 /*
  * Vector with the synchronization information
  */
+// ToDo: Remove hardcoded 
 bool synch_udp[256];            /// Vector containing the synchronization type flag
 char ip_addr_uav[256][16];     /// Vector containing the IP strings
-unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
+unsigned int uav_port_r[256]; /// Vector containing the read port for communicating with UAV
+unsigned int uav_port_w[256]; /// Vector containing the read port for communicating with UAV
 
 char serial_dev_uav[15][20]; /// Vector containing the Serial Devices strings
 int uav_baud[15];   /// Vector containing the baud rates of the serial interfaces
@@ -99,6 +101,7 @@ unsigned int gs_w_port = GS_WPORT; /// Write Port of the Groundstation
 char* ue_ip = (char *)UE_IP; /// IP of the Unreal Engine
 unsigned int ue_w_port = UE_WPORT; /// Read Port of the Unreal Engine
 unsigned int ue_r_port = UE_RPORT; /// Write Port of the Unreal Engine
+unsigned int ue_v_port = UE_VPORT; /// Video Port of the Unreal Engine
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Port for the communication with the Boards
@@ -221,19 +224,6 @@ FILE *outfile; /// File for output
 // -----------------------------------------------------------------------
 int main(int argc, char **argv);
 
-
-/** This function parse the option used to launch the application
- * throws EXIT_FAILURE if could not open the port
- * Inputs
- * \param gs_ip    Ground Station IP <"x.x.x.x">
- * \param gs_r_port Port number for reading incoming data from GS <"x">
- * \param gs_w_port Port number for writing outgoing data to GS <"x">
- * \param ue_ip    UnrealEngine Visualizator IP <"x.x.x.x">
- * \param ue_r_port number for reading incoming data from Visualizator <"x">
- * \param ue_w_port Port number for writing outgoing data to Visualizator <"x">
- */
-void parse_commandline(int argc, char **argv, char *&gs_ip, unsigned int &gs_r_port, unsigned int &gs_w_port, 
-                        char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port);
 
 void routing_messages(mavlink_message_t *msg, struct InflowArg* p);
 

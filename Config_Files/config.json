@@ -1,0 +1,37 @@
+{
+        "GS" : {
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortWrite" : 14550,
+                "PortRead" : 145551
+        },
+        "UE" : {
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortControl" : 7999,
+                "PortReadBase" : 8000,
+                "PortWriteBase" : 9000,
+                "PortVideoBase" : 10000
+        },
+        "Vehicle" : [
+            {
+                "ID" : 2,
+                "TypeID" : 2,
+                "Synch" : 0,
+                "IPAddressCamera": "127.0.0.1",
+                "ConnectionType" : "UDP",
+                "IPAddress" : "192.168.1.2",
+                "PortWrite" : 4003,
+                "PortRead" : 4004
+            },
+            {
+                "ID" : 3,
+                "TypeID" : 2,
+                "Synch" : 0,
+                "IPAddressCamera": "127.0.0.1",
+                "ConnectionType" : "Serial",
+                "Device" : "/dev/ttyUSB0",
+                "Baudrate" : 921600
+            }
+        ]
+}

@@ -84,6 +84,8 @@ GS_Interface::~GS_Interface()
 //  FUNCTIONS
 // ----------------------------------------------------------------
 
+// ToDo: Check!!!!!!!
+
 //
 // setReadPort
 //
@@ -102,6 +104,19 @@ int GS_Interface::setWritePort(unsigned int port)
     return 1;
 }
 
+//
+// setIP
+//
+int GS_Interface::setUDP(char* ip, unsigned int port_r, unsigned int port_w)
+{
+    r_port = port_r;
+    w_port = port_w;
+    
+	// Initialize UDP
+    //ToDo: Reinitialize UDP port!
+    
+    return 1;
+}
 
 //
 // setGSActive
