@@ -8,6 +8,21 @@
 // ==============================================================================
 // ==============================================================================
 
+// Home
+/*
+* HOME_LATITUDE: Latitude of the "home" reference position
+* default: 43.718306 (ReTiS lab)
+* 
+* HOME_LONGITUDE: Longitude of the "home" reference position
+* default: 10.424712 (ReTiS lab)
+*/
+#ifndef HOME_LATITUDE
+#define HOME_LATITUDE (43.718306)
+#endif
+#ifndef HOME_LONGITUDE
+#define HOME_LONGITUDE (10.424712)
+#endif
+
 // Ground Station
 /*
 * GS_IP: IP address of the machine hosting the Ground Station

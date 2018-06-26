@@ -461,6 +461,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         
     std::string tmp_str;
     int tmp_int;
+    float tmp_fl;
     struct in_addr* tmp_ip = nullptr; // Structure used for the check of the address format
     
     int N_UDP_vehicles = 0;
@@ -486,6 +487,23 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         return 1;
     }
 
+    // Home location
+    Json::Value js_hm = root["Home"];
+    if (!js_hm.empty()) {
+        printf("The configuration file includes a home location.\n");
+
+        // Dump Home object    
+        //std::cout << "[INFO] " << hm << std::endl;
+        
+        tmp_fl = js_hm.get("Latitude", HOME_LATITUDE).asFloat();
+        printf("Home - Latitude: %f\n", tmp_fl);
+        // ToDo: save it somewhere!
+   
+        tmp_fl = js_hm.get("Longitude", HOME_LONGITUDE).asFloat();
+        printf("Home - Longitude: %f\n", tmp_fl);
+        // ToDo: save it somewhere!
+    }
+    
     // Ground Station
     Json::Value js_gs = root["GS"];
     if (!js_gs.empty()) {
@@ -494,7 +512,6 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         // Dump GS object    
         //std::cout << "[INFO] " << gs << std::endl;
 
-        std::string tmp_str;
         int tmp_pw, tmp_pr;
         
         // ToDo: Get without default
@@ -604,9 +621,12 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         tmp_str = ve[index].get("IPAddressCamera", VH_IPCAM).asString();
         printf("Vehicle[%d] - IPAddressCamera: %s\n", index, tmp_str.c_str());
         
-        /// TEMP
-        for (int i = 0; i < 3; i++)
-                    init_pos[i] = 0.0;
+        init_pos[0] = ve[index].get("RelX", 0).asFloat();
+        printf("Vehicle[%d] - RelX: %f\n", index, init_pos[0]);
+        init_pos[1] = ve[index].get("RelY", 0).asFloat();
+        printf("Vehicle[%d] - RelY: %f\n", index, init_pos[1]);
+        init_pos[2] = ve[index].get("RelZ", 0).asFloat();
+        printf("Vehicle[%d] - RelZ: %f\n", index, init_pos[2]);
         
         if(ve[index].isMember("ConnectionType")) {
             std::string tmp_ct;
