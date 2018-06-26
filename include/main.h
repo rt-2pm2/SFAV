@@ -179,6 +179,8 @@ struct UeThreadArg
     tpars params; /// Ptask Thread parameters
     UE_Interface* ue; /// Pointer to the UnrealEngine Interface Class
     Simulator_Interface* sim; /// Pointer to the Simulator Interface Class
+    
+    float pos_offset[3];
 };
 /// Vector with the structure for the simualation threads
 vector<struct UeThreadArg* > VectUEThreadArg;

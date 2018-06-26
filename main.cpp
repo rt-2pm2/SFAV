@@ -155,6 +155,8 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
                         char* ip, uint32_t r_port, uint32_t w_port,
                         bool synch, float init_pos[3])
 {
+    int i;
+    
     int Agent_Id = -1; 
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
@@ -247,6 +249,10 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
     UEArg->params.processor = 0;
+    
+    for (i = 0; i < 3; i++)
+        UEArg->pos_offset[i] = init_pos[i];
+    
     UEArg->params.arg = (void *) UEArg;
     
     // Load the pointers to the Interface Classes
@@ -268,12 +274,18 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 // Add agent to system : Instantiate a new Autopilot interface class and start the 
 // Inflow thread to receive data from the board.
 int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                        char*& uart_name, int baudrate, bool synch, float init_pos[3]))
+                        char*& uart_name, int baudrate, bool synch, float init_pos[3])
 {
+    int i;
+    
     int Agent_Id = -1;    
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
     UE_Interface*  pUe;
+    
+    float lat = 0.0;
+    float lon = 0.0;
+    float alt = 0.0;
     
     struct InflowArg* IArg;
     
@@ -358,6 +370,10 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     UEArg->params.act_flag = NOW;
     UEArg->params.measure_flag = 0;
     UEArg->params.processor = 0;
+    
+    for (i = 0; i < 3; i++)
+        UEArg->pos_offset[i] = init_pos[i];
+    
     UEArg->params.arg = (void *) UEArg;
     
     // Load the pointers to the Interface Classes
@@ -459,6 +475,8 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
     int uav_baud;                   /// Vector containing the baud rates of the serial interfaces
     bool synch_serial;              /// Vector containing the synchronization type flag
 
+    float init_pos[3];
+    
     builder["rejectDupKeys"] = true;
 
     bool parsingSuccessful =  parseFromStream(builder, *cfg, &root, &parse_errs);
@@ -586,6 +604,10 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         tmp_str = ve[index].get("IPAddressCamera", VH_IPCAM).asString();
         printf("Vehicle[%d] - IPAddressCamera: %s\n", index, tmp_str.c_str());
         
+        /// TEMP
+        for (int i = 0; i < 3; i++)
+                    init_pos[i] = 0.0;
+        
         if(ve[index].isMember("ConnectionType")) {
             std::string tmp_ct;
             tmp_ct = ve[index]["ConnectionType"].asString();
@@ -613,7 +635,8 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
                 synch_udp = ve[index].get("Synch", VH_SYNCH).asInt();
                 printf("Vehicle[%d] - Synch: %d\n", index, synch_udp);
 
-                fill_launcher_udp(ma, sm, gs, ue, uav_port_r, uav_port_w, synch_udp, ip_addr_uav);   // All the parameters are read and we can add the vehicle
+                fill_launcher_udp(ma, sm, gs, ue, uav_port_r, uav_port_w, synch_udp, ip_addr_uav, 
+                                    init_pos);   // All the parameters are read and we can add the vehicle
                 N_UDP_vehicles++; 
                 
             } else if(tmp_ct == "Serial") {
@@ -630,7 +653,8 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
                 synch_serial = ve[index].get("Synch", VH_SYNCH).asInt();
                 printf("Vehicle[%d] - Synch: %d\n", index, synch_serial);
                 
-                fill_launcher_serial(ma, sm, gs, ue, uav_baud, synch_serial, serial_dev_uav);
+                
+                fill_launcher_serial(ma, sm, gs, ue, uav_baud, synch_serial, serial_dev_uav, init_pos);
                 N_SERIAL_vehicles++;
                 
             } else {
@@ -1211,9 +1235,9 @@ void ue_thread()
 
         dataOut.Id = SysId;
         SimInt->getSimPosAtt(X, A);
-        dataOut.X = X[0];
-        dataOut.Y = X[1];
-        dataOut.Z = X[2];
+        dataOut.X = X[0] + p->pos_offset[0];
+        dataOut.Y = X[1] + p->pos_offset[1];
+        dataOut.Z = X[2] + p->pos_offset[2];
 
         dataOut.r = A[0];
         dataOut.p = A[1];
