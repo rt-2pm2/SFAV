@@ -47,25 +47,6 @@ extern "C" {
 #include "../sfav_config.h"
 
 
-// -----------------------------------------------------------------------
-//   Variables and Structures
-// -----------------------------------------------------------------------
-
-/*
- * Vector with the synchronization information
- */
-// ToDo: Remove hardcoded 
-bool synch_udp[256];            /// Vector containing the synchronization type flag
-char ip_addr_uav[256][16];     /// Vector containing the IP strings
-unsigned int uav_port_r[256]; /// Vector containing the read port for communicating with UAV
-unsigned int uav_port_w[256]; /// Vector containing the read port for communicating with UAV
-
-char serial_dev_uav[15][20]; /// Vector containing the Serial Devices strings
-int uav_baud[15];   /// Vector containing the baud rates of the serial interfaces
-bool synch_serial[15];            /// Vector containing the synchronization type flag
-
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Threads Time properties
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,6 +94,18 @@ unsigned int ue_v_port = UE_VPORT; /// Video Port of the Unreal Engine
 int gsT_id; // Ground station thread index
 int ueT_id; // Unreal Engine thread index
 
+
+/** 
+ * Struct with the coordinates of the HOME
+ */
+struct HomePoint
+{
+    double Latitude;
+    double Longitude;
+    double Altitude;
+};
+
+
 /**
  * Struct with the pointes to the interfaces
  * to be used as arguments for the threads
@@ -136,6 +129,8 @@ struct LaunchArg
     int baudrate;   /// Serial port baudrate
     char* uart_name; /// Serial port device
     bool synch; /// Activation flag for the board driven sync
+    
+    float init_pos[3]; /// Initial position of the vehicle
 };
 
 /*!

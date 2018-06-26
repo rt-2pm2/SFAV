@@ -18,6 +18,7 @@
 int time_to_exit = 0;
 const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
 
+struct HomePoint home;
 
 /* Start to retrieve data from the Autopilot Interface
  * Lock the resource autopilot_connected, then wait for the first heartbeat
@@ -124,6 +125,25 @@ int start_ue_thread(struct UeThreadArg* UEarg)
 }
 
 
+
+/**
+ * Convert relative position to lat/lot 
+ */
+void rel2latlon(struct HomePoint hp, float init_pos[3], float* lat, float* lon, float* alt)
+{
+    float latitude;
+    float longitude;
+    
+    *alt = init_pos[2];
+    
+    latitude = hp.Latitude + init_pos[0] / 111111;
+    longitude = hp.Longitude + init_pos[1] / (111111 * cos(latitude));
+    
+    *lat = latitude;
+    *lon = longitude;
+}
+
+
 // add_agent_to_system
 /* Add agent to system : 
  * 1) Instantiate: Autopilot interface class, Simulation interface class, UnrealEngine interface class 
@@ -133,12 +153,16 @@ int start_ue_thread(struct UeThreadArg* UEarg)
  */
 int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
                         char* ip, uint32_t r_port, uint32_t w_port,
-                        bool synch)
+                        bool synch, float init_pos[3])
 {
     int Agent_Id = -1; 
     Autopilot_Interface* pA;
     Simulator_Interface* pS;
     UE_Interface* pUe;
+    
+    float lat = 0.0;
+    float lon = 0.0;
+    float alt = 0.0;
     
     struct InflowArg* IArg;
     
@@ -174,7 +198,8 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456, dbg_ip, dbg_port);
+    rel2latlon(home, init_pos, &lat, &lon, &alt);
+    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, dbg_port);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -243,7 +268,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 // Add agent to system : Instantiate a new Autopilot interface class and start the 
 // Inflow thread to receive data from the board.
 int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                        char*& uart_name, int baudrate, bool synch)
+                        char*& uart_name, int baudrate, bool synch, float init_pos[3]))
 {
     int Agent_Id = -1;    
     Autopilot_Interface* pA;
@@ -284,7 +309,8 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 2a) Add a Simulation_Interface class
-    pS = sm->add_simulator(Agent_Id, INITIAL_COORDINATE_LAT, INITIAL_COORDINATE_LON, dbg_ip, dbg_port);
+    rel2latlon(home, init_pos, &lat, &lon, &alt);
+    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, dbg_port);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -351,8 +377,10 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  * involved in the data exchange with the single vehicle.
  */
 void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                   UE_Interface* ue, unsigned int portr, unsigned int portw, bool sync, char* ip_addr)
+                   UE_Interface* ue, unsigned int portr, unsigned int portw, 
+                   bool sync, char* ip_addr, float init_pos[3])
 {
+    int i;
     struct LaunchArg* larg = new (struct LaunchArg);
     
     larg->ma = ma; // Pointer to the Multiagent Manager Interface Class
@@ -367,12 +395,19 @@ void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->w_port = portw;
     larg->commType = UDP;
     larg->synch = sync;
+    
+    for (i = 0; i < 3; i++)
+        larg->init_pos[i] = init_pos[i];
+    
     ptask_create_param(lauch_thread, &larg->params);
 }
 
 void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                   UE_Interface* ue, int baudrate, bool sync, char* uart_name)
+                   UE_Interface* ue, int baudrate, bool sync, char* uart_name, 
+                   float init_pos[3])
 {
+    int i;
+    
     struct LaunchArg* larg = new (struct LaunchArg);
     
     larg->ma = ma; // Pointer to the Multiagent Manager Interface Class
@@ -389,6 +424,10 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->baudrate = baudrate;
     larg->uart_name = uart_name;
     larg->synch = sync;
+    
+    for (i = 0; i < 3; i++)
+        larg->init_pos[i] = init_pos[i];
+    
     ptask_create_param(lauch_thread, &larg->params);
 }
 
@@ -397,7 +436,8 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  * connection with each of them.
  */
 
-int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, UE_Interface* ue)
+int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, 
+                  GS_Interface* gs, UE_Interface* ue)
 {
     Json::Value root;
     Json::CharReaderBuilder builder;
@@ -410,6 +450,14 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, GS_Interf
     int N_UDP_vehicles = 0;
     int N_SERIAL_vehicles = 0;
 
+    // Temp variables
+    char ip_addr_uav[16];
+    bool synch_udp;                 /// Vector containing the synchronization type flag
+    unsigned int uav_port_r;        /// Vector containing the read port for communicating with UAV
+    unsigned int uav_port_w;        /// Vector containing the write port for communicating with UAV
+    char serial_dev_uav[20];        /// Vector containing the Serial Devices strings
+    int uav_baud;                   /// Vector containing the baud rates of the serial interfaces
+    bool synch_serial;              /// Vector containing the synchronization type flag
 
     builder["rejectDupKeys"] = true;
 
@@ -549,23 +597,23 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, GS_Interf
                             
                 tmp_str = ve[index].get("IPAddress", VH_IPADDR).asString();
                 if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
-                    strcpy(ip_addr_uav[N_UDP_vehicles], (char *)tmp_str.c_str());
+                    strcpy(ip_addr_uav, (char *)tmp_str.c_str());
                     printf("Vehicle[%d] - IPAddress: %s\n", index, tmp_str.c_str());
                 } else {
                     printf("Failed to parse Ground Station IP address!\n");
                     return 1;
                 }
 
-                uav_port_w[N_UDP_vehicles] = ve[index].get("PortWrite", VH_PORTBASE_WRITE + ve[index]["ID"].asInt()*2).asInt();
-                printf("Vehicle[%d] - PortWrite: %d\n", index, uav_port_w[N_UDP_vehicles]);
+                uav_port_w = ve[index].get("PortWrite", VH_PORTBASE_WRITE + ve[index]["ID"].asInt()*2).asInt();
+                printf("Vehicle[%d] - PortWrite: %d\n", index, uav_port_w);
 
-                uav_port_r[N_UDP_vehicles] = ve[index].get("PortRead", VH_PORTBASE_READ + ve[index]["ID"].asInt()*2).asInt();
-                printf("Vehicle[%d] - PortRead: %d\n", index, uav_port_r[N_UDP_vehicles]);
+                uav_port_r = ve[index].get("PortRead", VH_PORTBASE_READ + ve[index]["ID"].asInt()*2).asInt();
+                printf("Vehicle[%d] - PortRead: %d\n", index, uav_port_r);
 
-                synch_udp[N_UDP_vehicles] = ve[index].get("Synch", VH_SYNCH).asInt();
-                printf("Vehicle[%d] - Synch: %d\n", index, synch_udp[N_UDP_vehicles]);
+                synch_udp = ve[index].get("Synch", VH_SYNCH).asInt();
+                printf("Vehicle[%d] - Synch: %d\n", index, synch_udp);
 
-                fill_launcher_udp(ma, sm, gs, ue, uav_port_r[N_UDP_vehicles], uav_port_w[N_UDP_vehicles], synch_udp[N_UDP_vehicles], ip_addr_uav[N_UDP_vehicles]);   // All the parameters are read and we can add the vehicle
+                fill_launcher_udp(ma, sm, gs, ue, uav_port_r, uav_port_w, synch_udp, ip_addr_uav);   // All the parameters are read and we can add the vehicle
                 N_UDP_vehicles++; 
                 
             } else if(tmp_ct == "Serial") {
@@ -573,16 +621,16 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, GS_Interf
                 printf("Vehicle[%d] - ConnectionType: Serial\n", index);
 
                 tmp_str = ve[index].get("Device", VH_DEVICE).asString();
-                strcpy(serial_dev_uav[N_SERIAL_vehicles], (char *)tmp_str.c_str());
+                strcpy(serial_dev_uav, (char *)tmp_str.c_str());
                 printf("Vehicle[%d] - Device: %s\n", index, tmp_str.c_str());
 
-                uav_baud[N_SERIAL_vehicles] = ve[index].get("Baudrate", VH_DEVICE_BAUDRATE).asInt();
-                printf("Vehicle[%d] - Baudrate: %d\n", index, uav_baud[N_SERIAL_vehicles]);
+                uav_baud = ve[index].get("Baudrate", VH_DEVICE_BAUDRATE).asInt();
+                printf("Vehicle[%d] - Baudrate: %d\n", index, uav_baud);
                 
-                synch_serial[N_UDP_vehicles] = ve[index].get("Synch", VH_SYNCH).asInt();
-                printf("Vehicle[%d] - Synch: %d\n", index, synch_serial[N_SERIAL_vehicles]);
+                synch_serial = ve[index].get("Synch", VH_SYNCH).asInt();
+                printf("Vehicle[%d] - Synch: %d\n", index, synch_serial);
                 
-                fill_launcher_serial(ma, sm, gs, ue, uav_baud[N_SERIAL_vehicles], synch_serial[N_SERIAL_vehicles], serial_dev_uav[N_SERIAL_vehicles]);
+                fill_launcher_serial(ma, sm, gs, ue, uav_baud, synch_serial, serial_dev_uav);
                 N_SERIAL_vehicles++;
                 
             } else {
@@ -640,7 +688,10 @@ int main(int argc, char *argv[])
     // -----------------------------
     //    INSTANTIATE CLASSES
     // -----------------------------
-
+    home.Latitude = 43.8148386; 
+    home.Longitude = 10.3192456; 
+    home.Altitude = 0.0;
+    
     /*
      * Instantiate a ground station interface object
      * This object handles the communication with the ground station.
@@ -761,10 +812,12 @@ void lauch_thread()
     switch (p->commType)
     {
         case UDP:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->ip, p->r_port, p->w_port, p->synch);
+            add_agent_to_system(p->ma, p->sm, p->gs, p->ip, p->r_port, p->w_port, 
+                                p->synch, p->init_pos);
             break;
         case SERIAL:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->uart_name, p->baudrate, p->synch);
+            add_agent_to_system(p->ma, p->sm, p->gs, p->uart_name, p->baudrate, p->synch, 
+                                p->init_pos);
             break;
             
         default:

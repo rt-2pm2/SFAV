@@ -140,7 +140,7 @@ class GS_Interface {
         /**
          * UDP port class
          */
-        Udp_Port udp_port;
+        Udp_Port* udp_port;
         
 
     private:
