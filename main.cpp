@@ -497,11 +497,13 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         
         tmp_fl = js_hm.get("Latitude", HOME_LATITUDE).asFloat();
         printf("Home - Latitude: %f\n", tmp_fl);
-        // ToDo: save it somewhere!
+        home.Latitude = tmp_fl;
    
         tmp_fl = js_hm.get("Longitude", HOME_LONGITUDE).asFloat();
         printf("Home - Longitude: %f\n", tmp_fl);
-        // ToDo: save it somewhere!
+        home.Longitude = tmp_fl;
+        
+        home.Altitude = 0.0;
     }
     
     // Ground Station

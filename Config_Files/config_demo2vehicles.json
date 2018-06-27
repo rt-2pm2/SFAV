@@ -27,7 +27,7 @@
                 "IPAddressCamera": "127.0.0.1",
                 "ConnectionType" : "UDP",
                 "IPAddress" : "192.168.1.2",
-                "PortWrite" : 4003,
+                "PortWrite" : 4005,
                 "PortRead" : 4004
             },
             {
