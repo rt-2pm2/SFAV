@@ -18,6 +18,15 @@ Simulator_Interface::Simulator_Interface()
     Initialize_Interface();
 }
 
+Simulator_Interface::Simulator_Interface(int Id)
+{
+    int i;
+    /// Allocate and Initialize the Simulation Structure
+    Initialize_Interface();
+
+    sysId = Id;
+}
+
 Simulator_Interface::Simulator_Interface(int Id, char *ip, uint32_t w_port)
 {
     int i;
@@ -154,7 +163,11 @@ void Simulator_Interface::DBGsendSimPosAtt()
     memcpy(outvect, SimModel->ModelData.outputs->Xe, 3 * sizeof(float));
     memcpy(&outvect[3], SimModel->ModelData.outputs->RPY, 3 * sizeof(float));
     
-    ComPort->writeBytes((char* )outvect, 6 * sizeof(float));
+    if (ComPort)
+        ComPort->writeBytes((char* )outvect, 6 * sizeof(float));
+
+    else
+        printf("No DBG port specified \n");
 }
 
 

@@ -105,6 +105,16 @@ struct HomePoint
     double Altitude;
 };
 
+/**
+ * Struct for the Unreal Engine Connection
+ */
+struct UEConnData
+{
+    char* ip;         /// IP address
+    
+    uint32_t br_port; /// Base Reading port 
+    uint32_t bw_port; /// Base Writing port
+}
 
 /**
  * Struct with the pointes to the interfaces

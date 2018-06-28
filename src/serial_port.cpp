@@ -395,7 +395,7 @@ int Serial_Port::_read_port(uint8_t &cp)
     int result = read(fd, &cp, 1);
     if ( result == -1 )
     {
-        printf("%s, %s : _read_port  : Failed to read on the serial\n",__FILE__,__LINE__);
+        //printf("%s, %s : _read_port  : Failed to read on the serial\n",__FILE__,__LINE__);
     }
     return result;
 }
@@ -412,7 +412,7 @@ int Serial_Port::_write_port(char *buf, unsigned &len)
 
     if ( writtenB == -1 )
     {
-        printf("%s, %s : _write_port  : Failed to write on the serial\n",__FILE__,__LINE__);
+        //printf("%s, %s : _write_port  : Failed to write on the serial\n",__FILE__,__LINE__);
         return writtenB;
     }
     // Wait until all data has been written

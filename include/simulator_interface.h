@@ -60,6 +60,9 @@ class Simulator_Interface {
         /// Default Constructor
         Simulator_Interface();
         
+        /// Simple Constructor
+        Simulator_Interface(int Id);
+        
         /// Advanced Constructor
         Simulator_Interface(int Id, char *ip, uint32_t w_port);
 

@@ -201,7 +201,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     //
     // 2a) Add a Simulation_Interface class
     rel2latlon(home, init_pos, &lat, &lon, &alt);
-    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, dbg_port);
+    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, 0);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -322,7 +322,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     //
     // 2a) Add a Simulation_Interface class
     rel2latlon(home, init_pos, &lat, &lon, &alt);
-    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, dbg_port);
+    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, 0);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -505,6 +505,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         
         home.Altitude = 0.0;
     }
+    printf("\n");
     
     // Ground Station
     Json::Value js_gs = root["GS"];
@@ -523,12 +524,12 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         if (tmp_str == "UDP") {
             
             tmp_pw = js_gs.get("PortWrite", GS_WPORT).asInt();
-            printf("Groud Station - PortWrite: ", tmp_pw);
+            printf("Groud Station - PortWrite: %d \n", tmp_pw);
             gs->setWritePort(tmp_pw);
 
             tmp_pr = js_gs.get("PortRead", GS_RPORT).asInt();
-            printf("Groud Station - PortRead: ", tmp_pr);
-            gs->setReadPort(tmp_pr);        
+            printf("Groud Station - PortRead: %d \n", tmp_pr);
+            gs->setReadPort(tmp_pr);
 
             tmp_str = js_gs.get("IPAddress", GS_IP).asString();
             if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
@@ -544,6 +545,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
             return 1;
         }
     }
+    printf("\n");
     
     // Unreal Engine
     Json::Value js_ue = root["UE"];
@@ -556,38 +558,55 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
         std::string tmp_str;
         int tmp_int;
             
-        // ToDo: Get without default!
-        tmp_str = js_ue.get("ConnectionType", "UDP").asString();
-        printf("Unreal Engine - ConnectionType: %s \n", tmp_str.c_str());
+        tmp_int = js_ue.get("Status", 0).asInt();
+        if (tmp_int == 1)
+            ue->active = true;
+        else
+            ue->active = false;
         
-        if (tmp_str == "UDP") {
-            
-            tmp_str = js_ue.get("IPAddress", UE_IP).asString();
-            if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid 
-                ue->setIP((char *)tmp_str.c_str());
-                printf("Unreal Engine - IPAddress: %s \n", tmp_str.c_str());
-            } else {
-                printf("Failed to parse Ground Station IP address!\n");
+        if (ue->active)
+        {
+            // ToDo: Get without default!
+            tmp_str = js_ue.get("ConnectionType", "UDP").asString();
+            printf("Unreal Engine - ConnectionType: %s \n", tmp_str.c_str());
+
+            if (tmp_str == "UDP") {
+
+                tmp_str = js_ue.get("IPAddress", UE_IP).asString();
+                if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid
+                    ue->setIP((char *)tmp_str.c_str());
+                    printf("Unreal Engine - IPAddress: %s \n", tmp_str.c_str());
+                } else {
+                    printf("Failed to parse Ground Station IP address!\n");
+                    return 1;
+                }
+
+                tmp_int = js_ue.get("PortWriteBase", UE_WPORT).asInt();
+                printf("Unreal Engine - PortWriteBase:  %d \n", tmp_int);
+                ue->setBaseWritePort(tmp_int);
+
+                tmp_int = js_ue.get("PortReadBase", UE_RPORT).asInt();
+                printf("Unreal Engine - PortReadBase:  %d \n", tmp_int);
+                ue->setBaseReadPort(tmp_int);
+
+                tmp_int = js_ue.get("PortVideoRead", UE_RPORT).asInt();
+                printf("Unreal Engine - PortVideoBase:  %d \n", tmp_int);
+                ue->setBaseVideoPort(tmp_int);
+
+            }
+            else
+            {
+                printf("Only UDP connection with Ground Station supported.\n");
                 return 1;
             }
-
-            tmp_int = js_ue.get("PortWriteBase", UE_WPORT).asInt();
-            printf("Unreal Engine - PortWriteBase:  %d \n", tmp_int);
-            ue->setBaseWritePort(tmp_int);
-
-            tmp_int = js_ue.get("PortReadBase", UE_RPORT).asInt();
-            printf("Unreal Engine - PortReadBase:  %d \n", tmp_int);
-            ue->setBaseReadPort(tmp_int);        
-
-            tmp_int = js_ue.get("PortVideoRead", UE_RPORT).asInt();
-            printf("Unreal Engine - PortVideoBase:  %d \n", tmp_int);
-            ue->setBaseVideoPort(tmp_int);        
- 
-        } else {
-            printf("Only UDP connection with Ground Station supported.\n");
-            return 1;
         }
+        else
+            {
+                printf("Unreal Engine - Not Active! \n");
+                return 1;
+            }
     }
+    printf("\n");
     
     // Vehicles
     Json::Value ve = root["Vehicle"];
@@ -675,7 +694,6 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
                 synch_serial = ve[index].get("Synch", VH_SYNCH).asInt();
                 printf("Vehicle[%d] - Synch: %d\n", index, synch_serial);
                 
-                
                 fill_launcher_serial(ma, sm, gs, ue, uav_baud, synch_serial, serial_dev_uav, init_pos);
                 N_SERIAL_vehicles++;
                 
@@ -687,7 +705,9 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
             printf("The configuration file includes a vehicle without ConnectionType.\n");
             return 1;
         }
+        printf("\n");
     }
+    return 0;
 }
   
 void Init_ThreadsEnvironment()
@@ -787,14 +807,16 @@ int main(int argc, char *argv[])
     GsThreadArg GSarg; 
     start_gs_thread(&GSarg, &ma_manager, &gs_interface);
     
-    
+    for(;;);
     // Wait for the GS thread to finish
     pthread_join(ptask_get_threadid(gsT_id), 0);
+    printf("Ground Station Thread terminated! \n");
     
     // Wait for the Inflow threads to finish
     N_size = VectInflowArg.size();
     for (i = 0; i < N_size; i++)
     {
+        printf("Waiting the InflowThreads [%d] to finish...\n", VectInflowArg.at(i)->ThreadId);
         pthread_join(ptask_get_threadid(VectInflowArg.at(i)->ThreadId), 0);
     }
     
@@ -1031,9 +1053,6 @@ void simulator_thread()
     ptime send_time = 0;
     ptime old_send_time = 0;
     ptime diff = 0;
-
-    Udp_Port* ComPort = new Udp_Port();
-    ComPort->InitializeOutputPort(dbg_ip, dbg_port + system_id);
     
     // Check the initialization of the necessary classes
     while (!time_to_exit)
@@ -1060,13 +1079,13 @@ void simulator_thread()
         p->sim->getSimOutput(&simout);
         
         // Send the state to the debug machine
-        p->sim->DBGsendSimPosAtt();
+        //p->sim->DBGsendSimPosAtt();
         
         // Extract the Sensors and Gps Data
         extractSensors(simout, &sensors);
         extractGpsData(simout, &gps);
         
-
+    
         // SEND
         if (p->aut->is_hil())
         {
@@ -1136,8 +1155,6 @@ void simulator_thread()
             }
         }
     }
-    delete ComPort;
-
 }
 
 

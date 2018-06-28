@@ -63,7 +63,11 @@ Simulator_Interface* Sim_Manager::add_simulator(int Sys_Id, float Lat, float Lon
     {
         // Create a new Autopilot Interface class and add it to the list
         Simulator_Interface* pSi;
-        pSi = new Simulator_Interface(Sys_Id, ip, port);
+        if (port != 0)
+            pSi = new Simulator_Interface(Sys_Id, ip, port);
+        else
+            pSi = new Simulator_Interface(Sys_Id);
+        
         pSi->setInitialCoordinates(Lat, Lon);
         pSI.push_back(pSi);
         ConnectedSimulators++;

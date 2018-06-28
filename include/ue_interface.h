@@ -85,6 +85,8 @@ public:
 
     int add_port(int offset);
 
+    bool active;
+    
 private:
 
     int NVehicles;

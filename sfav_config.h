@@ -73,7 +73,7 @@
 
 // Debug Interface
 #ifndef DBG_IP
-#define DBG_IP ("10.30.3.136")
+#define DBG_IP ("127.0.0.1")
 #endif
 #ifndef DBG_PORT
 #define DBG_PORT (10000)

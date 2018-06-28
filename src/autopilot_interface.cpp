@@ -340,6 +340,7 @@ int Autopilot_Interface::handle_message(mavlink_message_t message)
     {
         case MAVLINK_MSG_ID_HEARTBEAT:
         {
+            //printf("MAVLINK_MSG_HEARTBEAT\n");
             mavlink_heartbeat_t heartbeat;
             mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
@@ -415,7 +416,7 @@ int Autopilot_Interface::send_message(mavlink_message_t* message)
     
     if (len != writtenB)
     {
-        printf("Autopilot_Interface::write_message: ERROR WHILE WRITING \n %d instead of %d \n\n", writtenB, len); 
+        //printf("Autopilot_Interface::write_message: ERROR WHILE WRITING \n %d instead of %d \n\n", writtenB, len); 
         return -1;
     }
     // Done!
@@ -593,6 +594,7 @@ void Autopilot_Interface::start_hil()
 
         // Check the condition for the re-try
         condition = (base_mode & MAV_MODE_FLAG_HIL_ENABLED) == 0;
+        condition = 0;
         // Release the resource 
         pthread_mutex_unlock(&mut_heartbeat);
     }

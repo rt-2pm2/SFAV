@@ -41,6 +41,8 @@ UE_Interface::UE_Interface()
 		rbuff[i] = 0;
     
     ComPort = NULL;
+    
+    active = false;
 }
 
 UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port, uint32_t v_port)
@@ -65,6 +67,8 @@ UE_Interface::UE_Interface(char *ip, uint32_t r_port, uint32_t w_port, uint32_t 
 		rbuff[i] = 0;
     
     ComPort = NULL;
+    
+    active = false;
 }
 
 UE_Interface::~UE_Interface()
