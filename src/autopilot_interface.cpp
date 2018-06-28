@@ -309,7 +309,7 @@ void Autopilot_Interface::waitNextHeartbeat()
 {
     pthread_mutex_lock(&mut_heartbeat);
 
-    if (Connected == false)
+    while (Connected == false)
         pthread_cond_wait(&cond_heartbeat, &mut_heartbeat);
 
     pthread_mutex_unlock(&mut_heartbeat);

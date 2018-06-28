@@ -7,7 +7,7 @@
                 "ConnectionType" : "UDP",
                 "IPAddress" : "127.0.0.1",
                 "PortWrite" : 14550,
-                "PortRead" : 145551
+                "PortRead" : 14551
         },
         "UE" : {
                 "Status" : 0,
@@ -27,7 +27,7 @@
                 "RelY" : 4.5,
                 "IPAddressCamera": "127.0.0.1",
                 "ConnectionType" : "UDP",
-                "IPAddress" : "127.0.0.1",
+                "IPAddress" : "10.30.3.185",
                 "PortWrite" : 4005,
                 "PortRead" : 4004
             },
@@ -35,13 +35,13 @@
                 "ID" : 3,
                 "TypeID" : 2,
                 "Synch" : 0,
-                "RelX" : 6,
-                "RelY" : 4.533,
-                "RelZ" : 0.5,
-                "IPAddressCamera": "127.0.0.1",
-                "ConnectionType" : "Serial",
-                "Device" : "/dev/ttyUSB0",
-                "Baudrate" : 921600
+                "RelX" : 10.5,
+                "RelY" : 4.5,
+                "IPAddressCamera": "10.30.3.49",
+                "ConnectionType" : "UDP",
+                "IPAddress" : "10.30.3.49",
+                "PortWrite" : 4003,
+                "PortRead" : 4002
             }
 	]
 }

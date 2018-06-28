@@ -110,11 +110,15 @@ struct HomePoint
  */
 struct UEConnData
 {
-    char* ip;         /// IP address
+    bool active;      /// Active Flag
+    
+    char ip[15];         /// IP address
     
     uint32_t br_port; /// Base Reading port 
     uint32_t bw_port; /// Base Writing port
-}
+    
+    uint32_t bv_port; /// Base Video port
+};
 
 /**
  * Struct with the pointes to the interfaces
@@ -130,7 +134,7 @@ struct LaunchArg
     MA_Manager* ma; /// Pointer to the MultiAgent Interface Class
     Sim_Manager* sm; /// Pointer to the Simulators Manager Interface Class
     GS_Interface* gs; /// Pointer to the GroundStation Interface Class
-    UE_Interface* ue; /// Pointer to the UnrealEngine Interface Class
+    struct UEConnData* ue; /// Pointer to the UnrealEngine Interface Class
     
     CommInterfaceType commType; /// Connection type (UDP, SERIAL)
     char* ip; /// Ip Address of the vehicle

@@ -10,7 +10,14 @@ find_package (Threads)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
-#include_directories("${JSONCPP_INCLUDE_DIRS}")
+
+IF (NOT DEFINED ${JSONCPP_INCLUDE_DIRS})
+        find_path(JSONCPP_INCLUDE_DIRS json/json.h)
+ENDIF (NOT DEFINED ${JSONCPP_INCLUDE_DIRS})
+
+IF (DEFINED ${JSONCPP_INCLUDE_DIRS})
+        include_directories("${JSONCPP_INCLUDE_DIRS}")
+ENDIF (DEFINED ${JSONCPP_INCLUDE_DIRS})
 
 # =================================================
 # Add the directories containing the Header files

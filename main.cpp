@@ -20,6 +20,8 @@ const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
 
 struct HomePoint home;
 
+struct UEConnData ueconndata;
+
 /* Start to retrieve data from the Autopilot Interface
  * Lock the resource autopilot_connected, then wait for the first heartbeat
  * before going on. It is necessary to wait because the heartbeat message
@@ -67,7 +69,7 @@ int start_sim_thread(struct SimThreadArg* arg)
 {
     int simT_id = 0;
     int id = arg->aut->getSystemId();
-    printf("Creating the simuation_thread [%d] ....\n", id);
+    printf("Creating the simulation_thread [%d] ....\n", id);
     simT_id = ptask_create_param(simulator_thread, &arg->params);
     if(simT_id == -1)
     { 
@@ -152,7 +154,7 @@ void rel2latlon(struct HomePoint hp, float init_pos[3], float* lat, float* lon, 
  * 3) Start the VirtualEnvironment thread
  */
 int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                        char* ip, uint32_t r_port, uint32_t w_port,
+                        struct UEConnData* ue, char* ip, uint32_t r_port, uint32_t w_port,
                         bool synch, float init_pos[3])
 {
     int i;
@@ -229,41 +231,43 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 
     start_sim_thread(SArg);
     
-    //
-    // 3a) Add a UnrealEngine interface class and set up the communication port
-    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port, ue_v_port);
-    pUe->add_port(Agent_Id);
-    
-    //
-    // 3b) Set up the arguments to be passed to the UnrealThread
-    // Structure to pass arguments to the thread
-    struct UeThreadArg* UEArg;
-    UEArg = new struct UeThreadArg;
-    
-    // Defining the Structure containing the thread Properties 
-    UEArg->ThreadId = -1;
-    UEArg->params = TASK_SPEC_DFL;
-    UEArg->params.period = ue_period;
-    UEArg->params.rdline = ue_period;
-    UEArg->params.priority = UnrealEngine_Thread_Priority;
-    UEArg->params.act_flag = NOW;
-    UEArg->params.measure_flag = 0;
-    UEArg->params.processor = 0;
-    
-    for (i = 0; i < 3; i++)
-        UEArg->pos_offset[i] = init_pos[i];
-    
-    UEArg->params.arg = (void *) UEArg;
-    
-    // Load the pointers to the Interface Classes
-    UEArg->ue = pUe;
-    UEArg->sim = pS;
-    
-    // Save the address of the allocated memory
-    VectUEThreadArg.push_back(UEArg);
-    
-    start_ue_thread(UEArg);
-    
+    if (ue->active)
+    {
+        //
+        // 3a) Add a UnrealEngine interface class and set up the communication port
+        pUe = new UE_Interface(ue_ip, ue->br_port, ue->bw_port, ue->bv_port);
+        pUe->add_port(Agent_Id);
+
+        //
+        // 3b) Set up the arguments to be passed to the UnrealThread
+        // Structure to pass arguments to the thread
+        struct UeThreadArg* UEArg;
+        UEArg = new struct UeThreadArg;
+
+        // Defining the Structure containing the thread Properties
+        UEArg->ThreadId = -1;
+        UEArg->params = TASK_SPEC_DFL;
+        UEArg->params.period = ue_period;
+        UEArg->params.rdline = ue_period;
+        UEArg->params.priority = UnrealEngine_Thread_Priority;
+        UEArg->params.act_flag = NOW;
+        UEArg->params.measure_flag = 0;
+        UEArg->params.processor = 0;
+
+        for (i = 0; i < 3; i++)
+            UEArg->pos_offset[i] = init_pos[i];
+
+        UEArg->params.arg = (void *) UEArg;
+
+        // Load the pointers to the Interface Classes
+        UEArg->ue = pUe;
+        UEArg->sim = pS;
+
+        // Save the address of the allocated memory
+        VectUEThreadArg.push_back(UEArg);
+
+        start_ue_thread(UEArg);
+    }
     return Agent_Id;
 }
 
@@ -273,7 +277,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 // add_agent_to_system
 // Add agent to system : Instantiate a new Autopilot interface class and start the 
 // Inflow thread to receive data from the board.
-int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
+int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, struct UEConnData* ue,
                         char*& uart_name, int baudrate, bool synch, float init_pos[3])
 {
     int i;
@@ -352,39 +356,41 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     
     //
     // 3a) Add a communication port to the Synthetic Environment
-    pUe = new UE_Interface(ue_ip, ue_r_port, ue_w_port, ue_v_port);
+    pUe = new UE_Interface(ue_ip, ue->br_port, ue->bw_port, ue->bv_port);
     pUe->add_port(Agent_Id);
-    
-    //
-    // 3b) Set up the arguments to be passed to the UnrealThread
-    // Structure to pass arguments to the thread
-    struct UeThreadArg* UEArg;
-    UEArg = new struct UeThreadArg;
-    
-    // Defining the Structure containing the thread Properties 
-    UEArg->ThreadId = -1;
-    UEArg->params = TASK_SPEC_DFL;
-    UEArg->params.period = sim_period;
-    UEArg->params.rdline = sim_period;
-    UEArg->params.priority = UnrealEngine_Thread_Priority;
-    UEArg->params.act_flag = NOW;
-    UEArg->params.measure_flag = 0;
-    UEArg->params.processor = 0;
-    
-    for (i = 0; i < 3; i++)
-        UEArg->pos_offset[i] = init_pos[i];
-    
-    UEArg->params.arg = (void *) UEArg;
-    
-    // Load the pointers to the Interface Classes
-    UEArg->ue = pUe;
-    UEArg->sim = pS;
-    
-    // Save the address of the allocated memory
-    VectUEThreadArg.push_back(UEArg);
-    
-    start_ue_thread(UEArg);
-    
+
+    if (ue->active)
+    {
+        //
+        // 3b) Set up the arguments to be passed to the UnrealThread
+        // Structure to pass arguments to the thread
+        struct UeThreadArg* UEArg;
+        UEArg = new struct UeThreadArg;
+
+        // Defining the Structure containing the thread Properties
+        UEArg->ThreadId = -1;
+        UEArg->params = TASK_SPEC_DFL;
+        UEArg->params.period = sim_period;
+        UEArg->params.rdline = sim_period;
+        UEArg->params.priority = UnrealEngine_Thread_Priority;
+        UEArg->params.act_flag = NOW;
+        UEArg->params.measure_flag = 0;
+        UEArg->params.processor = 0;
+
+        for (i = 0; i < 3; i++)
+            UEArg->pos_offset[i] = init_pos[i];
+
+        UEArg->params.arg = (void *) UEArg;
+
+        // Load the pointers to the Interface Classes
+        UEArg->ue = pUe;
+        UEArg->sim = pS;
+
+        // Save the address of the allocated memory
+        VectUEThreadArg.push_back(UEArg);
+
+        start_ue_thread(UEArg);
+    }
     return Agent_Id;
 }
 
@@ -393,7 +399,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  * involved in the data exchange with the single vehicle.
  */
 void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                   UE_Interface* ue, unsigned int portr, unsigned int portw, 
+                   struct UEConnData* ue, unsigned int portr, unsigned int portw, 
                    bool sync, char* ip_addr, float init_pos[3])
 {
     int i;
@@ -419,7 +425,7 @@ void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 }
 
 void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, 
-                   UE_Interface* ue, int baudrate, bool sync, char* uart_name, 
+                   struct UEConnData* ue, int baudrate, bool sync, char* uart_name, 
                    float init_pos[3])
 {
     int i;
@@ -453,7 +459,7 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
  */
 
 int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm, 
-                  GS_Interface* gs, UE_Interface* ue)
+                  GS_Interface* gs, struct UEConnData* ue)
 {
     Json::Value root;
     Json::CharReaderBuilder builder;
@@ -574,7 +580,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
 
                 tmp_str = js_ue.get("IPAddress", UE_IP).asString();
                 if(inet_aton(tmp_str.c_str(), tmp_ip)) {    // The ip is valid
-                    ue->setIP((char *)tmp_str.c_str());
+                    strcpy(ue->ip, (char *)tmp_str.c_str());
                     printf("Unreal Engine - IPAddress: %s \n", tmp_str.c_str());
                 } else {
                     printf("Failed to parse Ground Station IP address!\n");
@@ -583,15 +589,15 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
 
                 tmp_int = js_ue.get("PortWriteBase", UE_WPORT).asInt();
                 printf("Unreal Engine - PortWriteBase:  %d \n", tmp_int);
-                ue->setBaseWritePort(tmp_int);
+                ue->bw_port = tmp_int;
 
                 tmp_int = js_ue.get("PortReadBase", UE_RPORT).asInt();
                 printf("Unreal Engine - PortReadBase:  %d \n", tmp_int);
-                ue->setBaseReadPort(tmp_int);
+                ue->br_port = tmp_int;
 
                 tmp_int = js_ue.get("PortVideoRead", UE_RPORT).asInt();
                 printf("Unreal Engine - PortVideoBase:  %d \n", tmp_int);
-                ue->setBaseVideoPort(tmp_int);
+                ue->bv_port = tmp_int;
 
             }
             else
@@ -601,10 +607,9 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
             }
         }
         else
-            {
-                printf("Unreal Engine - Not Active! \n");
-                return 1;
-            }
+        {
+            printf("Unreal Engine - Not Active! \n");
+        }
     }
     printf("\n");
     
@@ -614,7 +619,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
     //std::cout << "Number of Vehicles - " << nv << std::endl;    
     
     if (nv <= 0) {
-        printf("The configuration file defines %d% vehicles, which is an invalid number.\n", nv);
+        printf("The configuration file defines %d vehicles, which is an invalid number.\n", nv);
         return 1;
     }
  
@@ -712,7 +717,8 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
   
 void Init_ThreadsEnvironment()
 {
-    ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
+    //ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
+    ptask_init(SCHED_OTHER, GLOBAL, NO_PROTOCOL);
     
     // Setting periods
     aut_period = Inflow_Thread_Period;
@@ -766,12 +772,6 @@ int main(int argc, char *argv[])
     GS_Interface gs_interface;
 
     /*
-     * Instatiate the interface for the management of the 
-     * Unreal Engine. The communication is accomplished over the UDP.
-     */ 
-    UE_Interface ue_interface;
-
-    /*
      * Instatiate the interfaces for the management of the 
      * Multi Agent system.
      */ 
@@ -787,7 +787,7 @@ int main(int argc, char *argv[])
      * Parse the configuration file to get the information to initialize the managers
      */
     //parse_commandline(argc, argv, gs_ip, gs_r_port, gs_w_port, ue_ip, ue_r_port, ue_w_port);
-    Init_Managers(&configfile, &ma_manager, &sim_manager, &gs_interface, &ue_interface);
+    Init_Managers(&configfile, &ma_manager, &sim_manager, &gs_interface, &ueconndata);
 
     /*
      * Setup interrupt signal handler
@@ -807,9 +807,9 @@ int main(int argc, char *argv[])
     GsThreadArg GSarg; 
     start_gs_thread(&GSarg, &ma_manager, &gs_interface);
     
-    for(;;);
+
     // Wait for the GS thread to finish
-    pthread_join(ptask_get_threadid(gsT_id), 0);
+    pthread_join(ptask_get_threadid(GSarg.ThreadId), 0);
     printf("Ground Station Thread terminated! \n");
     
     // Wait for the Inflow threads to finish
@@ -880,11 +880,11 @@ void lauch_thread()
     switch (p->commType)
     {
         case UDP:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->ip, p->r_port, p->w_port, 
+            add_agent_to_system(p->ma, p->sm, p->gs, p->ue, p->ip, p->r_port, p->w_port, 
                                 p->synch, p->init_pos);
             break;
         case SERIAL:
-            add_agent_to_system(p->ma, p->sm, p->gs, p->uart_name, p->baudrate, p->synch, 
+            add_agent_to_system(p->ma, p->sm, p->gs, p->ue, p->uart_name, p->baudrate, p->synch, 
                                 p->init_pos);
             break;
             
@@ -899,7 +899,7 @@ void lauch_thread()
 
 
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 //    INFLOW THREAD
 // ----------------------------------------------------------------------
 /*
@@ -1223,6 +1223,7 @@ void gs_thread()
         }
         ptask_wait_for_period();
 	}
+	printf("Terminating the GS thread...\n");
     //delete p;
 }
 

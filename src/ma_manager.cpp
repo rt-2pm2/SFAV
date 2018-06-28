@@ -148,7 +148,7 @@ Autopilot_Interface* MA_Manager::getLastAutopilotInstance()
 int MA_Manager::sendMessage2UAV(mavlink_message_t* message, int uavId)
 {
     int i, N, bytesent;
-    printf("Sending Message %d to UAV %d\n", message->msgid, uavId);
+    //printf("Sending Message %d to UAV %d\n", message->msgid, uavId);
     
     if (getNumberOfAgents() == 0)
     {
