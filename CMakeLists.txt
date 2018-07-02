@@ -15,9 +15,9 @@ IF (NOT DEFINED ${JSONCPP_INCLUDE_DIRS})
         find_path(JSONCPP_INCLUDE_DIRS json/json.h)
 ENDIF (NOT DEFINED ${JSONCPP_INCLUDE_DIRS})
 
-IF (DEFINED ${JSONCPP_INCLUDE_DIRS})
+IF (NOT ${JSONCPP_INCLUDE_DIRS} STREQUAL "")
         include_directories("${JSONCPP_INCLUDE_DIRS}")
-ENDIF (DEFINED ${JSONCPP_INCLUDE_DIRS})
+ENDIF (NOT ${JSONCPP_INCLUDE_DIRS} STREQUAL "")
 
 # =================================================
 # Add the directories containing the Header files
