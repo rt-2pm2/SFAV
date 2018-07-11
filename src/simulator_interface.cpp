@@ -37,6 +37,8 @@ Simulator_Interface::Simulator_Interface(int Id, char *ip, uint32_t w_port)
     
     udp_port = w_port;
     
+    ComPort = new Udp_Port();
+   
     // Initialize UDP Communication for debug purpose
     for (i = 0; i < strlen(ip); i++)
         net_ip[i] = ip[i];
