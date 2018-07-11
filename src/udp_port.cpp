@@ -40,7 +40,7 @@ void Udp_Port::InitializeOutputPort(const char* ip_addr, uint32_t w_port)
     memset(&remAddr, 0, sizeof(remAddr));
 
     remAddr.sin_family = AF_INET;
-    remAddr.sin_port = htons(w_port);
+    remAddr.sin_port = htons(write_port);
     remAddr.sin_addr.s_addr = inet_addr(ip_addr);
     
     // Perfoming a non blocking access
@@ -55,7 +55,7 @@ void Udp_Port::InitializeOutputPort(const char* ip_addr, uint32_t w_port)
 
 void Udp_Port::InitializeInputPort(const char* ip_addr, uint32_t r_port)
 {
-    //printf("Setting UDP Input port : IP_DEST %s | PORT %d\n", ip_addr, r_port);
+    printf("Setting UDP Input port : IP_DEST %s | PORT %d\n", ip_addr, r_port);
     read_port = r_port;
     write_port = -1;
     
@@ -93,8 +93,8 @@ Udp_Port::Udp_Port(const char* ip_addr, uint32_t r_port, uint32_t w_port)
     read_port = r_port;
     write_port = w_port;
     
-    //printf("Setting UDP Input/Output port : \n IP_DEST %s | READ PORT %d | WRITE PORT %d\n", 
-    //       ip_addr, r_port, w_port);
+    printf("Setting UDP Input/Output port : \n IP_DEST %s | READ PORT %d | WRITE PORT %d\n", 
+           ip_addr, read_port, write_port);
     // Endpoint for communication file descriptor
     sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -102,21 +102,21 @@ Udp_Port::Udp_Port(const char* ip_addr, uint32_t r_port, uint32_t w_port)
     memset(&locAddr, 0, sizeof(locAddr));
 
     locAddr.sin_family = AF_INET;
-    locAddr.sin_port = htons(r_port);
+    locAddr.sin_port = htons(read_port);
     locAddr.sin_addr.s_addr = INADDR_ANY;
 
     // Initialize remote sockaddr_in structure
     memset(&remAddr, 0, sizeof(remAddr));
 
     remAddr.sin_family = AF_INET;
-    remAddr.sin_port = htons(w_port);
+    remAddr.sin_port = htons(write_port);
     remAddr.sin_addr.s_addr = inet_addr(ip_addr);
 
     // Binding the socket to read
     if (-1 == bind(sock,(struct sockaddr *)&locAddr,sizeof(struct sockaddr)))
     {
         fprintf(stderr,"Udp_Port::Udp_Port error: bind failed! (IP %s | R %d | W %d)\n", 
-                ip_addr, r_port, w_port);
+                ip_addr, r_port, write_port);
         close(sock);
         exit(EXIT_FAILURE);
     }

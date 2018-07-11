@@ -406,13 +406,13 @@ void fill_launcher_udp(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     struct LaunchArg* larg = new (struct LaunchArg);
     
     larg->ma = ma; // Pointer to the Multiagent Manager Interface Class
-    larg->sm = sm; // Pointer to the Simulators Manager Interface Class
+    larg->sm = sm; // Pointer to the Simulatrs Manager Interface Class
     larg->gs = gs; // Pointer to the GroundStation Interface Class
     larg->ue = ue; // Pointer to the UnrealEngine Interface Class
     larg->params = TASK_SPEC_DFL;
     larg->params.act_flag = NOW;
     larg->params.arg = (void *) larg;
-    larg->ip = ip_addr;
+    strcpy(larg->ip,  ip_addr);
     larg->r_port = portr;
     larg->w_port = portw;
     larg->commType = UDP;
@@ -439,7 +439,7 @@ void fill_launcher_serial(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     larg->params = TASK_SPEC_DFL;
     larg->params.act_flag = NOW;
     larg->params.arg = (void *) larg;
-    larg->ip = NULL;
+    //larg->ip = NULL;
     larg->r_port = 0;
     larg->w_port = 0;
     larg->commType = SERIAL;
@@ -840,14 +840,14 @@ int main(int argc, char *argv[])
         delete VectInflowArg.at(i)->aut;
         delete VectInflowArg.at(i);
     }
-    
+
     N_size = VectSimThreadArg.size();
     for (i = 0; i < N_size; i++)
     {
         delete VectSimThreadArg.at(i)->sim;
         delete VectSimThreadArg.at(i);
     }
-    
+
     N_size = VectUEThreadArg.size();
     for (i = 0; i < N_size; i++)
     {
@@ -957,8 +957,10 @@ void routing_messages(mavlink_message_t *msg, struct InflowArg* const p)
     {
         // OF NO INTEREST FOR THE GROUND STATION
         case MAVLINK_MSG_ID_HIL_CONTROLS:
+            p->gs->pushMessage(msg);
             break;
 		case MAVLINK_MSG_ID_HIL_ACTUATOR_CONTROLS:
+            p->gs->pushMessage(msg);
             break;
 
         default:

@@ -137,7 +137,7 @@ struct LaunchArg
     struct UEConnData* ue; /// Pointer to the UnrealEngine Interface Class
     
     CommInterfaceType commType; /// Connection type (UDP, SERIAL)
-    char* ip; /// Ip Address of the vehicle
+    char ip[16]; /// Ip Address of the vehicle
     uint32_t r_port; /// Reading port 
     uint32_t w_port; /// Writing port
     int baudrate;   /// Serial port baudrate
