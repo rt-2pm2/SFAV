@@ -63,6 +63,15 @@ class GS_Interface {
         ~GS_Interface(); 
 
         // Settings
+
+        /**
+         * Set the IP address variable
+         * \param ip IP address
+         * \param r_port Base Value for the Local Port for reading
+         * \param w_port Base Value for the Remote Port for sending
+         */        
+        int setUDP(char* ip, uint32_t r_port, uint32_t w_port);
+
         /**
          * Set the ReadPort variable
          * \param port Reading Port
@@ -131,7 +140,7 @@ class GS_Interface {
         /**
          * UDP port class
          */
-        Udp_Port udp_port;
+        Udp_Port* udp_port;
         
 
     private:

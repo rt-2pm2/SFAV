@@ -20,15 +20,36 @@ Simulator_Interface::Simulator_Interface()
 
 Simulator_Interface::Simulator_Interface(int Id)
 {
+    int i;
     /// Allocate and Initialize the Simulation Structure
     Initialize_Interface();
 
     sysId = Id;
 }
 
+Simulator_Interface::Simulator_Interface(int Id, char *ip, uint32_t w_port)
+{
+    int i;
+    /// Allocate and Initialize the Simulation Structure
+    Initialize_Interface();
+
+    sysId = Id;
+    
+    udp_port = w_port;
+    
+    ComPort = new Udp_Port();
+   
+    // Initialize UDP Communication for debug purpose
+    for (i = 0; i < strlen(ip); i++)
+        net_ip[i] = ip[i];
+    ComPort->InitializeOutputPort(net_ip, udp_port + sysId);
+}
+
 Simulator_Interface::~Simulator_Interface()
 {
     DynModel_terminate(SimModel);
+    if (ComPort != NULL)
+        delete ComPort;
     printf("Destructor of Simulator/n");
 }
 
@@ -56,6 +77,7 @@ void Simulator_Interface::Initialize_Interface()
         SimModel->ModelData.inputs->n_collision[i] = 0.0;
     }
     sysId = 1;
+    ComPort = NULL;
 }
 
 
@@ -133,6 +155,21 @@ void Simulator_Interface::getSimPosAtt(float Xe[3], float Att[3])
 {
     memcpy(Xe, SimModel->ModelData.outputs->Xe, 3 * sizeof(float));
     memcpy(Att, SimModel->ModelData.outputs->RPY, 3 * sizeof(float));
+}
+
+// Send debug information
+void Simulator_Interface::DBGsendSimPosAtt()
+{
+    float outvect[6];
+    
+    memcpy(outvect, SimModel->ModelData.outputs->Xe, 3 * sizeof(float));
+    memcpy(&outvect[3], SimModel->ModelData.outputs->RPY, 3 * sizeof(float));
+    
+    if (ComPort)
+        ComPort->writeBytes((char* )outvect, 6 * sizeof(float));
+
+    else
+        printf("No DBG port specified \n");
 }
 
 

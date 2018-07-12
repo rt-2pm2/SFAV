@@ -63,14 +63,16 @@ public:
 
     // Constructor
     UE_Interface();
-    UE_Interface(char* ip, uint32_t r_port, uint32_t w_port);
+    UE_Interface(char* ip, uint32_t r_port, uint32_t w_port, uint32_t v_port);
 
     // Destructor
     ~UE_Interface();
 
     // Settings
+    int setIP(char* ip);
     int setBaseReadPort(unsigned int port);
     int setBaseWritePort(unsigned int port);
+    int setBaseVideoPort(unsigned int port);
 
     // Communication
     int sendData(struct UE_SendData);
@@ -83,11 +85,13 @@ public:
 
     int add_port(int offset);
 
+    bool active;
+    
 private:
 
     int NVehicles;
     char net_ip[15];
-    uint32_t r_port, w_port;
+    uint32_t r_port, w_port, v_port;
 
     pthread_mutex_t mut_sendData;
     pthread_mutex_t mut_recData;

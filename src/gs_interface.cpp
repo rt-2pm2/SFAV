@@ -16,23 +16,24 @@
  *  UDP (14550)  ----->|                |
  *                     +----------------+
  */
-GS_Interface::GS_Interface():
-	udp_port((const char *)"127.0.0.1", (uint32_t)14551, (uint32_t)14550) 
+GS_Interface::GS_Interface()
 {
 	int i;
     
     connectedUAVs = 0;
 
-	// Inizialize UDP
-	setReadPort(14551);
-	setWritePort(14550);
+// 	// Inizialize UDP
+// 	setReadPort(14551);
+// 	setWritePort(14550);
+    
+    udp_port = NULL;
 
-	// Define the structure for the polling
-	fdsR[0].fd = udp_port.sock;
-	fdsR[0].events = POLLIN;
-
-	fdsW[0].fd = udp_port.sock;
-	fdsW[0].events = POLLOUT;
+// 	// Define the structure for the polling
+// 	fdsR[0].fd = udp_port.sock;
+// 	fdsR[0].events = POLLIN;
+// 
+// 	fdsW[0].fd = udp_port.sock;
+// 	fdsW[0].events = POLLOUT;
 
 	started = false;
 
@@ -40,8 +41,7 @@ GS_Interface::GS_Interface():
 		rbuff[i] = 0;
 }
 
-GS_Interface::GS_Interface(char *ip, uint32_t r_port, uint32_t w_port):
-	udp_port(ip, r_port, w_port)
+GS_Interface::GS_Interface(char *ip, uint32_t r_port, uint32_t w_port)
 {
 	int i;
     
@@ -51,11 +51,13 @@ GS_Interface::GS_Interface(char *ip, uint32_t r_port, uint32_t w_port):
 	setReadPort(r_port);
 	setWritePort(w_port);
 
+    udp_port = new Udp_Port(ip, r_port, w_port);
+    
 	// Define the structure for the polling
-	fdsR[0].fd = udp_port.sock;
+	fdsR[0].fd = udp_port->sock;
 	fdsR[0].events = POLLIN;
 
-	fdsW[0].fd = udp_port.sock;
+	fdsW[0].fd = udp_port->sock;
 	fdsW[0].events = POLLOUT;
 
 	started = false;
@@ -84,6 +86,8 @@ GS_Interface::~GS_Interface()
 //  FUNCTIONS
 // ----------------------------------------------------------------
 
+// ToDo: Check!!!!!!!
+
 //
 // setReadPort
 //
@@ -102,6 +106,32 @@ int GS_Interface::setWritePort(unsigned int port)
     return 1;
 }
 
+//
+// setIP
+//
+int GS_Interface::setUDP(char* ip, unsigned int port_r, unsigned int port_w)
+{
+	// Initialize UDP
+	setReadPort(port_r);
+	setWritePort(port_w);
+
+    if (!udp_port)
+        udp_port = new Udp_Port(ip, r_port, w_port);
+    else
+    {
+        delete udp_port;
+        udp_port = new Udp_Port(ip, r_port, w_port);
+    }
+    
+	// Define the structure for the polling
+	fdsR[0].fd = udp_port->sock;
+	fdsR[0].events = POLLIN;
+
+	fdsW[0].fd = udp_port->sock;
+	fdsW[0].events = POLLOUT;
+    
+    return 1;
+}
 
 //
 // setGSActive
@@ -168,7 +198,7 @@ int GS_Interface::sendMessage(mavlink_message_t* sendMessage)
 {
 	int bytes_sent;
 
-    bytes_sent = udp_port.send_mav_mess(sendMessage);
+    bytes_sent = udp_port->send_mav_mess(sendMessage);
 
 	return bytes_sent;
 }
@@ -233,7 +263,7 @@ int GS_Interface::receiveMessages()
 		while (ret > 0)
 		{
 			// Receive data num bytes over UDP and put them at the sensors address
-			read_bytes = udp_port.readBytes(rbuff, sizeof(mavlink_message_t));
+			read_bytes = udp_port->readBytes(rbuff, sizeof(mavlink_message_t));
 			for (i = 0; i < read_bytes; i++)
 			{
 				// Parse 1 byte at time

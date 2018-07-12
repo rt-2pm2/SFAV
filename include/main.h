@@ -47,17 +47,6 @@ extern "C" {
 #include "../sfav_config.h"
 
 
-// -----------------------------------------------------------------------
-//   Variables and Structures
-// -----------------------------------------------------------------------
-
-/*
- * Vector with the synchronization information
- */
-bool synch[256];            /// Vector containing the synchronization type flag
-char* ip_addr_uav[256];     /// Vector containing the pointer to IP strings
-unsigned int uav_port[256]; /// Vector containing the port for communicating with UAV
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Threads Time properties
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,6 +64,12 @@ int UnrealEngine_Thread_Priority = UETHR_PRIO; /// Priority of the UnrealEngine 
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Ports for the communication with Debug Application
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+char* dbg_ip = (char *)DBG_IP; /// IP of the Debug Application
+unsigned int dbg_port = DBG_PORT; /// Starting Write Port of the Debug Application
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Ports for the communication with GS
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 char* gs_ip = (char *)GS_IP; /// IP of the Groundstation
@@ -87,16 +82,43 @@ unsigned int gs_w_port = GS_WPORT; /// Write Port of the Groundstation
 char* ue_ip = (char *)UE_IP; /// IP of the Unreal Engine
 unsigned int ue_w_port = UE_WPORT; /// Read Port of the Unreal Engine
 unsigned int ue_r_port = UE_RPORT; /// Write Port of the Unreal Engine
+unsigned int ue_v_port = UE_VPORT; /// Video Port of the Unreal Engine
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Port for the communication with the Boards
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-char* uart_name = (char *)UART_NAME; /// Name of the uart for serial communication
-int baudrate = BAUDRATE; /// Serial connection baudrate
+//char* uart_name = (char *)UART_NAME; /// Name of the uart for serial communication
+//int baudrate = BAUDRATE; /// Serial connection baudrate
 
 // Threads Indexes
 int gsT_id; // Ground station thread index
 int ueT_id; // Unreal Engine thread index
+
+
+/** 
+ * Struct with the coordinates of the HOME
+ */
+struct HomePoint
+{
+    double Latitude;
+    double Longitude;
+    double Altitude;
+};
+
+/**
+ * Struct for the Unreal Engine Connection
+ */
+struct UEConnData
+{
+    bool active;      /// Active Flag
+    
+    char ip[15];         /// IP address
+    
+    uint32_t br_port; /// Base Reading port 
+    uint32_t bw_port; /// Base Writing port
+    
+    uint32_t bv_port; /// Base Video port
+};
 
 /**
  * Struct with the pointes to the interfaces
@@ -112,15 +134,17 @@ struct LaunchArg
     MA_Manager* ma; /// Pointer to the MultiAgent Interface Class
     Sim_Manager* sm; /// Pointer to the Simulators Manager Interface Class
     GS_Interface* gs; /// Pointer to the GroundStation Interface Class
-    UE_Interface* ue; /// Pointer to the UnrealEngine Interface Class
+    struct UEConnData* ue; /// Pointer to the UnrealEngine Interface Class
     
     CommInterfaceType commType; /// Connection type (UDP, SERIAL)
-    char* ip; /// Ip Address of the vehicle
+    char ip[16]; /// Ip Address of the vehicle
     uint32_t r_port; /// Reading port 
     uint32_t w_port; /// Writing port
     int baudrate;   /// Serial port baudrate
     char* uart_name; /// Serial port device
     bool synch; /// Activation flag for the board driven sync
+    
+    float init_pos[3]; /// Initial position of the vehicle
 };
 
 /*!
@@ -169,6 +193,8 @@ struct UeThreadArg
     tpars params; /// Ptask Thread parameters
     UE_Interface* ue; /// Pointer to the UnrealEngine Interface Class
     Simulator_Interface* sim; /// Pointer to the Simulator Interface Class
+    
+    float pos_offset[3];
 };
 /// Vector with the structure for the simualation threads
 vector<struct UeThreadArg* > VectUEThreadArg;
@@ -209,19 +235,6 @@ FILE *outfile; /// File for output
 // -----------------------------------------------------------------------
 int main(int argc, char **argv);
 
-
-/** This function parse the option used to launch the application
- * throws EXIT_FAILURE if could not open the port
- * Inputs
- * \param gs_ip    Ground Station IP <"x.x.x.x">
- * \param gs_r_port Port number for reading incoming data from GS <"x">
- * \param gs_w_port Port number for writing outgoing data to GS <"x">
- * \param ue_ip    UnrealEngine Visualizator IP <"x.x.x.x">
- * \param ue_r_port number for reading incoming data from Visualizator <"x">
- * \param ue_w_port Port number for writing outgoing data to Visualizator <"x">
- */
-void parse_commandline(int argc, char **argv, char *&gs_ip, unsigned int &gs_r_port, unsigned int &gs_w_port, 
-                        char *& ue_ip, unsigned int & ue_r_port, unsigned int& ue_w_port);
 
 void routing_messages(mavlink_message_t *msg, struct InflowArg* p);
 

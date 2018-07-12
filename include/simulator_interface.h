@@ -24,7 +24,7 @@ extern "C"
     #include "DynModel.h"
     #include "DynModel_private.h"
 }
-
+#include "udp_port.h"
 
 struct SimOutput
 {
@@ -60,8 +60,11 @@ class Simulator_Interface {
         /// Default Constructor
         Simulator_Interface();
         
-        /// Advanced Constructor
+        /// Simple Constructor
         Simulator_Interface(int Id);
+        
+        /// Advanced Constructor
+        Simulator_Interface(int Id, char *ip, uint32_t w_port);
 
         /// Default Destructor
         ~Simulator_Interface();
@@ -86,6 +89,12 @@ class Simulator_Interface {
          * Get the Position and Attitude of the simulated vehicle
          */
         void getSimPosAtt(float Xe[3], float Att[3]);
+        
+        /**
+         * Send the Position and Attitude of the simulated vehicle
+         * to the debug machine
+         */
+        void DBGsendSimPosAtt();
         
         /**
          * Simulation Step
@@ -135,6 +144,14 @@ class Simulator_Interface {
         /*! Flag to signal the simulation thread running */
         bool simulator_thread_active;
         
+        /*!< Communication port */
+        Udp_Port* ComPort; 
+        
+        /*! IP address of the debug machine */
+        char net_ip[15];
+        
+        /*! UDP port for dubeg purpose */
+        uint32_t udp_port;
         
 };
 

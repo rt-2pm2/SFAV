@@ -1,0 +1,37 @@
+Instructions to setup the Simulator
+
+INSTALLATION
+- Clone the git 
+- Go inside the folder "SFAV"
+- Create a folder "build" and go inside it
+- run "cmake .."
+- run make
+
+CONFIGURATION
+
+/* On the simulator machine */
+"sfav_config.h": 
+This file contains configuration parameters related to the communication between components(ports and IPs) and threads(Priorities and Periods). 
+
+It would be possible also to pass the SFAV executable the paramenters regarding the GroundStation and SyntheticEnvironment. Those values will overwrite the static ones defined in the sfav_config.h file. 
+
+/* On the board */
+Configure the .config file to start the Mavlink communication with the simulator machine.(select ports and IP).
+e.g. mavlink start -o 4002 -u 4003 -t 10.30.3.109 -r 1000000, where the parameters which could be to change are
+4002: the remote port on the simulator
+4003: is the local port on the autopilot
+10.30.3.109: IP address of the machine running the simulation framework 
+
+(In the folder "Config_Files" there is an example config) 
+
+/* On Unreal Engine */
+Create the new pawns and set up the configuration for the communication component.
+
+
+TODO
+The initial position of the vehicle (lat/lon) should be set modifing the code. I still have to implement a more "clean" way to do that. 
+The function which initialize the vehicle position and starts the simulation thread is "add_agent_to_system(...)". Inside that it is possible to find the call
+ "pS = sm->add_simulator(Agent_Id, 43.8148386, 10.3192456, dbg_ip, dbg_port)", where, in that case the initial position of the vehicle is set to [43.8148386, 10.3192456].
+ 
+ As far as the Synthetic Environment is considered, the possibility to set up the initial position has not been implemented yet. All the pawn are spawned in the origin of the map. 
+ 

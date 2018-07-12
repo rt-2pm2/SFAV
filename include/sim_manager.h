@@ -31,8 +31,10 @@ class Sim_Manager {
         /*!
          * Add agent to the list of connected Agents
          * \param Id Index of the added system 
+         * \param ip    IP address of the debug machine
+         * \param port  UDP port to stream debug info 
          */
-        int add_simulator(int Id);
+        int add_simulator(int Id, char* ip, uint32_t port);
         
         /*!
          * Add agent to the list of connected Agents
@@ -40,8 +42,10 @@ class Sim_Manager {
          * \param Sys_Id Index of the added system 
          * \param Lat Initial Latitude
          * \param Lon Initial Longitude
+         * \param ip    IP address of the debug machine
+         * \param port  UDP port to stream debug info 
          */
-        Simulator_Interface* add_simulator(int Sys_Id, float Lat, float Lon);
+        Simulator_Interface* add_simulator(int Sys_Id, float Lat, float Lon, char* ip, uint32_t port);
         
         /*!
          * Remove the i-th simulator from the list of active

@@ -1,0 +1,47 @@
+{
+        "Home" : {
+                "Latitude" : 43.718306,
+                "Longitude" : 10.424712
+        },
+        "GS" : {
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortWrite" : 14550,
+                "PortRead" : 14551
+        },
+        "UE" : {
+                "Status" : 0,
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortControl" : 7999,
+                "PortReadBase" : 8000,
+                "PortWriteBase" : 9000,
+                "PortVideoBase" : 10000
+        },
+        "Vehicle" : [
+            {
+                "ID" : 2,
+                "TypeID" : 2,
+                "Synch" : 0,
+                "RelX" : 10.5,
+                "RelY" : 10.5,
+                "IPAddressCamera": "127.0.0.1",
+                "ConnectionType" : "UDP",
+                "IPAddress" : "10.30.3.206",
+                "PortWrite" : 4005,
+                "PortRead" : 4004
+            },
+            {
+                "ID" : 4,
+                "TypeID" : 2,
+                "Synch" : 0,
+                "RelX" : 10.5,
+                "RelY" : 0,
+                "IPAddressCamera": "10.30.3.49",
+                "ConnectionType" : "UDP",
+                "IPAddress" : "10.30.3.49",
+                "PortWrite" : 4003,
+                "PortRead" : 4002
+            }
+	]
+}
