@@ -428,12 +428,11 @@ void Autopilot_Interface::sendSensorData(float xacc, float yacc, float zacc,
                                          float xgyro, float ygyro, float zgyro, 
                                          float xmag, float ymag, float zmag, 
                                          float abs_pressure, float diff_pressure, float pressure_alt,
-                                         float temperature)
+                                         float temperature, ptime timestamp)
 {
     // Compose the Mavlinkg sensor message 
     mavlink_message_t msg;
     mavlink_hil_sensor_t sensors;
-    ptime timestamp = ptask_gettime(MICRO);
     sensors.time_usec = timestamp; 
     sensors.xacc = xacc; 
     sensors.yacc = yacc; 
@@ -457,12 +456,12 @@ void Autopilot_Interface::sendSensorData(float xacc, float yacc, float zacc,
     return;
 }
 
-void Autopilot_Interface::sendGpsData(float gpslat, float gpslon, float gpsalt,
-                                        float gpsvmod, float gpsv[3],
-                                        float gpscog)
+void Autopilot_Interface::sendGpsData(float gpslat, float gpslon, float gpsalt, float gpseph, float gpsepv,
+                                      float gpsvmod, float gpsvn, float gpsve, float gpsvd,
+                                      float gpscog)
 {
     mavlink_message_t gps_msg;
-    
+
     uint8_t    fix_type;
     int32_t    lat;
     int32_t    lon;
@@ -479,16 +478,28 @@ void Autopilot_Interface::sendGpsData(float gpslat, float gpslon, float gpsalt,
 
     // Conver the measurements
     fix_type = 3;
+    /*
     lat = (int32_t)(gpslat * 1e7);
     lon = (int32_t)(gpslon * 1e7);
     alt = (int32_t)(gpsalt * 1e3);
     eph = 1;
     epv = 1;
     vel = (uint16_t)(gpsvmod * 100); // cm/s
-    vn  = (int16_t)(gpsv[0] * 100); 
-    ve  = (int16_t)(gpsv[1] * 100);
-    vd  = (int16_t)(gpsv[2] * 100);
+    vn  = (int16_t)(gpsvn * 100); 
+    ve  = (int16_t)(gpsve * 100);
+    vd  = (int16_t)(gpsvd * 100);
     cog = (int16_t)(gpscog * 100);  
+    */
+    lat = (int32_t)gpslat;
+    lon = (int32_t)gpslon;
+    alt = (int32_t)gpsalt;
+    eph = (uint16_t) gpseph;
+    epv = (uint16_t) gpsepv;
+    vel = (uint16_t)gpsvmod;
+    vn  = (int16_t)gpsvn; 
+    ve  = (int16_t)gpsve;
+    vd  = (int16_t)gpsvd;
+    cog = (int16_t)gpscog; 
     satellites_visible = 8;
         
     // Compose the Mavlink Message

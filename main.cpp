@@ -1052,8 +1052,6 @@ void simulator_thread()
     int i;
     
     bool hit;
-    //FILE *simfile; /// File for simulation output
-    //char filename[15];
     
     unsigned int scaler = 0;
 
@@ -1065,15 +1063,6 @@ void simulator_thread()
     uint8_t system_id = p->aut->getSystemId();
     uint8_t component_id = p->aut->getSystemId();
 
-    /*
-    sprintf(filename, "simfile%d.txt", system_id);
-    simfile = fopen(filename, "w");
-    
-    fprintf(simfile, "T \t X \t Y \t Z \t r \t p \t y \n");
-    fprintf(simfile, "%ld \t %3.4f \t %3.4f \t %3.4f \t %3.4f \t %3.4f \t %3.4f \n", 
-            ptask_gettime(MICRO), simout.Xe[0], simout.Xe[1], simout.Xe[2], 
-                simout.RPY[0], simout.RPY[1], simout.RPY[2]);
-    */
     mavlink_message_t sensor_msg, gps_msg; // Mavlink messages
 
     bool first = true;
@@ -1162,24 +1151,24 @@ void simulator_thread()
                 //printf("%ld \n", diff);
                 //fprintf(outfile, "%ld \n", diff);
                 
-                // Sensors
-                // Composition of the mavlink messages
+                // =====================
+                //        Sensors
+                // =====================
                 //  Sensors Message
-                mavlink_msg_hil_sensor_pack(system_id, component_id, &sensor_msg, time_usec,
-                                            sensors.xacc, sensors.yacc, sensors.zacc,
+                p->aut->sendSensorData(sensors.xacc, sensors.yacc, sensors.zacc,
                                             sensors.xgyro, sensors.ygyro, sensors.zgyro,
                                             sensors.xmag, sensors.ymag, sensors.zmag,
                                             sensors.abs_pressure, sensors.diff_pressure,
-                                            sensors.pressure_alt, sensors.temperature,
-                                            sensors.fields_updated);
-                ret_sens = p->aut->send_message(&sensor_msg);
+                                            sensors.pressure_alt, sensors.temperature, time_usec);
+                
 
                 if ((send_time - old_send_time) > 100000)
                 {
                     //  GPS Message
-                    mavlink_msg_hil_gps_pack(system_id, component_id, &gps_msg,
-                                             time_usec, gps.fix_type, gps.lat, gps.lon, gps.alt, gps.eph, gps.epv, gps.vel, gps.vn, gps.ve, gps.vd, gps.cog, gps.satellites_visible);
-                    ret_gps = p->aut->send_message(&gps_msg);
+                    p->aut->sendGpsData(gps.lat, gps.lon, gps.alt, gps.eph, gps.epv,
+                                        gps.vel, gps.vn, gps.ve, gps.vd,
+                                        gps.cog);
+  
                     old_send_time = send_time;
                 }
             }
@@ -1188,23 +1177,19 @@ void simulator_thread()
                 if ((scaler % 2) == 0)
                 {
                     // Sensors
-                    mavlink_msg_hil_sensor_pack(system_id, component_id, &sensor_msg, time_usec,
-                                            sensors.xacc, sensors.yacc, sensors.zacc,
+                    p->aut->sendSensorData(sensors.xacc, sensors.yacc, sensors.zacc,
                                             sensors.xgyro, sensors.ygyro, sensors.zgyro,
                                             sensors.xmag, sensors.ymag, sensors.zmag,
                                             sensors.abs_pressure, sensors.diff_pressure,
-                                            sensors.pressure_alt, sensors.temperature,
-                                            sensors.fields_updated);
-                    ret_sens = p->aut->send_message(&sensor_msg);
+                                            sensors.pressure_alt, sensors.temperature, time_usec);
 
                     // GPS
                     if ((scaler % 50) == 0)
                     {
                         //  GPS Message
-                        mavlink_msg_hil_gps_pack(system_id, component_id, &gps_msg,
-                                                 time_usec, gps.fix_type, gps.lat, gps.lon, gps.alt, gps.eph, gps.epv, gps.vel, gps.vn, gps.ve, gps.vd, gps.cog, gps.satellites_visible);
-                        //printf("Sending GPS message to %d\n", system_id);
-                        ret_gps = p->aut->send_message(&gps_msg);
+                        p->aut->sendGpsData(gps.lat, gps.lon, gps.alt, gps.eph, gps.epv,
+                                        gps.vel, gps.vn, gps.ve, gps.vd,
+                                        gps.cog);
                     }
                 }
                 if (ptask_deadline_miss())
