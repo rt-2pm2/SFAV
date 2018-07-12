@@ -73,7 +73,7 @@
 
 // Debug Interface
 #ifndef DBG_IP
-#define DBG_IP ("127.0.0.1")
+#define DBG_IP ("10.30.3.136")
 #endif
 #ifndef DBG_PORT
 #define DBG_PORT (10000)
@@ -103,7 +103,7 @@
 /*
 * UART_NAME: Name of the Serial Interface used for connecting autopilot board
 * default: ("/dev/ttyUSB0")
-* 
+* M_SCHED_DEF
 * BAUDRATE: Connection baud rate
 * default: 921600
 */
@@ -237,6 +237,19 @@
 //#define EXTPC_IP ("127.0.0.1")
 //#endif
 
+// ==============================================================================
+// ==============================================================================
+// Scheduling 
+// ==============================================================================
+// ==============================================================================
+
+#ifndef M_SCHED_DEF
+#define M_SCHED_DEF 0
+#endif
+
+#ifndef K_SCHED_DEF
+#define K_SCHED_DEF 1
+#endif
 
 // ==============================================================================
 // ==============================================================================

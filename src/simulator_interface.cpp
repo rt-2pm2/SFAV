@@ -37,6 +37,8 @@ Simulator_Interface::Simulator_Interface(int Id, char *ip, uint32_t w_port)
     
     udp_port = w_port;
     
+    ComPort = new Udp_Port();
+    
     // Initialize UDP Communication for debug purpose
     for (i = 0; i < strlen(ip); i++)
         net_ip[i] = ip[i];
@@ -162,6 +164,20 @@ void Simulator_Interface::DBGsendSimPosAtt()
     
     memcpy(outvect, SimModel->ModelData.outputs->Xe, 3 * sizeof(float));
     memcpy(&outvect[3], SimModel->ModelData.outputs->RPY, 3 * sizeof(float));
+    
+    if (ComPort)
+        ComPort->writeBytes((char* )outvect, 6 * sizeof(float));
+
+    else
+        printf("No DBG port specified \n");
+}
+
+void Simulator_Interface::DBGsendSimPosGyro()
+{
+    float outvect[6];
+    
+    memcpy(outvect, SimModel->ModelData.outputs->Xe, 3 * sizeof(float));
+    memcpy(&outvect[3], SimModel->ModelData.outputs->Gyro, 3 * sizeof(float));
     
     if (ComPort)
         ComPort->writeBytes((char* )outvect, 6 * sizeof(float));

@@ -19,5 +19,10 @@
                 "PortWrite" : 4005,
                 "PortRead" : 4004
             }
-        ]
+        ],
+        "SCHEDULER" : 
+        {
+            "M" : 0,
+            "K" : 1
+        }
 }

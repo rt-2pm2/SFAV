@@ -97,6 +97,12 @@ class Simulator_Interface {
         void DBGsendSimPosAtt();
         
         /**
+         * Send the Position and the Angular velocity of the simulated vehicle
+         * to the debug machine
+         */
+        void DBGsendSimPosGyro();
+        
+        /**
          * Simulation Step
          */
         void simStep();

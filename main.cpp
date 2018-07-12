@@ -11,6 +11,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "scheduler_class.h"
+
 #include "json/json.h"
 
 #include "main.h"
@@ -21,6 +23,9 @@ const char *RT_MEMORY_ALLOCATION_ERROR = "memory allocation error";
 struct HomePoint home;
 
 struct UEConnData ueconndata;
+
+int M_sched;
+int K_sched;
 
 /* Start to retrieve data from the Autopilot Interface
  * Lock the resource autopilot_connected, then wait for the first heartbeat
@@ -203,7 +208,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
     //
     // 2a) Add a Simulation_Interface class
     rel2latlon(home, init_pos, &lat, &lon, &alt);
-    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, 0);
+    pS = sm->add_simulator(Agent_Id, lat, lon, dbg_ip, DBG_PORT);
     
     //
     // 2b) Set up the arguments to be passed to the SimulationThread
@@ -711,6 +716,24 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
             return 1;
         }
         printf("\n");
+
+        // Scheduling
+        Json::Value js_sched = root["SCHEDULER"];
+        if (!js_sched.empty())
+        {
+            printf("The configuration file includes scheduling model\n");
+            M_sched = js_sched.get("M", M_SCHED_DEF).asInt();
+            K_sched = js_sched.get("K", K_SCHED_DEF).asInt();
+            
+            printf("M = %d | K = %d \n", M_sched, K_sched);
+        }
+        else
+        {
+            printf("No scheduling model...\n");
+            return 1;
+        }
+        printf("\n");
+
     }
     return 0;
 }
@@ -754,7 +777,7 @@ int main(int argc, char *argv[])
     }
 
     // File to save data to
-    //outfile = fopen("outfile.txt", "w");
+    outfile = fopen("outfile.txt", "w");
        
 
     // -----------------------------
@@ -855,7 +878,7 @@ int main(int argc, char *argv[])
         delete VectUEThreadArg.at(i);
     }
 
-    //fclose(outfile);
+    fclose(outfile);
     return 0;
 }
 
@@ -1004,7 +1027,7 @@ void extractGpsData(struct SimOutput simout, struct GPSData_str* gps)
     gps->vn = (int16_t)(simout.Gps_V[0] * 100);
     gps->ve = (int16_t)(simout.Gps_V[1] * 100);
     gps->vd = (int16_t)(simout.Gps_V[2] * 100);
-                     
+    
     gps->cog = (int16_t)(simout.COG * 100);
     
     gps->satellites_visible = 8;
@@ -1026,25 +1049,43 @@ void simulator_thread()
     int ret_sens;
     int ret_gps;
     
+    int i;
+    
+    bool hit;
+    //FILE *simfile; /// File for simulation output
+    //char filename[15];
+    
     unsigned int scaler = 0;
 
+    class MKscheduler mkscheduler(M_sched, K_sched);
+    
     int tid = ptask_get_index();
     struct SimThreadArg* p = (struct SimThreadArg*)ptask_get_argument();
     
     uint8_t system_id = p->aut->getSystemId();
     uint8_t component_id = p->aut->getSystemId();
 
+    /*
+    sprintf(filename, "simfile%d.txt", system_id);
+    simfile = fopen(filename, "w");
+    
+    fprintf(simfile, "T \t X \t Y \t Z \t r \t p \t y \n");
+    fprintf(simfile, "%ld \t %3.4f \t %3.4f \t %3.4f \t %3.4f \t %3.4f \t %3.4f \n", 
+            ptask_gettime(MICRO), simout.Xe[0], simout.Xe[1], simout.Xe[2], 
+                simout.RPY[0], simout.RPY[1], simout.RPY[2]);
+    */
     mavlink_message_t sensor_msg, gps_msg; // Mavlink messages
 
     bool first = true;
 
+    float rec_pwm[NUM_FLOAT_ACT_CONTROLS];
     float pwm[NUM_FLOAT_ACT_CONTROLS];  // Structure to allocate simulation input
     struct SimOutput simout;            // Structure to allocate simualation output
 
     struct SensorData_str sensors;      // Structure to allocate simulated sensor data
     struct GPSData_str gps;             // Structure to allocate simulated gps data
     
-    uint64_t   time_usec;
+    uint64_t   time_usec, old_time_usec;
     
     ptime abs_deadlinetime;
     tspec abs_deadlinetime_tspec; 
@@ -1055,7 +1096,9 @@ void simulator_thread()
     ptime send_time = 0;
     ptime old_send_time = 0;
     ptime diff = 0;
+    old_time_usec = 0;
     
+    hit = true;
     // Check the initialization of the necessary classes
     while (!time_to_exit)
     {
@@ -1069,7 +1112,28 @@ void simulator_thread()
         }
 
         // Get the Actuator Command
-        time_usec = p->aut->getActuator(pwm);
+        time_usec = p->aut->getActuator(rec_pwm);
+        
+        // Simulate the presence of a scheduler
+        if (time_usec != old_time_usec)  // New control data
+        {
+            if (mkscheduler.sched_query()) // Whether to actuate
+            {
+                for (i = 0; i < 4; i++)
+                    pwm[i] = rec_pwm[i];
+                
+                hit = true;
+                //fprintf(outfile, "%d \n", 1);
+            }
+            else
+            {
+                hit = false;
+                //fprintf(outfile, "%d \n", 0);
+            }
+            old_time_usec = time_usec;
+        }
+                
+                
 
         // Update the Inputs to the Simulator
         p->sim->updatePWM(pwm);
@@ -1081,7 +1145,7 @@ void simulator_thread()
         p->sim->getSimOutput(&simout);
         
         // Send the state to the debug machine
-        //p->sim->DBGsendSimPosAtt();
+        p->sim->DBGsendSimPosGyro();
         
         // Extract the Sensors and Gps Data
         extractSensors(simout, &sensors);
@@ -1089,7 +1153,7 @@ void simulator_thread()
         
     
         // SEND
-        if (p->aut->is_hil())
+        if (p->aut->is_hil() || true)
         {
             if (p->aut->getSynchActive())
             {
@@ -1142,7 +1206,6 @@ void simulator_thread()
                         //printf("Sending GPS message to %d\n", system_id);
                         ret_gps = p->aut->send_message(&gps_msg);
                     }
-
                 }
                 if (ptask_deadline_miss())
                 {
@@ -1157,6 +1220,7 @@ void simulator_thread()
             }
         }
     }
+    //fclose(simfile);
 }
 
 

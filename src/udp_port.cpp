@@ -29,8 +29,8 @@ Udp_Port::Udp_Port()
 
 void Udp_Port::InitializeOutputPort(const char* ip_addr, uint32_t w_port)
 {
-    printf("Setting UDP Output port : IP_DEST %s | PORT %d\n", ip_addr, w_port);
-    read_port = -1;
+    //printf("Setting UDP Output port : IP_DEST %s | PORT %d\n", ip_addr, w_port);
+    //read_port = 0;
     write_port = w_port;
     
     // Endpoint for communication file descriptor
