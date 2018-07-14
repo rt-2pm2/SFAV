@@ -1061,9 +1061,6 @@ void simulator_thread()
     struct SimThreadArg* p = (struct SimThreadArg*)ptask_get_argument();
     
     uint8_t system_id = p->aut->getSystemId();
-    uint8_t component_id = p->aut->getSystemId();
-
-    mavlink_message_t sensor_msg, gps_msg; // Mavlink messages
 
     bool first = true;
 
@@ -1103,6 +1100,9 @@ void simulator_thread()
         // Get the Actuator Command
         time_usec = p->aut->getActuator(rec_pwm);
         
+	printf("[%2.1f, %2.1f, %2.1f, %2.1f]\n", rec_pwm[0], rec_pwm[1], rec_pwm[2], rec_pwm[3]); 
+
+
         // Simulate the presence of a scheduler
         if (time_usec != old_time_usec)  // New control data
         {
@@ -1142,7 +1142,7 @@ void simulator_thread()
         
     
         // SEND
-        if (p->aut->is_hil() || true)
+        if (p->aut->is_hil())
         {
             if (p->aut->getSynchActive())
             {
