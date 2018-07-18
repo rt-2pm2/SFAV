@@ -102,6 +102,9 @@ class Simulator_Interface {
          */
         void DBGsendSimPosGyro();
         
+
+	void DBGsendComplete();
+
         /**
          * Simulation Step
          */
