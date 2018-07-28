@@ -42,13 +42,11 @@ int start_inflow_thread(struct InflowArg* arg)
 	//printf("Creating the inflow_thread...\n");
 	inflowT_id = ptask_create_param(inflow_thread, &arg->params);
 
-	if (inflowT_id == -1)
-	{
+	if (inflowT_id == -1) {
 		printf("Inflow Thread not created!");
 		return -1;
 	}
-	if (!arg->aut->isConnected())
-	{
+	if (!arg->aut->isConnected()) {
 		//printf("Waiting for autopilot connection...\n");
 		arg->aut->waitNextHeartbeat();
 	}
@@ -76,8 +74,7 @@ int start_sim_thread(struct SimThreadArg* arg)
 	int id = arg->aut->getSystemId();
 	printf("Creating the simulation_thread [%d] ....\n", id);
 	simT_id = ptask_create_param(simulator_thread, &arg->params);
-	if(simT_id == -1)
-	{ 
+	if(simT_id == -1) { 
 		printf("Error creating the simulator thread\n");
 	}
 	arg->ThreadId = simT_id;
@@ -106,8 +103,7 @@ int start_gs_thread(struct GsThreadArg* GSarg, class MA_Manager* ma_manager, cla
 	printf("Creating the groundstation_thread....\n");
 	gsT_id = ptask_create_param(gs_thread, &GSarg->params);
 
-	if(gsT_id == -1)
-	{
+	if(gsT_id == -1) {
 		printf("Error creating the Ground Station thread\n");
 	}
 
@@ -122,8 +118,7 @@ int start_ue_thread(struct UeThreadArg* UEarg)
 
 	ueT_id = ptask_create_param(ue_thread, &(UEarg->params));
 
-	if(ueT_id == -1)
-	{
+	if(ueT_id == -1) {
 		printf("Error creating the Unreal Engine thread\n");
 	}
 	UEarg->ThreadId = ueT_id;
@@ -236,8 +231,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs,
 
 	start_sim_thread(SArg);
 
-	if (ue->active)
-	{
+	if (ue->active) {
 		//
 		// 3a) Add a UnrealEngine interface class and set up the communication port
 		pUe = new UE_Interface(ue_ip, ue->br_port, ue->bw_port, ue->bv_port);
@@ -364,8 +358,7 @@ int add_agent_to_system(MA_Manager* ma, Sim_Manager* sm, GS_Interface* gs, struc
 	pUe = new UE_Interface(ue_ip, ue->br_port, ue->bw_port, ue->bv_port);
 	pUe->add_port(Agent_Id);
 
-	if (ue->active)
-	{
+	if (ue->active) {
 		//
 		// 3b) Set up the arguments to be passed to the UnrealThread
 		// Structure to pass arguments to the thread
@@ -492,8 +485,7 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
 	builder["rejectDupKeys"] = true;
 
 	bool parsingSuccessful =  parseFromStream(builder, *cfg, &root, &parse_errs);
-	if ( !parsingSuccessful ) {
-		// report to the user the failure and their locations in the document.
+	if ( !parsingSuccessful ) { // report to the user the failure and their locations in the document.
 		printf("Failed to parse configuration.\n");
 		return 1;
 	}
@@ -777,7 +769,7 @@ int main(int argc, char *argv[])
 	}
 
 	// File to save data to
-//	//outfile = fopen("outfile.txt", "w");
+	//	//outfile = fopen("outfile.txt", "w");
 
 
 	// -----------------------------
@@ -1086,13 +1078,11 @@ void simulator_thread()
 
 	hit = true;
 	// Check the initialization of the necessary classes
-	while (!time_to_exit)
-	{
+	while (!time_to_exit) {
 		/*
 		 * The synchronization part is still not implemented
 		 */
-		if (first)
-		{
+		if (first) {
 			first = false;
 			printf("Simulation Thread STARTED! \n");
 		}
@@ -1101,24 +1091,21 @@ void simulator_thread()
 		// AutopilotInterface --> Here
 		time_usec = p->aut->getActuator(rec_pwm);
 
-		//printf("[%2.1f, %2.1f, %2.1f, %2.1f]\n", rec_pwm[0], rec_pwm[1], rec_pwm[2], rec_pwm[3]); 
+		//printf("[%2.1f, %2.1f, %2.1f, %2.1f] @ %llu ms\n", 
+		//		rec_pwm[0], rec_pwm[1], rec_pwm[2], rec_pwm[3], time_usec / 1000); 
 
 
 		// Simulate the presence of a scheduler
 		// The time_usec is filled by the control firmware, thus I can used it
 		// to check when I am in a main step (not the simulation substep).
-		if (time_usec != old_time_usec)  // New control data
-		{
-			if (mkscheduler.sched_query()) // Whether to actuate
-			{
+		if (time_usec != old_time_usec)   { // New control data
+			if (mkscheduler.sched_query()) { // Whether to actuate
 				for (i = 0; i < 4; i++)
 					pwm[i] = rec_pwm[i];
 
 				hit = true;
 				//fprintf(outfile, "%d \n", 1);
-			}
-			else
-			{
+			} else {
 				hit = false;
 				//fprintf(outfile, "%d \n", 0);
 			}
@@ -1136,17 +1123,15 @@ void simulator_thread()
 
 		// Get the Simulation Output
 		p->sim->getSimOutput(&simout);
-	
+
 		// Extract the Sensors and Gps Data
 		extractSensors(simout, &sensors);
 		extractGpsData(simout, &gps);
 
 
 		// SEND
-		if (p->aut->is_hil())
-		{
-			if (p->aut->getSynchActive())
-			{
+		if (p->aut->is_hil()) {
+			if (p->aut->getSynchActive()) {
 				send_time = ptask_gettime(MICRO);
 				diff = send_time - p->aut->t_ctr;
 
@@ -1164,8 +1149,7 @@ void simulator_thread()
 						sensors.pressure_alt, sensors.temperature, time_usec);
 
 
-				if ((send_time - old_send_time) > 100000)
-				{
+				if ((send_time - old_send_time) > 100000) {
 					//  GPS Message
 					p->aut->sendGpsData(gps.lat, gps.lon, gps.alt, gps.eph, gps.epv,
 							gps.vel, gps.vn, gps.ve, gps.vd,
@@ -1174,10 +1158,8 @@ void simulator_thread()
 					old_send_time = send_time;
 				}
 			}
-			else
-			{
-				if ((scaler % 2) == 0)
-				{
+			else {
+				if ((scaler % 2) == 0) {
 					// Send the state to the debug machine
 					p->sim->DBGsendComplete();
 
@@ -1189,16 +1171,14 @@ void simulator_thread()
 							sensors.pressure_alt, sensors.temperature, time_usec);
 
 					// GPS
-					if ((scaler % 50) == 0)
-					{
+					if ((scaler % 50) == 0) {
 						//  GPS Message
 						p->aut->sendGpsData(gps.lat, gps.lon, gps.alt, gps.eph, gps.epv,
 								gps.vel, gps.vn, gps.ve, gps.vd,
 								gps.cog);
 					}
 				}
-				if (ptask_deadline_miss())
-				{
+				if (ptask_deadline_miss()) {
 					abs_deadlinetime = task_absdl(tid);
 					abs_deadlinetime_tspec = tspec_from(abs_deadlinetime, MILLI);
 
@@ -1245,10 +1225,8 @@ void gs_thread()
 	gs_thread_active = true;
 
 	// Check the initialization of the necessary classes
-	while (!time_to_exit)
-	{
-		if (first)
-		{
+	while (!time_to_exit) {
+		if (first) {
 			first = false;
 			printf("GS Thread STARTED! \n");
 		}
@@ -1260,8 +1238,7 @@ void gs_thread()
 
 		// Send data to the Autopilot
 		// We send data until the recQueue is empty
-		while (p->gs->getDimrecQueue() > 0)
-		{
+		while (p->gs->getDimrecQueue() > 0) {
 			// Retrieve message from the Ground Station
 			uavId = p->gs->getMessage(&msg_message);
 
@@ -1269,8 +1246,7 @@ void gs_thread()
 			p->ma->sendMessage2UAV(&msg_message, uavId);
 		}
 
-		if (ptask_deadline_miss())
-		{
+		if (ptask_deadline_miss()) {
 			abs_deadlinetime = task_absdl(tid);
 			abs_deadlinetime_tspec = tspec_from(abs_deadlinetime, MILLI);
 
@@ -1317,10 +1293,8 @@ void ue_thread()
 	ue_thread_active = true;
 
 	// Check the initialization of the necessary classes
-	while (!time_to_exit)
-	{
-		if (first)
-		{
+	while (!time_to_exit) {
+		if (first) {
 			first = false;
 			printf("UE Thread STARTED! \n");
 		}
@@ -1344,13 +1318,10 @@ void ue_thread()
 
 		//printf("Z = %3.2f\n", dataOut.Z);
 
-		if(p->ue->receiveData())
-		{
+		if(p->ue->receiveData()) {
 			// Read data from the Synthetic Environment
 			p->ue->getCollision(impnorm, &pen);
-		}
-		else
-		{
+		} else {
 			impnorm[0] = 0.0;
 			impnorm[1] = 0.0;
 			impnorm[2] = 0.0;
