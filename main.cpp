@@ -27,6 +27,12 @@ struct UEConnData ueconndata;
 int M_sched;
 int K_sched;
 
+#define BIGDIM (80 * 250 * 60 * 3)
+//BIGBUFFER = char[10 * sizeof(float) * 250 * 60 * 3]; // 10 float * 205 Hz * 3 minutes 
+
+int charcounter = 0;
+char BIGBUFFER[BIGDIM]; 
+
 /* Start to retrieve data from the Autopilot Interface
  * Lock the resource autopilot_connected, then wait for the first heartbeat
  * before going on. It is necessary to wait because the heartbeat message
@@ -769,8 +775,9 @@ int main(int argc, char *argv[])
 	}
 
 	// File to save data to
-	//	//outfile = fopen("outfile.txt", "w");
-
+	outfile = fopen("outfile.txt", "w");
+	for (i = 0; i < BIGDIM; i++)
+		BIGBUFFER[i] = 0;
 
 	// -----------------------------
 	//    INSTANTIATE CLASSES
@@ -801,16 +808,12 @@ int main(int argc, char *argv[])
 	/*
 	 * Parse the configuration file to get the information to initialize the managers
 	 */
-	//parse_commandline(argc, argv, gs_ip, gs_r_port, gs_w_port, ue_ip, ue_r_port, ue_w_port);
 	Init_Managers(&configfile, &ma_manager, &sim_manager, &gs_interface, &ueconndata);
 
 	/*
 	 * Setup interrupt signal handler
 	 *
-	 * Responds to early exits signaled with Ctrl-C.  The handler will 
-	 * command the UAV to return the standar operative mode, and close 
-	 * threads and the port.
-	 *
+	 * Responds to early exits signaled with Ctrl-C	
 	 */
 	signal(SIGINT,quit_handler);
 
@@ -870,7 +873,11 @@ int main(int argc, char *argv[])
 		delete VectUEThreadArg.at(i);
 	}
 
-	//fclose(outfile);
+	if (outfile)
+	{
+		fwrite(BIGBUFFER, 1, BIGDIM, outfile);
+		fclose(outfile);
+	}
 	return 0;
 }
 
@@ -1136,7 +1143,11 @@ void simulator_thread()
 				diff = send_time - p->aut->t_ctr;
 
 				//printf("%ld \n", diff);
-				//fprintf(outfile, "%ld \n", diff);
+				charcounter += sprintf(&BIGBUFFER[charcounter], 
+						"PWM:%1.4f,%1.4f,%1.4f,%1.4f\n", pwm[0], pwm[1], pwm[2], pwm[3]);
+				charcounter += sprintf(&BIGBUFFER[charcounter], 
+							"W:%1.4f,%1.4f,%1.4f\n", 
+							simout.Gyro[0], simout.Gyro[1], simout.Gyro[2]);
 
 				// =====================
 				//        Sensors
@@ -1161,7 +1172,12 @@ void simulator_thread()
 			else {
 				if ((scaler % 2) == 0) {
 					// Send the state to the debug machine
-					p->sim->DBGsendComplete();
+					//p->sim->DBGsendComplete();
+					charcounter += sprintf(&BIGBUFFER[charcounter], 
+							"PWM:%1.4f,%1.4f,%1.4f,%1.4f\n", pwm[0], pwm[1], pwm[2], pwm[3]);
+					charcounter += sprintf(&BIGBUFFER[charcounter], 
+							"W:%2.4f,%2.4f,%2.4f\n", 
+							simout.Gyro[0], simout.Gyro[1], simout.Gyro[2]);
 
 					// Sensors
 					p->aut->sendSensorData(sensors.xacc, sensors.yacc, sensors.zacc,
@@ -1352,6 +1368,12 @@ void quit_handler( int sig )
 
 	} 
 	catch (int error){}
+	if (outfile)
+	{
+		fwrite(BIGBUFFER, 1, charcounter, outfile);
+		fflush(outfile);
+		fclose(outfile);
+	}
 
 
 	// end program here
