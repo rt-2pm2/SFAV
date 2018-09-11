@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.6)
-project (SFAV)
+cmake_minimum_required (VERSION 3.5)
+project (SFAV VERSION 2.0 LANGUAGES CXX C)
 
 # Version Number    
 set (LSim_VERSION_MAJOR 1)
