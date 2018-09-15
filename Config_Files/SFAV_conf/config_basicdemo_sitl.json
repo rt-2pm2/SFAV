@@ -1,0 +1,28 @@
+{
+        "Home" : {
+                "Latitude" : 43.718306,
+                "Longitude" : 10.424712
+        },
+        "GS" : {
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortWrite" : 14550,
+                "PortRead" : 14551
+        },
+        "Vehicle" : [
+            {
+                "ID" : 2,
+                "TypeID" : 2,
+                "Synch" : 0,
+                "ConnectionType" : "UDP",
+                "IPAddress" : "127.0.0.1",
+                "PortWrite" : 4005,
+                "PortRead" : 4004
+            }
+        ],
+        "SCHEDULER" : 
+        {
+            "M" : 0,
+            "K" : 1 
+        }
+}

@@ -28,6 +28,7 @@ int M_sched;
 int K_sched;
 
 #define BIGDIM (80 * 250 * 60 * 3)
+//#define LOG
 //BIGBUFFER = char[10 * sizeof(float) * 250 * 60 * 3]; // 10 float * 205 Hz * 3 minutes 
 
 int charcounter = 0;
@@ -738,8 +739,8 @@ int Init_Managers(std::ifstream* cfg, MA_Manager* ma, Sim_Manager* sm,
 
 void Init_ThreadsEnvironment()
 {
-	//ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
-	ptask_init(SCHED_OTHER, GLOBAL, NO_PROTOCOL);
+	ptask_init(SCHED_FIFO, GLOBAL, NO_PROTOCOL);
+	//ptask_init(SCHED_OTHER, GLOBAL, NO_PROTOCOL);
 
 	// Setting periods
 	aut_period = Inflow_Thread_Period;
@@ -775,7 +776,9 @@ int main(int argc, char *argv[])
 	}
 
 	// File to save data to
+#ifdef LOG
 	outfile = fopen("outfile.txt", "w");
+#endif
 	for (i = 0; i < BIGDIM; i++)
 		BIGBUFFER[i] = 0;
 
@@ -1109,12 +1112,9 @@ void simulator_thread()
 			if (mkscheduler.sched_query()) { // Whether to actuate
 				for (i = 0; i < 4; i++)
 					pwm[i] = rec_pwm[i];
-
 				hit = true;
-				//fprintf(outfile, "%d \n", 1);
 			} else {
 				hit = false;
-				//fprintf(outfile, "%d \n", 0);
 			}
 			old_time_usec = time_usec;
 		}
@@ -1143,11 +1143,16 @@ void simulator_thread()
 				diff = send_time - p->aut->t_ctr;
 
 				//printf("%ld \n", diff);
+#ifdef LOG
 				charcounter += sprintf(&BIGBUFFER[charcounter], 
 						"PWM:%1.4f,%1.4f,%1.4f,%1.4f\n", pwm[0], pwm[1], pwm[2], pwm[3]);
 				charcounter += sprintf(&BIGBUFFER[charcounter], 
 							"W:%1.4f,%1.4f,%1.4f\n", 
 							simout.Gyro[0], simout.Gyro[1], simout.Gyro[2]);
+				charcounter += sprintf(&BIGBUFFER[charcounter], 
+							"H:%hu\n", hit);
+
+#endif
 
 				// =====================
 				//        Sensors
@@ -1173,12 +1178,15 @@ void simulator_thread()
 				if ((scaler % 2) == 0) {
 					// Send the state to the debug machine
 					//p->sim->DBGsendComplete();
+#ifdef LOG
 					charcounter += sprintf(&BIGBUFFER[charcounter], 
 							"PWM:%1.4f,%1.4f,%1.4f,%1.4f\n", pwm[0], pwm[1], pwm[2], pwm[3]);
 					charcounter += sprintf(&BIGBUFFER[charcounter], 
 							"W:%2.4f,%2.4f,%2.4f\n", 
 							simout.Gyro[0], simout.Gyro[1], simout.Gyro[2]);
-
+					charcounter += sprintf(&BIGBUFFER[charcounter], 
+							"H:%hu\n", hit);
+#endif
 					// Sensors
 					p->aut->sendSensorData(sensors.xacc, sensors.yacc, sensors.zacc,
 							sensors.xgyro, sensors.ygyro, sensors.zgyro,
