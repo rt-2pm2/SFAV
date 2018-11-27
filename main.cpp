@@ -28,7 +28,7 @@ int M_sched;
 int K_sched;
 
 #define BIGDIM (80 * 250 * 60 * 3)
-//#define LOG
+#define LOG
 //BIGBUFFER = char[10 * sizeof(float) * 250 * 60 * 3]; // 10 float * 205 Hz * 3 minutes 
 
 int charcounter = 0;
@@ -1135,7 +1135,6 @@ void simulator_thread()
 		extractSensors(simout, &sensors);
 		extractGpsData(simout, &gps);
 
-
 		// SEND
 		if (p->aut->is_hil()) {
 			if (p->aut->getSynchActive()) {
@@ -1151,7 +1150,6 @@ void simulator_thread()
 							simout.Gyro[0], simout.Gyro[1], simout.Gyro[2]);
 				charcounter += sprintf(&BIGBUFFER[charcounter], 
 							"H:%hu\n", hit);
-
 #endif
 
 				// =====================

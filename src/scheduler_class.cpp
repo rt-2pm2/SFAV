@@ -81,7 +81,7 @@ bool MKscheduler::sched_query()
     {
         // I could skip the job
         r = (double)(rand())/RAND_MAX;
-        if (r >= (1 / M) + (accumulator / M))
+        if (r >= (0.5 / (double)M) + 0.5*(accumulator / M))
             act_buff[K-1] = false; // Skip the job
         else
             act_buff[K-1] = true; // Job hit
